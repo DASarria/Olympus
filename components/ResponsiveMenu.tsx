@@ -4,7 +4,6 @@ import modulo3 from "../assets/images/3imagen.jpg";
 import modulo4 from "../assets/images/4imagen.jpg";
 import modulo5 from "../assets/images/5imagen.jpg";
 import modulo6 from "../assets/images/6imagen.jpg";
-import Image from "next/image";
 import Module from "./Module";
 
 const modules = [
