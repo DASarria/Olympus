@@ -1,9 +1,21 @@
-const index = () => {
+import {useRouter} from "next/router";
+
+const Index = () => {
+  const router = useRouter();
+  const role = "admin"; // Esto deberia cambiar cuando usen el 
+                        //login aqui, realmente deberia llamarse User o algo asi para guardar toda esa informacion
+
+  const handleLogin = () => {
+    sessionStorage.setItem("role", role);
+    
+    router.push("/Dashboard");
+  }
   return (
     <div>
-      <h1 className="bg-red-800 text-white">ECI BIENESTAR TOTAL ✔</h1>
+      <button className="border-1 rounded"
+        onClick={handleLogin}>Login</button>
     </div>
   );
 };
 
-export default index;
+export default Index;
