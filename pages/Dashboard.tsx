@@ -1,9 +1,11 @@
 import ResponsiveMenu from "@/components/ResponsiveMenu";
+import Layout from "@/components/Layout";
+
 
 const Dashboard = () => {
   return (
     <div>
-      <ResponsiveMenu/>
+      <Layout/>
     </div>
   );
 };

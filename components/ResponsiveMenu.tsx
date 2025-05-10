@@ -1,5 +1,3 @@
-
-import logotransparente from "../assets/images/logotransparente.png";
 import modulo1 from "../assets/images/1imagen.jpg";
 import modulo2 from "../assets/images/2imagen.jpg";
 import modulo3 from "../assets/images/3imagen.jpg";
@@ -49,63 +47,45 @@ const modules = [
 ];
 
 const ResponsiveMenu = () => {
-    const role = sessionStorage.getItem("role");
-  return (
-    
-    <div>
-        {/* Esto es la vista de escritorio  */}
-      <aside className="hidden md:block w-[6vw] min-h-screen bg-white rounded-r-lg "
-      >
-        
-        <div className="space-y-0.5">
-            <div className="bg-eci rounded-r-lg">
-                <Image src={logotransparente} alt="ECI logo" />
-            </div>
-            
-            <div className="flex flex-col items-center justify-center ">
-                {modules.
-                    filter((module => module.roleCanUse.some((r) => r === role)))
-                    .map((module, index) => (
-                    <Module
-                        key={index+1}
-                        moduleName={module.moduleName}
-                        roleCanUse={module.roleCanUse}
-                        urlToNavigate={module.urlToNavigate}
-                        image={module.image}
-                    />
-                ))}
-            </div>
-        </div >
-      </aside>
+    const role = typeof window !== 'undefined' ? sessionStorage.getItem("role") : null;
 
-    
-    {/* Esto es la vista de movil */}
-    
-      <div className="md:hidden">
-        <div className="bg-eci rounded-r-lg w-[14vw] ">
-            <Image src={logotransparente} alt="ECI logo" />
+    return (
+        <div>
+            {/* Vista de escritorio, le quité el logo para que se viera bien el body*/}
+            <aside className="hidden md:block w-[6vw] bg-white rounded-r-lg">
+                <div className="flex flex-col items-center justify-center py-4">
+                    {modules
+                        .filter((module => module.roleCanUse.some((r) => r === role)))
+                        .map((module, index) => (
+                        <Module
+                            key={index+1}
+                            moduleName={module.moduleName}
+                            roleCanUse={module.roleCanUse}
+                            urlToNavigate={module.urlToNavigate}
+                            image={module.image}
+                        />
+                    ))}
+                </div>
+            </aside>
 
-        </div>
-        <div className="flex flex-col justify-end h-[90vh] p-4 bg-white overflow-hidden">
-            <div className="flex-grow" /> 
-            <div className="flex space-x-4 justify-center mt-4 h-1/6">
-                {modules
-                    .filter((module) => module.roleCanUse.some((r) => r === role))
-                    .map((module, index) => (
-                    <Module
-                        key={index + 1}
-                        moduleName={module.moduleName}
-                        roleCanUse={module.roleCanUse}
-                        urlToNavigate={module.urlToNavigate}
-                        image={module.image}
-                    />
-                ))}
+            {/* Vista de móvil, le quité el logo para que se viera bien el body*/}
+            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200">
+                <div className="flex justify-center items-center p-2 space-x-2">
+                    {modules
+                        .filter((module) => module.roleCanUse.some((r) => r === role))
+                        .map((module, index) => (
+                        <Module
+                            key={index + 1}
+                            moduleName={module.moduleName}
+                            roleCanUse={module.roleCanUse}
+                            urlToNavigate={module.urlToNavigate}
+                            image={module.image}
+                        />
+                    ))}
+                </div>
             </div>
         </div>
-      </div>
-
-    </div>
-  );
+    );
 };
 
 export default ResponsiveMenu;
