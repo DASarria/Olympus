@@ -10,8 +10,8 @@ const Dashboard = () => {
     <div>
       <Layout>
       <div className="flex flex-col md:flex-row md:space-x-4">
-          <Opciones title="Prestamos" imgSrc={prestamo.src} href="../prestamosDeportivos/Prestamos" />
-          <Opciones title="Notificaciones" imgSrc={notificacionesImg.src} href="../prestamosDeportivos/Notificaciones" />
+          <Opciones title="Prestamos" imgSrc={prestamo.src} href="/Prestamos" />
+          <Opciones title="Notificaciones" imgSrc={notificacionesImg.src} href="/Notificaciones" />
       </div>
       </Layout>
     </div>
