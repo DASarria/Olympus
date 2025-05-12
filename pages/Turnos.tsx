@@ -3,13 +3,12 @@ import { useRouter } from 'next/router';
 
 const Turnos = () => {
   const router = useRouter();
-  const [showForm, setShowForm] = useState(false);
   
   const initialFormState = {
     nombre: '',
     documento: '',
     especializacion: '',
-    discapacidad: '' 
+    discapacidad: ''
   };
   
   const [formData, setFormData] = useState(initialFormState);
@@ -40,124 +39,106 @@ const Turnos = () => {
     e.preventDefault();
     console.log('Datos enviados:', formData);
     alert('Turno registrado exitosamente!');
-    
     setFormData(initialFormState);
-    setShowForm(false);
   };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
-      {!showForm ? (
-        <div className="text-center space-y-8 max-w-md w-full">
-          <h1 className="text-3xl font-bold text-gray-800">Registrar Turno</h1>
-          <button
-            onClick={() => setShowForm(true)}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition-colors w-full sm:w-auto"
+      <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg w-full max-w-md border border-red-100"> {/* Borde rojo suave en el formulario */}
+        <h2 className="text-2xl font-bold text-gray-800 mb-8 text-center">Registro de Turno</h2>
+        
+        {/* Campo Nombre */}
+        <div className="mb-6 border border-red-500 rounded p-1"> {/* Borde rojo suave */}
+          <label className="block text-gray-700 mb-2" htmlFor="nombre">
+            Nombre
+          </label>
+          <input
+            type="text"
+            id="nombre"
+            name="nombre"
+            value={formData.nombre}
+            onChange={handleChange}
+            className="w-full px-3 py-2 focus:outline-none bg-transparent"
+            required
+          />
+        </div>
+
+        {/* Campo Documento */}
+        <div className="mb-6 border border-red-500 rounded p-1">
+          <label className="block text-gray-700 mb-2" htmlFor="documento">
+            Documento
+          </label>
+          <input
+            type="text"
+            id="documento"
+            name="documento"
+            value={formData.documento}
+            onChange={handleChange}
+            className="w-full px-3 py-2 focus:outline-none bg-transparent"
+            required
+          />
+        </div>
+
+        {/* Campo Especialización */}
+        <div className="mb-6 border border-red-500 rounded p-1">
+          <label className="block text-gray-700 mb-2" htmlFor="especializacion">
+            Especialización
+          </label>
+          <select
+            id="especializacion"
+            name="especializacion"
+            value={formData.especializacion}
+            onChange={handleChange}
+            className="w-full px-3 py-2 focus:outline-none bg-transparent appearance-none"
+            required
           >
-            Registrar Turno
+            <option value="">Seleccione una opción</option>
+            {especialidades.map((esp) => (
+              <option key={esp} value={esp}>{esp.replace(/([A-Z])/g, ' $1').trim()}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Campo Discapacidad */}
+        <div className="mb-8 border border-red-500 rounded p-1">
+          <label className="block text-gray-700 mb-2" htmlFor="discapacidad">
+            Discapacidad
+          </label>
+          <select
+            id="discapacidad"
+            name="discapacidad"
+            value={formData.discapacidad}
+            onChange={handleChange}
+            className="w-full px-3 py-2 focus:outline-none bg-transparent appearance-none"
+            required
+          >
+            <option value="">Seleccione una opción</option>
+            {opcionesDiscapacidad.map((opcion) => (
+              <option key={opcion} value={opcion}>{opcion.replace(/([A-Z])/g, ' $1').trim()}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Botones */}
+        <div className="flex justify-between mt-8">
+          <button
+            type="button"
+            onClick={() => {
+              setFormData(initialFormState);
+              router.back();
+            }}
+            className="px-6 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors border border-gray-600"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors border border-blue-600"
+          >
+            Siguiente
           </button>
         </div>
-      ) : (
-        <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">Formulario de Turno</h2>
-          
-          {/* Campos del formulario (igual que antes) */}
-          <div className="mb-4">
-            <label className="block text-gray-700 mb-2" htmlFor="nombre">
-              Nombre completo *
-            </label>
-            <input
-              type="text"
-              id="nombre"
-              name="nombre"
-              value={formData.nombre}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-gray-700 mb-2" htmlFor="documento">
-              Número de documento *
-            </label>
-            <input
-              type="text"
-              id="documento"
-              name="documento"
-              value={formData.documento}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-gray-700 mb-2" htmlFor="especializacion">
-              Especialización a visitar *
-            </label>
-            <select
-              id="especializacion"
-              name="especializacion"
-              value={formData.especializacion}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            >
-              <option value="">Seleccione una opción</option>
-              {especialidades.map((esp) => (
-                <option key={esp} value={esp}>
-                  {esp.replace(/([A-Z])/g, ' $1').trim()}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="mb-6">
-            <label className="block text-gray-700 mb-2">
-              Condición especial
-            </label>
-            <div className="space-y-2">
-              {opcionesDiscapacidad.map((opcion) => (
-                <div key={opcion} className="flex items-center">
-                  <input
-                    type="radio"
-                    id={opcion}
-                    name="discapacidad"
-                    value={opcion}
-                    checked={formData.discapacidad === opcion}
-                    onChange={handleChange}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                    required={!formData.discapacidad} // Requerido si no hay selección
-                  />
-                  <label htmlFor={opcion} className="ml-2 block text-gray-700">
-                    {opcion.replace(/([A-Z])/g, ' $1').trim()}
-                  </label>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex justify-end space-x-4">
-            <button
-              type="button"
-              onClick={() => {
-                setFormData(initialFormState);
-                setShowForm(false);
-              }}
-              className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              Confirmar Turno
-            </button>
-          </div>
-        </form>
-      )}
+      </form>
     </div>
   );
 };

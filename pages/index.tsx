@@ -11,7 +11,7 @@ const Index = () => {
   }
 
   const handleTurnos = () => {
-    router.push("/Turnos");
+    router.push("/TurnosMenu");
   }
 
   return (
