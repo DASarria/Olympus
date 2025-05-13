@@ -2,6 +2,18 @@
 
 :root{
     --color-eci: #990000;
+    --bluegray: rgba(78, 87, 116, 1);
+    --darkblue: rgba(40, 42, 75, 1);
+    --lavender: rgba(133, 149, 201, 1);
+    --neutrallightgray: rgba(247, 247, 249, 1);
+    --neutralwhite: rgba(255, 255, 255, 1);
+    --primary-red: rgba(153, 0, 0, 1);
+    --titulo-font-family: "Montserrat", Helvetica;
+    --titulo-font-size: 40px;
+    --titulo-font-weight: 700;
+    --titulo-letter-spacing: 0px;
+    --titulo-line-height: 100%;
+    --background-blanco: rgba(255,255, 255, 1);
 }
 
 .bg-eci{

@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import ResponsiveMenu from './ResponsiveMenu';
 import Header from './Header';
+import cvdsLogo from '@/assets/icons/cvds.svg';
 
 interface LayoutProps {
   children?: ReactNode;
@@ -39,9 +40,26 @@ const Layout = ({
       </div>
 
       {/* Footer solo en escritorio */}
-      <footer className="hidden md:block fixed bottom-0 right-0 left-[6vw] z-10 bg-gray-800 text-white p-4 text-center text-sm">
-        <p>© 2025 - Escuela Colombiana de Ingeniería Julio Garavito. Todos los derechos reservados.</p>
-        <p className="text-gray-400">UX, Diseño y Desarrollo por: CVDS Company</p>
+      <footer className="flex flex-col w-full items-center justify-center gap-2.5 px-20 py-5 relative bg-[#333333]">
+        <p className="relative w-fit mt-[-1.00px] [font-family: 'Montserrat-Regular', Helvetica] font-normal text-white text-sm tracking-[0] leading-[normal]">
+          © 2025 - Escuela Colombiana de Ingeniería Julio Garavito. Todos los derechos reservados.
+        </p>
+        <p className="relative w-fit [font-family: 'Montserrat-Regular', Helvetica] font-normal text-white text-sm tracking-[0] leading-[normal]">
+          <span className="[font-family: 'Montserrat-Regular', Helvetica] font-normal text-white text-sm tracking-[0]">
+            UX, Diseño y Desarrollo por{" "}
+          </span>
+          <span className="[font-family: 'Montserrat-Regular', Helvetica] font-bold">
+            CVDS Company
+          </span>
+          <span className="[font-family: 'Montserrat-Regular', Helvetica] font-normal text-white text-sm tracking-[0]">
+            .
+          </span>
+        </p>
+        <img
+          className='relative w-7 h-[18px] object-cover'
+          alt="cvdsLogo"
+          src={cvdsLogo.src}
+        />
       </footer>
     </div>
   );

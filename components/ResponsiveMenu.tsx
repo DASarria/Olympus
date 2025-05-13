@@ -51,7 +51,9 @@ const ResponsiveMenu = () => {
     return (
         <div>
             {/* Vista de escritorio, le quité el logo para que se viera bien el body*/}
-            <aside className="hidden md:block w-[6vw] bg-white rounded-r-lg">
+            <aside className="inline-flex flex-col w-[6vw] items-start gap-[5px] relative bg-neutrallightgray">
+                <div className="flex flex-col items-center justify-center px-0 py-2.5 relative self-stretch w-full flex-[0_0_auto] bg-primario">
+                </div>
                 <div className="flex flex-col items-center justify-center py-4">
                     {modules
                         .filter((module => module.roleCanUse.some((r) => r === role)))
