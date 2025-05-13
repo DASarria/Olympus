@@ -18,7 +18,7 @@ const TurnosMenu = () => {
         router.push('Su respectiva ruta');
         break;
       case 'entrada':
-        router.push('/Turnos');
+        router.push('/Pantalla_Entrada/Especialidad');
         break;
       default:
         break;

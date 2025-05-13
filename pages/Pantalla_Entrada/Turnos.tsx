@@ -7,13 +7,13 @@ const Turnos = () => {
   const initialFormState = {
     nombre: '',
     documento: '',
-    especializacion: '',
+    rol: '',
     discapacidad: ''
   };
   
   const [formData, setFormData] = useState(initialFormState);
 
-  const especialidades = [
+  const Especialidades = [
     'Odontologia',
     'MedicinaGeneral',
     'Psicologia'
@@ -79,21 +79,21 @@ const Turnos = () => {
           />
         </div>
 
-        {/* Campo Especialización */}
+        {/* Campo Rol */}
         <div className="mb-6 border border-red-500 rounded p-1">
-          <label className="block text-gray-700 mb-2" htmlFor="especializacion">
-            Especialización
+          <label className="block text-gray-700 mb-2" htmlFor="rol">
+            Rol
           </label>
           <select
-            id="especializacion"
-            name="especializacion"
-            value={formData.especializacion}
+            id="rol"
+            name="rol"
+            value={formData.rol}
             onChange={handleChange}
             className="w-full px-3 py-2 focus:outline-none bg-transparent appearance-none"
             required
           >
             <option value="">Seleccione una opción</option>
-            {especialidades.map((esp) => (
+            {Especialidades.map((esp) => (
               <option key={esp} value={esp}>{esp.replace(/([A-Z])/g, ' $1').trim()}</option>
             ))}
           </select>
