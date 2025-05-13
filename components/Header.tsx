@@ -18,7 +18,7 @@ const Header = ({ userName = 'Nombre de Usuario', notificationsCount = 0 }: Head
   };
 
   return (
-    <div className="flex w-full justify-between items-center h-14">
+    <div className="flex w-full justify-end items-center h-14">
 
       {/* Controles de usuario a la derecha, nombre y notificaciones */}
       <div className="flex items-center space-x-4 px-4">

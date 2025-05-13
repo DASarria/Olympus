@@ -1,9 +1,10 @@
-import modulo1 from "../assets/images/1imagen.jpg";
-import modulo2 from "../assets/images/2imagen.jpg";
-import modulo3 from "../assets/images/3imagen.jpg";
-import modulo4 from "../assets/images/4imagen.jpg";
-import modulo5 from "../assets/images/5imagen.jpg";
-import modulo6 from "../assets/images/6imagen.jpg";
+import modulo1 from "@/assets/images/1imagen.jpg";
+import modulo2 from "@/assets/images/2imagen.jpg";
+import modulo3 from "@/assets/images/3imagen.jpg";
+import modulo4 from "@/assets/images/4imagen.jpg";
+import modulo5 from "@/assets/images/5imagen.jpg";
+import modulo6 from "@/assets/images/6imagen.jpg";
+import logotransparente from "@/assets/images/logotransparente.png";
 import Module from "./Module";
 
 const modules = [
@@ -49,10 +50,15 @@ const ResponsiveMenu = () => {
     const role = typeof window !== 'undefined' ? sessionStorage.getItem("role") : null;
 
     return (
-        <div>
+        <>
             {/* Vista de escritorio, le quité el logo para que se viera bien el body*/}
-            <aside className="inline-flex flex-col w-[6vw] items-start gap-[5px] relative bg-neutrallightgray">
-                <div className="flex flex-col items-center justify-center px-0 py-2.5 relative self-stretch w-full flex-[0_0_auto] bg-primario">
+            <aside className="hidden md:inline-flex flex-col w-[7rem] items-start gap-[5px] relative bg-neutrallightgray h-full fixed left-0 top-0 z-50">
+                <div className="flex flex-col items-center justify-center px-0 py-2.5 relative self-stretch w-full flex-[0_0_auto] bg-[var(--primary-red)]">
+                    <img 
+                        alt="logo"
+                        src={logotransparente.src}
+                    >
+                    </img>
                 </div>
                 <div className="flex flex-col items-center justify-center py-4">
                     {modules
@@ -70,7 +76,7 @@ const ResponsiveMenu = () => {
             </aside>
 
             {/* Vista de móvil, le quité el logo para que se viera bien el body*/}
-            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200">
+            <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200">
                 <div className="flex justify-center items-center p-2 space-x-2">
                     {modules
                         .filter((module) => module.roleCanUse.some((r) => r === role))
@@ -84,8 +90,8 @@ const ResponsiveMenu = () => {
                         />
                     ))}
                 </div>
-            </div>
-        </div>
+            </nav>
+        </>
     );
 };
 

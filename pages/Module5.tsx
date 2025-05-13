@@ -24,7 +24,7 @@ const Module5 = () => {
                 title="MODULO DE SEGUIMIENTO FISICO"
                 text="Reserva tus sesiones de entrenamiento, registra tu progreso físico y consulta el análisis de tus rutinas desde un solo lugar. Gestiona tu actividad en el gimnasio de forma sencilla y enfocada en tus objetivos."
             />
-            <div className="flex flex-wrap items-start gap-[10px_10px] relative">
+            <div className="flex flex-wrap items-start justify-center gap-[10px_10px] relative">
                 {(role === "USER" || role === "TRAINER") && (
                     <>
                         <NavBtn

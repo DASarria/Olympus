@@ -1,9 +1,7 @@
-import { useRouter } from "next/router";
 import { Return } from "@/components/Return"
 import { withRoleProtection } from "@/hoc/withRoleProtection";
 
 const Analysis = () => {
-    const router = useRouter();
     //const role = typeof window !== 'undefined' ? sessionStorage.getItem("role") : null;
     const role: string = "TRAINER";
 
