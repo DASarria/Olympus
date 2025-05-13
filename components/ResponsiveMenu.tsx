@@ -22,7 +22,7 @@ const modules = [
     {
         moduleName: "module 3",
         roleCanUse: ["admin", "usuario"],
-        urlToNavigate: "/Module3",
+        urlToNavigate: "/clasesExtracurriculares/CEAdminPrincipal",
         image: modulo3,
     },
     {
