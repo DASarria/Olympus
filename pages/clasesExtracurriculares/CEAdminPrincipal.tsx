@@ -42,7 +42,7 @@ const ClasesExtracurriculares = () => {
         {/* Tarjeta de Estadísticas de Clases */}
         <div
           className="bg-white rounded-lg shadow-md p-8 h-50 flex flex-col items-center justify-center hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 cursor-pointer border border-gray-100"
-          onClick={() => navegarA('/clasesExtracurriculares/estadisticas')}
+          onClick={() => navegarA('/clasesExtracurriculares/CEProfeClases')}
         >
           <div className="bg-white-50 p-2 rounded-full mb-6 shadow-inner">
             <Image

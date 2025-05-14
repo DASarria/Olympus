@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
+import { useRouter } from 'next/router';
 
 // Versión simplificada del componente de horario de clases
 const HorarioClasesExacto = () => {
+  const router = useRouter();
+  
+  const navegarA = (ruta) => {
+    router.push(ruta);
+  };
+
   // Estados básicos
   const [diaActual, setDiaActual] = useState(0);
   const [actividadSeleccionada, setActividadSeleccionada] = useState(null);
@@ -190,7 +197,10 @@ const HorarioClasesExacto = () => {
 
       {/* Botón de nueva actividad */}
       <div className="flex justify-end">
-        <button className="bg-red-800 hover:bg-red-900 text-white px-4 py-2 rounded transition-colors">
+        <button 
+        className="bg-red-800 hover:bg-red-900 text-white px-4 py-2 rounded transition-colors"
+        onClick={() => navegarA('/clasesExtracurriculares/test')}
+        >
           Nueva actividad
         </button>
       </div>
