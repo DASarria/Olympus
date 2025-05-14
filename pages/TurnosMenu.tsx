@@ -16,7 +16,7 @@ const TurnosMenu = () => {
         router.push('su respectiva ruta');
         break;
       case 'sala':
-        router.push('su respectiva ruta');
+        router.push('/Pantalla_Sala');
         break;
       case 'entrada':
         router.push('/TurnosRegistro');
