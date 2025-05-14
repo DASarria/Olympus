@@ -27,7 +27,7 @@ const SCERAdmin = () => {
   const [nuevaCantidadFormulario, setNuevaCantidadFormulario] = useState(0);
   const [nuevaImagen, setNuevaImagen] = useState<File | null>(null);
   const [previewImagen, setPreviewImagen] = useState<string | null>(null);
-  const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEwMDAwMDAwIiwidXNlck5hbWUiOiJzYWxhLmFkbWluaXN0cmFkb3IiLCJlbWFpbCI6InNhbGEuYWRtaW5pc3RyYWRvckBlc2N1ZWxhaW5nLmVkdS5jbyIsIm5hbWUiOiJTQUxBX0FETUlOSVNUUkFET1IiLCJyb2xlIjoiU2FsYV9BZG1pbmlzdHJhdG9yIiwic3BlY2lhbHR5IjoibnVsbCIsImV4cCI6MTc0NzIzMTc3Mn0.GQv9fdEudLTdsbgcIGS9cq0brbt7N-FFZhez9Jg4syY";
+  const token = sessionStorage.getItem('token');
 
   const fetchElementos = async () => {
     try {
@@ -41,7 +41,6 @@ const SCERAdmin = () => {
       });
       if (!response.ok) throw new Error(`Error: ${response.statusText}`);
       const data = await response.json();
-      const nuevoElementoId = data.id;
       const elementos = data
         .filter((el: any) => el.name)
         .map((el: any) => ({
@@ -159,67 +158,74 @@ const SCERAdmin = () => {
   };
 
   const guardarNuevoElemento = async () => {
-    if (!nuevoNombre.trim()) return;
-    try {
-      const response = await fetch(
-  `${process.env.NEXT_PUBLIC_API_URL}/elements`, {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${token}`,
-  },
-  body: JSON.stringify({
-    name: nuevoNombre,
-    description: nuevaDesc || "Sin descripción",
-    quantity: nuevaCantidadFormulario,
-  }),
-});
+  if (!nuevoNombre.trim()) {
+    Swal.fire("Error", "El nombre del elemento no puede estar vacío", "error");
+    return;
+  }
 
-      if (!response.ok) throw new Error("No se pudo crear el elemento");
-      let nuevoElementoId;
-      const contentType = response.headers.get("content-type");
-      if (contentType && contentType.includes("application/json")) {
-        const data = await response.json();
-        nuevoElementoId = data.id;
-      } else {
-        const allResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/elements`,{
+  try {
+    let imagenUrl = imagenesPorNombre[nuevoNombre] || defaultImage.src;
+    if (nuevaImagen) {
+      imagenUrl = await uploadImagen(nuevaImagen);
+    }
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/elements`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        name: nuevoNombre,
+        description: nuevaDesc || "Sin descripción",
+        quantity: nuevaCantidadFormulario,
+      }),
+    });
+
+    if (!response.ok) throw new Error("No se pudo crear el elemento");
+
+    let nuevoElementoId;
+    const contentType = response.headers.get("content-type");
+    if (contentType && contentType.includes("application/json")) {
+      const data = await response.json();
+      nuevoElementoId = data.id;
+    } else {
+      const allResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/elements`, {
         method: 'GET',
         headers: {
-          'content-type': 'application/json',
-          Authorization: `Bearer ${token}` ,
-        }
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
       });
-        const allElements = await allResponse.json();
-        const recienCreado = allElements.find((el: any) => el.name === nuevoNombre);
-        if (!recienCreado) throw new Error("No se encontró el nuevo elemento");
-        nuevoElementoId = recienCreado.id;
-      }
-
-      const imagenUrl =
-        imagenesPorNombre[nuevoNombre] || previewImagen || defaultImage.src;
-
-      const nuevoElemento = {
-        id: nuevoElementoId,
-        nombre: nuevoNombre,
-        descripcion: nuevaDesc || "Sin descripción",
-        cantidad: nuevaCantidadFormulario,
-        imagen: imagenUrl,
-      };
-
-      setElementosList((prev) => [...prev, nuevoElemento]);
-      setMostrarFormulario(false);
-      setNuevoNombre("");
-      setNuevaDesc("");
-      setNuevaCantidadFormulario(0);
-      setPreviewImagen(null);
-      setNuevaImagen(null);
-
-      Swal.fire("Éxito", "Elemento creado correctamente", "success");
-    } catch (error) {
-      console.error("Error al crear nuevo elemento:", error);
-      Swal.fire("Error", "No se pudo crear el elemento", "error");
+      const allElements = await allResponse.json();
+      const recienCreado = allElements.find((el: any) => el.name === nuevoNombre);
+      if (!recienCreado) throw new Error("No se encontró el nuevo elemento");
+      nuevoElementoId = recienCreado.id;
     }
-  };
+
+    const nuevoElemento = {
+      id: nuevoElementoId,
+      nombre: nuevoNombre,
+      descripcion: nuevaDesc || "Sin descripción",
+      cantidad: nuevaCantidadFormulario,
+      imagen: imagenUrl,
+    };
+
+    setElementosList((prev) => [...prev, nuevoElemento]);
+
+    setMostrarFormulario(false);
+    setNuevoNombre("");
+    setNuevaDesc("");
+    setNuevaCantidadFormulario(0);
+    setPreviewImagen(null);
+    setNuevaImagen(null);
+
+    Swal.fire("Éxito", "Elemento creado correctamente", "success");
+  } catch (error) {
+    console.error("Error al crear nuevo elemento:", error);
+    Swal.fire("Error", "No se pudo crear el elemento", "error");
+  }
+};
+
 
   const handleImagenSeleccionada = (e: React.ChangeEvent<HTMLInputElement>) => {
     const archivo = e.target.files?.[0];
