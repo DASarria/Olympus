@@ -2,6 +2,7 @@ import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { NavBtn } from "@/components/NavBtn";
 import { ServiceContainer } from "@/components/ServiceContainer";
+import { PageTransitionWrapper } from "@/components/PageTransitionWrapper";
 import Reseva from "@/assets/images/gym-module/SCHEDULE.svg";
 import Progreso from "@/assets/images/gym-module/PROGRESOFISICO.svg";
 import Rutina from "@/assets/images/gym-module/RUTINA.svg";
@@ -19,7 +20,7 @@ const Module5 = () => {
     }, [role, router]);
 
     return (
-        <>
+        <PageTransitionWrapper>
             <ServiceContainer
                 title="MODULO DE SEGUIMIENTO FISICO"
                 text="Reserva tus sesiones de entrenamiento, registra tu progreso físico y consulta el análisis de tus rutinas desde un solo lugar. Gestiona tu actividad en el gimnasio de forma sencilla y enfocada en tus objetivos."
@@ -53,7 +54,7 @@ const Module5 = () => {
                     />
                 )}
             </div>
-        </>
+        </PageTransitionWrapper>
     );
 };
 

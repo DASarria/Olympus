@@ -16,5 +16,5 @@ export const RoutineCard = ({ routine }: Props) => {
         Ver rutina
       </button>
     </div>
-  );
-};
+  )
+}
