@@ -7,6 +7,7 @@ import cranium from "../../assets/images/cranium.webp";
 import defaultImage from "../../assets/images/1imagen.jpg";
 import Swal from "sweetalert2";
 
+
 const imagenesPorNombre: Record<string, string> = {
   Uno: uno.src,
   Jenga: jenga.src,
@@ -26,10 +27,18 @@ const SCERAdmin = () => {
   const [nuevaCantidadFormulario, setNuevaCantidadFormulario] = useState(0);
   const [nuevaImagen, setNuevaImagen] = useState<File | null>(null);
   const [previewImagen, setPreviewImagen] = useState<string | null>(null);
+  const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEwMDAwMDAwIiwidXNlck5hbWUiOiJzYWxhLmFkbWluaXN0cmFkb3IiLCJlbWFpbCI6InNhbGEuYWRtaW5pc3RyYWRvckBlc2N1ZWxhaW5nLmVkdS5jbyIsIm5hbWUiOiJTQUxBX0FETUlOSVNUUkFET1IiLCJyb2xlIjoiU2FsYV9BZG1pbmlzdHJhdG9yIiwic3BlY2lhbHR5IjoibnVsbCIsImV4cCI6MTc0NzIzMTc3Mn0.GQv9fdEudLTdsbgcIGS9cq0brbt7N-FFZhez9Jg4syY";
 
   const fetchElementos = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/elements`);
+      
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/elements`,{
+        method: 'GET',
+        headers: {
+          'content-type': 'application/json',
+          Authorization: `Bearer ${token}` ,
+        }
+      });
       if (!response.ok) throw new Error(`Error: ${response.statusText}`);
       const data = await response.json();
       const nuevoElementoId = data.id;
@@ -81,19 +90,18 @@ const SCERAdmin = () => {
   const guardarEdicion = async () => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/elements/${elementoSeleccionado.id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: elementoSeleccionado.nombre,
-            description: nuevaDescripcion,
-            quantity: nuevaCantidad,
-          }),
-        }
-      );
+  `${process.env.NEXT_PUBLIC_API_URL}/elements/${elementoSeleccionado.id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      description: nuevaDescripcion,
+      quantity: nuevaCantidad,
+    }),
+});
+
       if (!response.ok) throw new Error("No se pudo actualizar el elemento");
 
       const actualizados = elementosList.map((el) =>
@@ -126,14 +134,13 @@ const SCERAdmin = () => {
     if (confirmacion.isConfirmed) {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/elements/${elementoSeleccionado.id}`,
-          {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
+          `${process.env.NEXT_PUBLIC_API_URL}/elements/${elementoSeleccionado.id}`,{
+        method: 'DELETE',
+        headers: {
+          'content-type': 'application/json',
+          Authorization: `Bearer ${token}` ,
+        }
+      });
         if (!response.ok) {
           const errorText = await response.text();
           throw new Error(`Error al eliminar el elemento: ${errorText}`);
@@ -155,19 +162,19 @@ const SCERAdmin = () => {
     if (!nuevoNombre.trim()) return;
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/elements`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: nuevoNombre,
-            description: nuevaDesc,
-            quantity: nuevaCantidadFormulario,
-          }),
-        }
-      );
+  `${process.env.NEXT_PUBLIC_API_URL}/elements`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`,
+  },
+  body: JSON.stringify({
+    name: nuevoNombre,
+    description: nuevaDesc || "Sin descripción",
+    quantity: nuevaCantidadFormulario,
+  }),
+});
+
       if (!response.ok) throw new Error("No se pudo crear el elemento");
       let nuevoElementoId;
       const contentType = response.headers.get("content-type");
@@ -175,7 +182,13 @@ const SCERAdmin = () => {
         const data = await response.json();
         nuevoElementoId = data.id;
       } else {
-        const allResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/elements`);
+        const allResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/elements`,{
+        method: 'GET',
+        headers: {
+          'content-type': 'application/json',
+          Authorization: `Bearer ${token}` ,
+        }
+      });
         const allElements = await allResponse.json();
         const recienCreado = allElements.find((el: any) => el.name === nuevoNombre);
         if (!recienCreado) throw new Error("No se encontró el nuevo elemento");
