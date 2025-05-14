@@ -3,9 +3,9 @@ import { useEffect } from "react";
 import { NavBtn } from "@/components/NavBtn";
 import { ServiceContainer } from "@/components/ServiceContainer";
 import Horario from "@/assets/images/UserModule/horario.png"
-import Usuario from "@/assets/images/UserModule/usuarios.webp"
+import Configuracion from "@/assets/images/UserModule/configuraciones.webp"
 
-const Module6 = () => {
+const SchedulePage = () => {
     const router = useRouter();
     // const role = typeof window !== 'undefined' ? sessionStorage.getItem("role") : null;
     const role: string = "ADMIN";
@@ -17,21 +17,21 @@ const Module6 = () => {
     return (
         <>
             <ServiceContainer
-                title="MODULO DE GESTION DE USUARIOS Y HORARIOS"
-                text="Realiza el registro, modificacion y eliminacion de usuarios, tambien realiza el manejo de configuraciones de horarios para los distintos servicios."
+                title="GESTION DE HORARIOS"
+                text="Realiza el manejo de configuraciones de horarios para los distintos servicios."
             />
             <div className="flex flex-wrap items-start gap-[10px_10px] relative">
                 {(role === "ADMIN") && (
                     <>
                         <NavBtn
-                            image={{src:Usuario.src}}
-                            texto="Gestion de usuarios"
+                            image={{src:Horario.src}}
+                            texto="Servicios"
                             navigate="/"
                         />
                         <NavBtn
-                            image={{ src: Horario.src }}
-                            texto="Gestion de horarios"
-                            navigate="/UserModule/ScheduleManagement/SchedulePage"
+                            image={{ src: Configuracion.src }}
+                            texto="Configuraciones"
+                            navigate="/UserModule/ScheduleManagement/ConfigurationPage"
                         />
                         
                     </>
@@ -42,4 +42,4 @@ const Module6 = () => {
     );
 };
 
-export default Module6;
+export default SchedulePage;
