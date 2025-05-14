@@ -13,6 +13,7 @@ const CampoSelect: React.FC<Props> = ({ etiqueta, opciones, marcador }) => {
   const manejarCambio = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setValorSeleccionado(event.target.value);
   };
+  
 
   return (
     <div

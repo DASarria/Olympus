@@ -18,11 +18,11 @@ const Reservations = () => {
     >
       <Return 
             className="!self-stretch !flex-[0_0_auto] !w-full mb-6"
-            text="Progreso físico"
-            returnPoint="/Module5"
+            text="Crear usuario"
+            returnPoint="/gym-module/Routines"
         />
 
-      <RectanguloConTexto texto="Datos" ancho="1500px" alto="500px">
+      <RectanguloConTexto texto="Informacion Personal" ancho="1500px" alto="500px">
   <div
     style={{
       display: "flex",
@@ -133,6 +133,23 @@ const Reservations = () => {
   </RectanguloConTexto>
 </div>
 
+<div style={{ marginTop: "40px" }}>
+  <button
+    onClick={() => window.location.href = "/gym-module/Routines"} // Ajusta esta ruta
+    style={{
+      backgroundColor: "#990000",
+      color: "#ffffff",
+      fontFamily: "'Open Sans', sans-serif",
+      borderRadius: "16px",
+      padding: "10px 20px",
+      border: "none",
+      cursor: "pointer",
+      fontSize: "20px"
+    }}
+  >
+    Crear Usuario
+  </button>
+</div>
 
     </div>
   );

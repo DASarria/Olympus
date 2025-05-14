@@ -35,13 +35,13 @@ const modules = [
     {
         moduleName: "module 5",
         roleCanUse: ["admin"],
-        urlToNavigate: "/Module5",
+        urlToNavigate: "/Module6",
         image: modulo5,
     },
     {
         moduleName: "module 6",
         roleCanUse: ["admin"],
-        urlToNavigate: "/Module6",
+        urlToNavigate: "/Module5",
         image: modulo6,
     }
 ];
