@@ -9,11 +9,11 @@ const TurnosMenu = () => {
       case 'Turnos':
         router.push('/TurnosGestion'); 
         break;
-      case 'consultar':
-        router.push('su respectiva ruta');
+      case 'contenido_visual':
+        router.push('/Contenido_Visual');
         break;
       case 'analisis':
-        router.push('su respectiva ruta');
+        router.push('/Analisis');
         break;
       case 'sala':
         router.push('/SalaDeEspera');
@@ -71,7 +71,7 @@ const TurnosMenu = () => {
 
         <div className="col-span-2 flex justify-center mt-4">
           <button
-            onClick={() => handleButtonClick('consultar')}
+            onClick={() => handleButtonClick('contenido_visual')}
             className="bg-white rounded-lg p-4 flex flex-col items-center justify-center shadow-lg hover:shadow-xl transition-shadow h-32 w-full max-w-xs border border-gray-200"
           >
             <span className="text-gray-700 text-3xl mb-2">🔍</span>
