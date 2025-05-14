@@ -12,7 +12,7 @@ export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
 
   // Rutas donde NO mostrar Layout (actualizado)
-  const noLayoutRoutes = ['/', '/login', '/Turnos', '/Pantalla_Entrada']; // Ahora usa '/Turnos' directo
+  const noLayoutRoutes = ['/', '/login', '/Turnos', '/Pantalla_Entrada', '/SalaDeEspera']; // Ahora usa '/Turnos' directo
   
   // Verificación más flexible para subrutas
   const hideLayout = noLayoutRoutes.some(route => 
