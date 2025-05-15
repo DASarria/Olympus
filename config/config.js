@@ -1,0 +1,1 @@
+export const BASE_URL = "https://atlas-aqbrbmashtamb7ab.canadacentral-01.azurewebsites.net/";
