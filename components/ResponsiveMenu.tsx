@@ -10,7 +10,7 @@ const modules = [
     {
         moduleName: "module 1",
         roleCanUse: ["admin", "usuario"],
-        urlToNavigate: "/Module1",
+        urlToNavigate: "/TurnosMenu",
         image: modulo1,
     },
     {

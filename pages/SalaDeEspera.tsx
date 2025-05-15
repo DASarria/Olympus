@@ -55,7 +55,7 @@ export default function SalaDeEspera() {
       {/* Main Content */}
       <main className="flex-1 p-4 max-w-7xl mx-auto w-full">
         {/* Carousel */}
-        <div className="relative bg-gray-100 rounded-lg mb-6 overflow-hidden">
+        <div className="relative bg-white-100 rounded-lg mb-6 overflow-hidden">
           <div className="relative h-64 md:h-80">
             <div className="absolute inset-0 flex items-center justify-center">
               <Image
