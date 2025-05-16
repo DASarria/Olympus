@@ -17,90 +17,34 @@ const ConfigurationPage = () => {
 
     return (
         <>
-            <div className="w-[90%] sm:w-[500px] md:w-[600px] lg:w-[700px] h-[500px] sm:h-[550px] md:h-[600px] lg:h-[650px] overflow-y-auto p-4 bg-gray-100 rounded-lg shadow-md ml-0">
-                <div className="flex flex-wrap items-start gap-[10px_10px] relative">
-                    {(role === "ADMIN") && (
-                        <>
-                            <ConfigBtn
-                                image ={{src:Configuracion.src}}
-                                configurationName = "configuracion 1"
-                                intervalo = "07:00 - 08:00"
-                                navigate = "/"
-                            />
-                            <ConfigBtn
-                                image ={{src:Configuracion.src}}
-                                configurationName = "configuracion 1"
-                                intervalo = "07:00 - 08:00"
-                                navigate = "/"
-                            />
-                            <ConfigBtn
-                                image ={{src:Configuracion.src}}
-                                configurationName = "configuracion 1"
-                                intervalo = "07:00 - 08:00"
-                                navigate = "/"
-                            />
-                            <ConfigBtn
-                                image ={{src:Configuracion.src}}
-                                configurationName = "configuracion 1"
-                                intervalo = "07:00 - 08:00"
-                                navigate = "/"
-                            />
-                            <ConfigBtn
-                                image ={{src:Configuracion.src}}
-                                configurationName = "configuracion 1"
-                                intervalo = "07:00 - 08:00"
-                                navigate = "/"
-                            />
-                            <ConfigBtn
-                                image ={{src:Configuracion.src}}
-                                configurationName = "configuracion 1"
-                                intervalo = "07:00 - 08:00"
-                                navigate = "/"
-                            />
-                            <ConfigBtn
-                                image ={{src:Configuracion.src}}
-                                configurationName = "configuracion 1"
-                                intervalo = "07:00 - 08:00"
-                                navigate = "/"
-                            />
-                            <ConfigBtn
-                                image ={{src:Configuracion.src}}
-                                configurationName = "configuracion 1"
-                                intervalo = "07:00 - 08:00"
-                                navigate = "/"
-                            />
-                            <ConfigBtn
-                                image ={{src:Configuracion.src}}
-                                configurationName = "configuracion 1"
-                                intervalo = "07:00 - 08:00"
-                                navigate = "/"
-                            />
-                            <ConfigBtn
-                                image ={{src:Configuracion.src}}
-                                configurationName = "configuracion 1"
-                                intervalo = "07:00 - 08:00"
-                                navigate = "/"
-                            />
-                            <ConfigBtn
-                                image ={{src:Configuracion.src}}
-                                configurationName = "configuracion 1"
-                                intervalo = "07:00 - 08:00"
-                                navigate = "/"
-                            />
-                            <ConfigBtn
-                                image ={{src:Configuracion.src}}
-                                configurationName = "configuracion 1"
-                                intervalo = "07:00 - 08:00"
-                                navigate = "/"
-                            />
-
-                        
-                        </>
-                        
+            <div className="w-[90%] sm:w-[300px] md:w-[350px] lg:w-[400px] h-[400px] sm:h-[450px] md:h-[500px] lg:h-[550px] overflow-y-auto p-2 bg-gray-100 rounded-lg shadow-md mx-auto">
+                <div className="flex flex-wrap items-start gap-2 relative">
+                    {role === "ADMIN" && (
+                    <>
+                        <ConfigBtn
+                        image={{ src: Configuracion.src }}
+                        configurationName="configuracion 1"
+                        intervalo="07:00 - 08:00"
+                        navigate="/"
+                        />
+                        <ConfigBtn
+                        image={{ src: Configuracion.src }}
+                        configurationName="configuracion 1"
+                        intervalo="07:00 - 08:00"
+                        navigate="/"
+                        />
+                        <ConfigBtn
+                        image={{ src: Configuracion.src }}
+                        configurationName="configuracion 1"
+                        intervalo="07:00 - 08:00"
+                        navigate="/"
+                        />
+                        {/* Más botones si los necesitas */}
+                    </>
                     )}
-
                 </div>
             </div>
+
         </>
     );
 };
