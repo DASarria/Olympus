@@ -2,6 +2,7 @@ import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { NavBtn } from "@/components/NavBtn";
 import { ServiceContainer } from "@/components/ServiceContainer";
+import { PageTransitionWrapper } from "@/components/PageTransitionWrapper";
 import Horario from "@/assets/images/UserModule/horario.png"
 import Configuracion from "@/assets/images/UserModule/configuraciones.webp"
 
@@ -16,28 +17,30 @@ const SchedulePage = () => {
 
     return (
         <>
-            <ServiceContainer
-                title="GESTION DE HORARIOS"
-                text="Realiza el manejo de configuraciones de horarios para los distintos servicios."
-            />
-            <div className="flex flex-wrap items-start gap-[10px_10px] relative">
-                {(role === "ADMIN") && (
-                    <>
-                        <NavBtn
-                            image={{src:Horario.src}}
-                            texto="Servicios"
-                            navigate="/"
-                        />
-                        <NavBtn
-                            image={{ src: Configuracion.src }}
-                            texto="Configuraciones"
-                            navigate="/UserModule/ScheduleManagement/ConfigurationPage"
-                        />
-                        
-                    </>
-                )}
+            <PageTransitionWrapper>
+                <ServiceContainer
+                    title="GESTION DE HORARIOS"
+                    text="Realiza el manejo de configuraciones de horarios para los distintos servicios."
+                />
+                <div className="flex flex-wrap items-start gap-[10px_10px] relative">
+                    {(role === "ADMIN") && (
+                        <>
+                            <NavBtn
+                                image={{src:Horario.src}}
+                                texto="Servicios"
+                                navigate="/"
+                            />
+                            <NavBtn
+                                image={{ src: Configuracion.src }}
+                                texto="Configuraciones"
+                                navigate="/UserModule/ScheduleManagement/ConfigurationPage"
+                            />
+                            
+                        </>
+                    )}
 
-            </div>
+                </div>
+            </PageTransitionWrapper>
         </>
     );
 };

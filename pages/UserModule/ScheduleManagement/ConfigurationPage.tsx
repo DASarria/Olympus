@@ -1,7 +1,7 @@
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import React,{useState} from "react";
-
+import { PageTransitionWrapper } from "@/components/PageTransitionWrapper";
 import Configuracion from "@/assets/images/UserModule/configuraciones.webp"
 import { ConfigBtn } from "@/components/ConfigBtn";
 
@@ -17,34 +17,80 @@ const ConfigurationPage = () => {
 
     return (
         <>
-            <div className="w-[90%] sm:w-[300px] md:w-[350px] lg:w-[400px] h-[400px] sm:h-[450px] md:h-[500px] lg:h-[550px] overflow-y-auto p-2 bg-gray-100 rounded-lg shadow-md mx-auto">
-                <div className="flex flex-wrap items-start gap-2 relative">
-                    {role === "ADMIN" && (
-                    <>
-                        <ConfigBtn
-                        image={{ src: Configuracion.src }}
-                        configurationName="configuracion 1"
-                        intervalo="07:00 - 08:00"
-                        navigate="/"
-                        />
-                        <ConfigBtn
-                        image={{ src: Configuracion.src }}
-                        configurationName="configuracion 1"
-                        intervalo="07:00 - 08:00"
-                        navigate="/"
-                        />
-                        <ConfigBtn
-                        image={{ src: Configuracion.src }}
-                        configurationName="configuracion 1"
-                        intervalo="07:00 - 08:00"
-                        navigate="/"
-                        />
-                        {/* Más botones si los necesitas */}
-                    </>
-                    )}
+            <PageTransitionWrapper>
+                <div className="max-w-[40vw]     /* Ancho máximo 28rem (~448px), ancho full */
+                                max-h-[80vh]         /* Máximo alto 80% de viewport height */
+                                overflow-y-auto
+                                p-2
+                                bg-gray-50
+                                rounded-md
+                                shadow-md
+                                ml-0
+                                ">
+                    <div className="flex flex-wrap items-start gap-2 relative">
+                        {role === "ADMIN" && (
+                        <>
+                            <ConfigBtn
+                            image={{ src: Configuracion.src }}
+                            configurationName="configuracion 1"
+                            intervalo="07:00 - 08:00"
+                            navigate="/"
+                            />
+                            <ConfigBtn
+                            image={{ src: Configuracion.src }}
+                            configurationName="configuracion 1"
+                            intervalo="07:00 - 08:00"
+                            navigate="/"
+                            />
+                            <ConfigBtn
+                            image={{ src: Configuracion.src }}
+                            configurationName="configuracion 1"
+                            intervalo="07:00 - 08:00"
+                            navigate="/"
+                            />
+                            <ConfigBtn
+                            image={{ src: Configuracion.src }}
+                            configurationName="configuracion 1"
+                            intervalo="07:00 - 08:00"
+                            navigate="/"
+                            />
+                            <ConfigBtn
+                            image={{ src: Configuracion.src }}
+                            configurationName="configuracion 1"
+                            intervalo="07:00 - 08:00"
+                            navigate="/"
+                            />
+                            <ConfigBtn
+                            image={{ src: Configuracion.src }}
+                            configurationName="configuracion 1"
+                            intervalo="07:00 - 08:00"
+                            navigate="/"
+                            />
+                            <ConfigBtn
+                            image={{ src: Configuracion.src }}
+                            configurationName="configuracion 1"
+                            intervalo="07:00 - 08:00"
+                            navigate="/"
+                            />
+                            <ConfigBtn
+                            image={{ src: Configuracion.src }}
+                            configurationName="configuracion 1"
+                            intervalo="07:00 - 08:00"
+                            navigate="/"
+                            />
+                            <ConfigBtn
+                            image={{ src: Configuracion.src }}
+                            configurationName="configuracion 1"
+                            intervalo="07:00 - 08:00"
+                            navigate="/"
+                            />
+                            {/* Más botones si los necesitas */}
+                        </>
+                        )}
+                    </div>
                 </div>
-            </div>
 
+            </PageTransitionWrapper>
         </>
     );
 };

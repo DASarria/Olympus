@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { motion } from "framer-motion";
 
 interface Props {
     image: { src: string };
@@ -10,14 +11,19 @@ interface Props {
 export const ConfigBtn = ({ image, configurationName,intervalo, navigate }: Props) => {
     return (
         <Link href={navigate} passHref>
-            <div className="w-full sm:w-80 md:w-[500px] lg:w-[600px] flex items-center gap-4 px-6 py-3 h-auto rounded-[12px] bg-gray-100 hover:bg-gray-200 cursor-pointer transition">
-                
+            <motion.div 
+                key={navigate}
+                className="max-w-[50vw]  flex flex-col items-center gap-2.5 px-4 py-5 max-h-[50vh]  overflow-hidden rounded-[20px] justify-center bg-red-100 relative hover:shadow-[0px_5px_27px_4px_#99000040] cursor-pointer"
+                whileHover={{
+                    scale: 1.005,
+                    transition: { duration: 0.15 },
+                }}
+            >
                 <img
                 className="w-16 h-16 object-cover rounded-md"
                 alt="service"
                 src={image.src}
                 />
-                
                 <div className="text-black font-bold text-sm sm:text-base md:text-lg lg:text-xl leading-tight">
                 {configurationName}
                 </div>
@@ -25,7 +31,7 @@ export const ConfigBtn = ({ image, configurationName,intervalo, navigate }: Prop
                 {intervalo}
                 </div>
 
-            </div>
+            </motion.div>
         </Link>
     )
 }
