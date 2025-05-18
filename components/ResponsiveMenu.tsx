@@ -35,7 +35,7 @@ const modules = [
     {
         moduleName: "module 5",
         roleCanUse: ["admin"],
-        urlToNavigate: "/Module5",
+        urlToNavigate: "/gym-module",
         image: modulo5,
     },
     {

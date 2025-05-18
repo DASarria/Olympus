@@ -30,7 +30,7 @@ const Routines = () => {
             <Return 
                 className="!self-stretch !flex-[0_0_auto] !w-full"
                 text="Rutinas"
-                returnPoint="/Module5"
+                returnPoint="/gym-module"
             />
 
             <div className="flex flex-col md:flex-row gap-6">
@@ -82,4 +82,4 @@ const Routines = () => {
 }
 
 
-export default withRoleProtection(["USER", "TRAINER"], "/Module5")(Routines);
+export default withRoleProtection(["USER", "TRAINER"], "/gym-module")(Routines);

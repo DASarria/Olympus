@@ -11,7 +11,7 @@ const Analysis = () => {
                 <Return 
                     className="!self-stretch !flex-[0_0_auto] !w-full"
                     text="Analisis"
-                    returnPoint="/Module5"
+                    returnPoint="/gym-module"
                 />
             )}
         </div>
@@ -19,4 +19,4 @@ const Analysis = () => {
 }
 
 
-export default withRoleProtection(["TRAINER", "ADMIN"], "/Module5")(Analysis);
+export default withRoleProtection(["TRAINER", "ADMIN"], "/gym-module")(Analysis);

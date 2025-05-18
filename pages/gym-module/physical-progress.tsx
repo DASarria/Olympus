@@ -1,7 +1,6 @@
 import { Return } from "@/components/Return"
 import { withRoleProtection } from "@/hoc/withRoleProtection";
 import { FilterBtn } from "@/components/gym-module/FilterBtn";
-import { PageTransitionWrapper } from "@/components/PageTransitionWrapper";
 import UserIcon from '@/assets/icons/user-filter.svg';
 import { useState } from "react";
 
@@ -29,7 +28,7 @@ const PhysicalProgress = () => {
             <Return 
                 className="!self-stretch !flex-[0_0_auto] !w-full"
                 text="Progreso fisico"
-                returnPoint="/Module5"
+                returnPoint="/gym-module"
             />
             {/* Load filters */}
             <div className="flex flex-col w-fit items-center gap-5 pt-0 pb-20 px-0 relative flex-[0_0_auto]">
@@ -117,4 +116,4 @@ const PhysicalProgress = () => {
 }
 
 
-export default withRoleProtection(["USER", "TRAINER"], "/Module5")(PhysicalProgress);
+export default withRoleProtection(["USER", "TRAINER"], "/gym-module")(PhysicalProgress);

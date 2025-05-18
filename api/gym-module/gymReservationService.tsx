@@ -1,4 +1,4 @@
-import api from "@/pages/api/axiosInstance";
+import api from "@/api/axiosInstance";
 const USER_API = "/users";
 
 /**
@@ -22,7 +22,6 @@ export enum ReservationStatus {
 
 /**
  * @typedef {Object} ReservationDTO
- * @property {string} id - The unique identifier for the reservation.
  * @property {string} userId - The unique identifier of the user who made the reservation.
  * @property {string} sessionId - The unique identifier of the session the reservation is for.
  * @property {ReservationStatus} status - The status of the reservation, defined by the `ReservationStatus` enum.
@@ -33,14 +32,13 @@ export enum ReservationStatus {
  * @property {string} [notes] - Any additional notes related to the reservation (optional).
  */
 export interface ReservationDTO {
-  id: string;
   userId: string;
   sessionId: string;
   status: ReservationStatus; 
   reservationDate: string;
   cancellationDate?: string;
   checkInTime?: string;
-  equipmentIds: string[];
+  equipmentIds?: string[];
   notes?: string;
 }
 
