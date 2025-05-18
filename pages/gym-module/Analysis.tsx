@@ -1,3 +1,4 @@
+import { PageTransitionWrapper } from "@/components/PageTransitionWrapper";
 import { Return } from "@/components/Return"
 import { withRoleProtection } from "@/hoc/withRoleProtection";
 
@@ -6,15 +7,17 @@ const Analysis = () => {
     const role: string = "TRAINER";
 
     return (
-        <div>
-            {role !== "ADMIN" && (
-                <Return 
-                    className="!self-stretch !flex-[0_0_auto] !w-full"
-                    text="Analisis"
-                    returnPoint="/gym-module"
-                />
-            )}
-        </div>
+        <PageTransitionWrapper>
+            <div>
+                {role !== "ADMIN" && (
+                    <Return 
+                        className="!self-stretch !flex-[0_0_auto] !w-full"
+                        text="Analisis"
+                        returnPoint="/gym-module"
+                    />
+                )}
+            </div>
+        </PageTransitionWrapper>
     )
 }
 

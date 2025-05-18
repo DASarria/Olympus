@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { Return } from "@/components/Return"
 import { withRoleProtection } from "@/hoc/withRoleProtection";
 import { ReservationDTO, ReservationStatus, createReservation } from '@/api/gymServicesIndex';
+import { PageTransitionWrapper } from '@/components/PageTransitionWrapper';
 
 /**
  * ReservationForm component is used to create a new reservation by the user or trainer.
@@ -103,88 +104,90 @@ const ReservationForm = () => {
     };
     
     return (
-        <div className='flex flex-col gap-6'>
-            <Return 
-                className="!self-stretch !flex-[0_0_auto] !w-full"
-                text="Reserva de salon"
-                returnPoint="/gym-module/reservations"
-            />
-            <div>
-                <h2 className="text-xl font-semibold mb-4">Crear nueva reserva</h2>
+        <PageTransitionWrapper>
+            <div className='flex flex-col gap-6'>
+                <Return 
+                    className="!self-stretch !flex-[0_0_auto] !w-full"
+                    text="Reserva de salon"
+                    returnPoint="/gym-module/reservations"
+                />
+                <div>
+                    <h2 className="text-xl font-semibold mb-4">Crear nueva reserva</h2>
 
-                {successMessage && <div className="mb-4 text-green-600">{successMessage}</div>}
-                {errorMessage && <div className="mb-4 text-red-600">{errorMessage}</div>}
+                    {successMessage && <div className="mb-4 text-green-600">{successMessage}</div>}
+                    {errorMessage && <div className="mb-4 text-red-600">{errorMessage}</div>}
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label className="block font-medium mb-1">ID de Sesión</label>
-                        <input
-                            type="text"
-                            name="sessionId"
-                            value={formData.sessionId}
-                            onChange={handleChange}
-                            required
-                            className="w-full border rounded p-2"
-                        />
-                    </div>
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <div>
+                            <label className="block font-medium mb-1">ID de Sesión</label>
+                            <input
+                                type="text"
+                                name="sessionId"
+                                value={formData.sessionId}
+                                onChange={handleChange}
+                                required
+                                className="w-full border rounded p-2"
+                            />
+                        </div>
 
-                    <div>
-                        <label className="block font-medium mb-1">Fecha de Reserva</label>
-                        <input
-                            type="datetime-local"
-                            name="reservationDate"
-                            value={formData.reservationDate}
-                            onChange={handleChange}
-                            required
-                            className="w-full border rounded p-2"
-                        />
-                    </div>
+                        <div>
+                            <label className="block font-medium mb-1">Fecha de Reserva</label>
+                            <input
+                                type="datetime-local"
+                                name="reservationDate"
+                                value={formData.reservationDate}
+                                onChange={handleChange}
+                                required
+                                className="w-full border rounded p-2"
+                            />
+                        </div>
 
-                    <div>
-                        <label className="block font-medium mb-1">Equipos (IDs separados por coma)</label>
-                        <input
-                            type="text"
-                            name="equipmentIds"
-                            value={formData.equipmentIds}
-                            onChange={handleChange}
-                            placeholder="equipment1,equipment2"
-                            className="w-full border rounded p-2"
-                        />
-                    </div>
+                        <div>
+                            <label className="block font-medium mb-1">Equipos (IDs separados por coma)</label>
+                            <input
+                                type="text"
+                                name="equipmentIds"
+                                value={formData.equipmentIds}
+                                onChange={handleChange}
+                                placeholder="equipment1,equipment2"
+                                className="w-full border rounded p-2"
+                            />
+                        </div>
 
-                    <div>
-                        <label className="block font-medium mb-1">Notas</label>
-                        <textarea
-                            name="notes"
-                            value={formData.notes}
-                            onChange={handleChange}
-                            className="w-full border rounded p-2"
-                        />
-                    </div>
+                        <div>
+                            <label className="block font-medium mb-1">Notas</label>
+                            <textarea
+                                name="notes"
+                                value={formData.notes}
+                                onChange={handleChange}
+                                className="w-full border rounded p-2"
+                            />
+                        </div>
 
-                    <div>
-                        <label className="block font-medium mb-1">Estado</label>
-                        <select
-                            name="status"
-                            value={formData.status}
-                            onChange={handleChange}
-                            className="w-full border rounded p-2"
+                        <div>
+                            <label className="block font-medium mb-1">Estado</label>
+                            <select
+                                name="status"
+                                value={formData.status}
+                                onChange={handleChange}
+                                className="w-full border rounded p-2"
+                            >
+                                <option value={ReservationStatus.PENDING}>Pendiente</option>
+                                <option value={ReservationStatus.CONFIRMED}>Confirmada</option>
+                                <option value={ReservationStatus.CANCELLED}>Cancelada</option>
+                            </select>
+                        </div>
+
+                        <button
+                            type="submit"
+                            className="bg-[var(--primary-red)] text-white px-4 py-2 rounded cursor-pointer"
                         >
-                            <option value={ReservationStatus.PENDING}>Pendiente</option>
-                            <option value={ReservationStatus.CONFIRMED}>Confirmada</option>
-                            <option value={ReservationStatus.CANCELLED}>Cancelada</option>
-                        </select>
-                    </div>
-
-                    <button
-                        type="submit"
-                        className="bg-[var(--primary-red)] text-white px-4 py-2 rounded cursor-pointer"
-                    >
-                        Crear Reserva
-                    </button>
-                </form>
+                            Crear Reserva
+                        </button>
+                    </form>
+                </div>
             </div>
-        </div>
+        </PageTransitionWrapper>
     )
 }
 

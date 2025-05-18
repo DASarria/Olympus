@@ -1,12 +1,36 @@
 import Link from 'next/link';
 import { motion } from "framer-motion";
 
+
+/**
+ * Props interface for the NavBtn component.
+ * 
+ * @interface
+ */
 interface Props {
     image: { src: string };
     texto: string;
     navigate: string;
 }
 
+/**
+ * NavBtn Component
+ * 
+ * This component renders a clickable navigation button with an image and text. It uses `motion.div` from `framer-motion` 
+ * to provide hover effects and animations. The button is wrapped with a Next.js `Link` component for client-side navigation.
+ * 
+ * @component
+ * @example
+ * // Usage of NavBtn component
+ * <NavBtn 
+ *   image={{ src: '/path/to/image.jpg' }} 
+ *   texto="Navigate to Dashboard" 
+ *   navigate="/dashboard" 
+ * />
+ * 
+ * @param {Props} props - The props for the NavBtn component.
+ * @returns {JSX.Element} The rendered navigation button with hover animation and linked navigation.
+ */
 export const NavBtn = ({ image, texto, navigate }: Props) => {
     return (
         <Link href={navigate} passHref>
