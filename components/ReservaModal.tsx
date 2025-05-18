@@ -1,65 +1,203 @@
-// components/ReservaModal.tsx
-import { useState } from 'react';
+"use client"
 
-interface Props {
-  onClose: () => void;
-  onSubmit: (reserva: any) => void;
+import type React from "react"
+
+import { useState } from "react"
+import { X } from "lucide-react"
+
+interface Reserva {
+  id?: string
+  userName: string
+  userId: string
+  role: null
+  date: {
+    day: string
+    time: string
+  }
+  roomId: string
+  loans: string[]
+  state: string
+  people: number
 }
 
-const ReservaModal = ({ onClose, onSubmit }: Props) => {
-  const role = typeof window !== 'undefined' ? sessionStorage.getItem("role") : null;
-  const [reserva, setReserva] = useState({
-    userName: '',
-    userId: '',
-    day: '',
-    time: '',
-    roomId: '',
-    people: '',
-  });
+interface ReservaModalProps {
+  onClose: () => void
+  onSubmit: (reserva: Reserva) => void
+}
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setReserva((prev) => ({ ...prev, [name]: value }));
-  };
+const ReservaModal: React.FC<ReservaModalProps> = ({ onClose, onSubmit }) => {
+  const [userName, setUserName] = useState("")
+  const [userId, setUserId] = useState("")
+  const [day, setDay] = useState("")
+  const [time, setTime] = useState("")
+  const [people, setPeople] = useState(1)
+  const [selectedRoom, setSelectedRoom] = useState("Sala-Crea")
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleSubmit = () => {
-    const nuevaReserva = {
-      userName: reserva.userName,
-      userId: reserva.userId,
-      role: null, 
+  // Se eliminó la inicialización de fecha y hora predeterminadas
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (isSubmitting) {
+      return
+    }
+
+    // Validación básica
+    if (!userName.trim() || !userId.trim() || !day || !time) {
+      alert("Por favor, complete todos los campos requeridos")
+      return
+    }
+
+    setIsSubmitting(true)
+
+    // Asegurarse de que el formato de la hora sea correcto (HH:MM:00)
+    const formattedTime = time.includes(":00") ? time : `${time}:00`
+
+    // Crear una estructura en el formato exacto requerido
+    const newReserva: Reserva = {
+      userName,
+      userId,
+      role: null,
       date: {
-        day: reserva.day,
-        time: reserva.time,
+        day,
+        time: formattedTime,
       },
-      roomId: reserva.roomId,
+      roomId: selectedRoom,
       loans: [],
-      state: 'RESERVA_CONFIRMADA',
-      people: Number(reserva.people),
-      
-    };
-    onSubmit(nuevaReserva);
-    onClose();
-  };
+      state: "RESERVA_CONFIRMADA",
+      people,
+    }
+
+    console.log("Enviando nueva reserva:", newReserva)
+
+    try {
+      onSubmit(newReserva)
+    } catch (error) {
+      console.error("Error al crear reserva:", error)
+      setIsSubmitting(false)
+    }
+  }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center  bg-opacity-50 backdrop-blur-xs drop-shadow-xl">
-      <div className="bg-white p-6 rounded-xl w-[400px] shadow-lg">
+    <div className="fixed inset-0 backdrop-blur-sm flex justify-center items-center z-50">
+      <div className="bg-white p-6 rounded-xl w-[90%] md:w-[500px] shadow-2xl relative">
+        <button
+          onClick={onClose}
+          className="absolute top-2 right-4 text-xl font-bold text-gray-600 hover:text-black"
+          disabled={isSubmitting}
+        >
+          <X />
+        </button>
         <h2 className="text-xl font-bold mb-4">Nueva Reserva</h2>
-        <div className="space-y-3">
-          <input name="userName" placeholder="Nombre" onChange={handleChange} className="w-full p-2 border rounded-xl" />
-          <input name="userId" placeholder="ID Usuario" onChange={handleChange} className="w-full p-2 border rounded-xl" />
-          <input name="day" type="date" onChange={handleChange} className="w-full p-2 border rounded-xl" />
-          <input name="time" type="time" onChange={handleChange} className="w-full p-2 border rounded-xl" />
-          <input name="roomId" placeholder="Sala" onChange={handleChange} className="w-full p-2 border rounded-xl" />
-          <input name="people" type="number" min={1} max={5} value={reserva.people} onChange={handleChange} className="w-full p-2 border rounded-xl" />
-        </div>
-        <div className="flex justify-end gap-2 mt-5">
-          <button onClick={onClose} className="bg-[#990000] px-4 py-2 rounded-xl text-white">Cancelar</button>
-          <button onClick={handleSubmit} className="bg-[#990000] text-white px-4 py-2 rounded-xl">Guardar</button>
-        </div>
+
+        <form onSubmit={handleSubmit}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Nombre</label>
+              <input
+                type="text"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                className="w-full px-3 py-2 border rounded-md"
+                required
+                disabled={isSubmitting}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1">Identificación</label>
+              <input
+                type="text"
+                value={userId}
+                onChange={(e) => setUserId(e.target.value)}
+                className="w-full px-3 py-2 border rounded-md"
+                required
+                disabled={isSubmitting}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1">Personas</label>
+              <input
+                type="number"
+                min="1"
+                value={people}
+                onChange={(e) => setPeople(Number.parseInt(e.target.value))}
+                className="w-full px-3 py-2 border rounded-md"
+                required
+                disabled={isSubmitting}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1">Fecha</label>
+              <input
+                type="date"
+                value={day}
+                onChange={(e) => setDay(e.target.value)}
+                className="w-full px-3 py-2 border rounded-md"
+                required
+                disabled={isSubmitting}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1">Hora</label>
+              <input
+                type="time"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                className="w-full px-3 py-2 border rounded-md"
+                required
+                disabled={isSubmitting}
+              />
+            </div>
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">Sala</label>
+            <div className="flex gap-3">
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="roomType"
+                  value="Sala-Crea"
+                  checked={selectedRoom === "Sala-Crea"}
+                  onChange={() => setSelectedRoom("Sala-Crea")}
+                  className="mr-2"
+                  disabled={isSubmitting}
+                />
+                <span>Sala Crea</span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="roomType"
+                  value="Sala-Descanso"
+                  checked={selectedRoom === "Sala-Descanso"}
+                  onChange={() => setSelectedRoom("Sala-Descanso")}
+                  className="mr-2"
+                  disabled={isSubmitting}
+                />
+                <span>Sala De Descanso</span>
+              </label>
+            </div>
+          </div>
+
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              className="px-4 py-2 bg-[#990000] text-white rounded-md hover:bg-red-800 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Guardando..." : "Guardar"}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ReservaModal;
+export default ReservaModal

@@ -9,10 +9,10 @@ interface MenuAdminButtonsProps {
 
 const MenuAdminButtons = ({label,componentKey,onClick,image}:MenuAdminButtonsProps) => {
 
-  return (
+return (
     
     <button className="bg-white rounded-[20px] w-[250px] h-[250px] drop-shadow-xl 
-                       flex items-center justify-center gap-2 flex-col hover:bg-[#990000] hover:text-white"
+                    flex items-center justify-center gap-2 flex-col hover:bg-[#990000] hover:text-white"
         onClick={() => onClick(componentKey)}
         >
             <div>
@@ -27,7 +27,7 @@ const MenuAdminButtons = ({label,componentKey,onClick,image}:MenuAdminButtonsPro
         </span>
     </button>
     
-  );
+);
 };
 
 export default MenuAdminButtons;
