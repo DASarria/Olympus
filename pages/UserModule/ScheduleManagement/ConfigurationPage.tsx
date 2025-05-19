@@ -84,6 +84,60 @@ const ConfigurationPage = () => {
                             intervalo="07:00 - 08:00"
                             navigate="/"
                             />
+                            <ConfigBtn
+                            image={{ src: Configuracion.src }}
+                            configurationName="configuracion 1"
+                            intervalo="07:00 - 08:00"
+                            navigate="/"
+                            />
+                            <ConfigBtn
+                            image={{ src: Configuracion.src }}
+                            configurationName="configuracion 1"
+                            intervalo="07:00 - 08:00"
+                            navigate="/"
+                            />
+                            <ConfigBtn
+                            image={{ src: Configuracion.src }}
+                            configurationName="configuracion 1"
+                            intervalo="07:00 - 08:00"
+                            navigate="/"
+                            />
+                            <ConfigBtn
+                            image={{ src: Configuracion.src }}
+                            configurationName="configuracion 1"
+                            intervalo="07:00 - 08:00"
+                            navigate="/"
+                            />
+                            <ConfigBtn
+                            image={{ src: Configuracion.src }}
+                            configurationName="configuracion 1"
+                            intervalo="07:00 - 08:00"
+                            navigate="/"
+                            />
+                            <ConfigBtn
+                            image={{ src: Configuracion.src }}
+                            configurationName="configuracion 1"
+                            intervalo="07:00 - 08:00"
+                            navigate="/"
+                            />
+                            <ConfigBtn
+                            image={{ src: Configuracion.src }}
+                            configurationName="configuracion 1"
+                            intervalo="07:00 - 08:00"
+                            navigate="/"
+                            />
+                            <ConfigBtn
+                            image={{ src: Configuracion.src }}
+                            configurationName="configuracion 1"
+                            intervalo="07:00 - 08:00"
+                            navigate="/"
+                            />
+                            <ConfigBtn
+                            image={{ src: Configuracion.src }}
+                            configurationName="configuracion 1"
+                            intervalo="07:00 - 08:00"
+                            navigate="/"
+                            />
                             {/* Más botones si los necesitas */}
                         </>
                         )}
