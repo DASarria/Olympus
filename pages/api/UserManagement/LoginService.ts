@@ -9,7 +9,7 @@ const api = axios.create({ baseURL: USER_API_BASE_URL });
 // Configuración del interceptor para agregar el token de autorización
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
       config.headers['Content-Type'] = 'application/json';
