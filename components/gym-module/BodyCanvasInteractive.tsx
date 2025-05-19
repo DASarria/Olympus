@@ -124,10 +124,11 @@ function Model({ modelPath }: Omit<BodyCanvasProps, 'onSelectZone'>) {
   const { scene } = useGLTF(modelPath)
   
   // Ajustar la escala para que el modelo se vea más pequeño
-  scene.scale.set(0.7, 0.7, 0.7)
+  scene.scale.set(0.75, 0.75, 0.75)
   
   // Ajustar la posición vertical para que esté un poco más abajo
-  scene.position.y = -0.5
+  scene.position.x = -0.3
+  scene.position.y = -0.8
   
   return (
     <primitive object={scene} />
