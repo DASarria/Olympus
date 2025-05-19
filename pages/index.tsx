@@ -10,19 +10,25 @@ const Index = () => {
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  interface LogDTO{
+    fullname:string;
+    role:string;
+    token:string;
+  }
   interface response{
     status:string;
     message:string;
-    data:string;
+    data:LogDTO;
   }
+  
   
   const handleLogin = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault(); 
     
     const loginResponse:response = await login({ userName, password });
     if(loginResponse.status== "200"){
-      sessionStorage.setItem("token", loginResponse.data);
-      sessionStorage.setItem("role", "admin");
+      sessionStorage.setItem("token", loginResponse.data.token);
+      sessionStorage.setItem("role", loginResponse.data.role);
       router.push("/Dashboard");
     }
     if(loginResponse.status == "400"){
