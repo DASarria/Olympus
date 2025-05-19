@@ -1,4 +1,4 @@
-import axios, { AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios';
+import axios, { InternalAxiosRequestConfig } from 'axios';
 
 // URL base
 const USER_API_BASE_URL = "https://usermanagement-bhe9cfg4b5b2hthj.eastus-01.azurewebsites.net/";
