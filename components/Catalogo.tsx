@@ -5,12 +5,18 @@ import { useRouter } from 'next/router';
 import Filtro from '../components/Filtro';
 import FiltroAvanzado from '../components/FiltroAvanzado';
 
+import balonfut from '../assets/images/balonfut.png';
+import balonbasquet from '../assets/images/balonbasquet.png';
+import raqueta from '../assets/images/raqueta.jpg';
+import pingpong from '../assets/images/pingpong.png';
+import cuerda from '../assets/images/cuerda.png';
+
 // Definición de la interfaz Product
 interface Product {
   id: string;
   name: string;
   description: string;
-  imageSrc: string;
+  imageSrc: any; // TODO: Replace 'any' with proper type after importing StaticImageData from 'next/image'
   status: 'disponible' | 'mantenimiento' | 'dañado';
   horariosDisponibles?: {
     manana: boolean;
@@ -25,7 +31,7 @@ export const productosIniciales: Product[] = [
     id: "001",
     name: "Balón de Fútbol",
     description: "Balón oficial de competición",
-    imageSrc: "balonfut.png",
+    imageSrc: balonfut,
     status: "disponible",
     horariosDisponibles: {
       manana: true,
@@ -37,65 +43,30 @@ export const productosIniciales: Product[] = [
     id: "002",
     name: "Balón de Baloncesto",
     description: "Balón profesional de baloncesto, tamaño oficial",
-    imageSrc: "balonbasquet.png",
+    imageSrc: balonbasquet,
     status: "disponible"
   },
   {
     id: "003",
     name: "Raqueta de Tenis",
     description: "Raqueta profesional con cordaje de alta tensión",
-    imageSrc: "raqueta.png",
+    imageSrc: raqueta,
     status: "mantenimiento"
   },
   {
-    id: "004",
-    name: "Red de Voleibol",
-    description: "Red oficial para competiciones de voleibol",
-    imageSrc: "redvoleibol.png",
-    status: "disponible"
-  },
-  {
-    id: "005",
-    name: "Pesas de 5kg",
-    description: "Par de pesas de 5kg para entrenamiento de fuerza",
-    imageSrc: "pesas.png",
-    status: "disponible"
-  },
-  {
-    id: "006",
-    name: "Colchoneta de Yoga",
-    description: "Colchoneta antideslizante para yoga y pilates",
-    imageSrc: "colchoneta.png",
-    status: "dañado"
-  },
-  {
-    id: "007",
-    name: "Bicicleta Estática",
-    description: "Bicicleta estática con monitor de frecuencia cardíaca",
-    imageSrc: "bicicleta.png",
+    id: "003",
+    name: "Raquetas de Ping pong",
+    description: "Raquetas ping pong para entrenamiento",
+    imageSrc: pingpong,
     status: "mantenimiento"
   },
   {
     id: "008",
     name: "Cuerda para Saltar",
     description: "Cuerda ajustable para entrenamiento cardiovascular",
-    imageSrc: "cuerda.png",
+    imageSrc: cuerda,
     status: "disponible"
   },
-  {
-    id: "009",
-    name: "Arco de Fútbol Portátil",
-    description: "Arco plegable para práctica de fútbol",
-    imageSrc: "arco.png",
-    status: "dañado"
-  },
-  {
-    id: "010",
-    name: "Tabla de Natación",
-    description: "Tabla de flotación para entrenamiento de natación",
-    imageSrc: "tabla.png",
-    status: "disponible"
-  }
 ];
 
 export default function CatalogoPage() {
@@ -179,7 +150,7 @@ export default function CatalogoPage() {
             <div key={product.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
               <div className="relative h-32 w-full">
                 <Image
-                  src={`/${product.imageSrc}`}
+                  src={product.imageSrc}
                   alt={product.name}
                   fill
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -238,11 +209,9 @@ export default function CatalogoPage() {
         </div>
       </div>
       
-
       
-
       
-
+      
       
       {/* Botón de reservar */}
       <div className="mt-8 mb-16 flex justify-center">

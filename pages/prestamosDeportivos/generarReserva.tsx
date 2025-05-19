@@ -76,7 +76,7 @@ export default function GenerarReserva() {
     alert('¡Reserva generada con éxito!');
     
     localStorage.removeItem('productosSeleccionados');
-    router.push('/prestamosDeportivos/Prestamos');
+    router.push('/Dashboard');
 };
 
   return (

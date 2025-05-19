@@ -1,9 +1,6 @@
 import { ReactNode } from 'react';
 import ResponsiveMenu from './ResponsiveMenu';
 import Header from './Header';
-import Opciones from './Opciones';
-import prestamo from "../assets/images/prestamo.png";
-import notificacionesImg from "../assets/images/notificaciones.png"; // Import the image
 
 interface LayoutProps {
   children?: ReactNode;
@@ -25,16 +22,11 @@ const Layout = ({
 
       {/* Este es el contenedor principal, con padding arriba para el header y abajo para el menú en móviles */}
       <div className="flex flex-1 pt-14 pb-16 md:pb-0 md:pl-[6vw]">
-
-
         {/* Este div maneja el scroll vertical y evita el horizontal */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden w-full max-w-full">
           <main className="p-4 min-h-full break-words">
-
-
             {/* Utilicé un div con max-width 100% para asegurar que el contenido no cause scroll horizontal */}
             <div className="max-w-full">
-              
               {children}
             </div>
           </main>

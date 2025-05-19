@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 import logotransparente from "../assets/images/logotransparente.png";
 
 interface HeaderProps {
@@ -42,10 +43,7 @@ const Header = ({ userName = 'Nombre de Usuario', notificationsCount = 0 }: Head
 
         {/* Campanita de notificaciones */}
         <div className="relative">
-          <button
-            className="p-2 rounded-full hover:bg-gray-100"
-            aria-label="Notificaciones"
-          >
+          <Link href="/prestamosDeportivos/Notificaciones" aria-label="Notificaciones" className="p-2 rounded-full hover:bg-gray-100 inline-flex">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-6 w-6 text-gray-700"
@@ -67,7 +65,7 @@ const Header = ({ userName = 'Nombre de Usuario', notificationsCount = 0 }: Head
                 {notificationsCount > 9 ? '9+' : notificationsCount}
               </span>
             )}
-          </button>
+          </Link>
         </div>
       </div>
     </div>
