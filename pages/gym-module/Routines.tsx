@@ -4,6 +4,181 @@ import { Return } from "@/components/Return"
 import { withRoleProtection } from "@/hoc/withRoleProtection";
 import { RoutineCard } from '@/components/gym-module/RoutineCardProps';
 import Tabs from '@/components/gym-module/TabsProps';
+import { getCurrentRoutine, getUserRoutines, getRecommendedRoutines } from "@/api/gymServicesIndex";
+import RoutineCarousel from "@/components/gym-module/RoutineCarousel";
+import ExerciseCarousel from "@/components/gym-module/ExerciseCarousel";
+import { AnimatePresence, motion } from "framer-motion";
+import { PageTransitionWrapper } from "@/components/PageTransitionWrapper";
+
+// /**
+//  * routines component that renders the main content of the "routines" page.
+//  * 
+//  * @returns {jsx.element} the rendered routines page component.
+//  */
+// const routines = () => {
+//     const userid = typeof window !== 'undefined' ? sessionstorage.getitem("id") : null;
+//     //const role = typeof window !== 'undefined' ? sessionstorage.getitem("role") : null;
+//     const role: string = "trainer";
+//     const [currentroutine, setcurrentroutine] = usestate<any>();
+//     const [routines, setroutines] = usestate<any[]>([]);
+//     const [recommendedroutines, setrecommendedroutines] = usestate<any[]>([]);
+//     const [loading, setloading] = usestate<boolean>(true);
+//     const [activetab, setactivetab] = usestate('rutina-actual');
+
+//     /**
+//      * effect hook to fetch routines with api calls.
+//      * this is executed when the component mounts and when the userid changes.
+//      * 
+//      * @returns {void}
+//      */
+//     useeffect(() => {
+//         // if (userid) {
+//         //     const fetchalldata = async () => {
+//         //         try {
+//         //             await promise.all([
+//         //                 getcurrentroutine(userid)
+//         //                     .then(setcurrentroutine)
+//         //                     .catch((error) => {
+//         //                         console.error('error fetching current routine:', error);
+//         //                     }),
+//         //                 getuserroutines(userid)
+//         //                     .then(setroutines)
+//         //                     .catch((error) => {
+//         //                         console.error('error fetching user routines:', error);
+//         //                     }),
+//         //                 getrecommendedroutines(userid)
+//         //                     .then(setrecommendedroutines)
+//         //                     .catch((error) => {
+//         //                         console.error('error fetching recommended routines:', error);
+//         //                     }),
+//         //             ]);
+//         //         } catch (error) {
+//         //             console.error('error in fetching all data:', error);
+//         //         } finally {
+//         //             setloading(false);
+//         //         }
+//         //     };
+
+//         //     fetchalldata();
+//         // } else {
+//         //     console.error('no userid found in sessionstorage');
+//         // }
+
+//         const simulatedroutine = {
+//             id: 'routine1',
+//             name: 'rutina de fuerza para principiantes',
+//             description: 'una rutina básica enfocada en desarrollar fuerza en los principales grupos musculares',
+//             difficulty: 'beginner',
+//             goal: 'strength',
+//             exercises: [
+//                 {
+//                     baseexerciseid: 'ejercicio-uuid-aquí',
+//                     sets: 3,
+//                     repetitions: 12,
+//                     resttime: 60,
+//                     sequenceorder: 1
+//                 },
+//                 {
+//                     baseexerciseid: 'otro-ejercicio-uuid-aquí',
+//                     sets: 3,
+//                     repetitions: 10,
+//                     resttime: 90,
+//                     sequenceorder: 2
+//                 }
+//             ]
+//         };
+
+//         const simulatedroutines = [
+//             simulatedroutine,
+//             {
+//                 ...simulatedroutine,
+//                 id: 'routine2',
+//                 name: 'rutina intermedia de resistencia',
+//                 difficulty: 'intermediate',
+//                 goal: 'endurance',
+//             }
+//         ];
+
+//         setcurrentroutine(simulatedroutine);
+//         setroutines(simulatedroutines);
+//         setrecommendedroutines([simulatedroutines[1]]);
+//         setloading(false);
+//     }, [userid]);
+
+//     return (
+//         <pagetransitionwrapper>
+//             <div classname="flex flex-col gap-6">
+//                 <return 
+//                     classname="!self-stretch !flex-[0_0_auto] !w-full"
+//                     text="rutinas"
+//                     returnpoint="/gym-module"
+//                 />
+
+//                 <div classname="flex flex-col md:flex-row gap-6">
+//                     {/* selector de anatomía */}
+//                     <div classname="flex flex-col items-center justify-center gap-5 relative flex-[0_0_auto]">
+//                         {/* silueta humana simplificada */}
+//                         <svg width="200" viewbox="0 0 100 200" fill="none" xmlns="http://www.w3.org/2000/svg" classname="relative w-[550px] h-[500px] bg-gray-100 object-cover">
+//                             <path d="m50 10 c60 10 60 20 60 25 c60 35 55 40 50 40 c45 40 40 35 40 25 c40 20 40 10 50 10 z" stroke="black" strokewidth="1" fill="none"/>
+//                             <path d="m40 40 l40 80 l35 120 l40 170 l45 170 l50 120 l55 170 l60 170 l65 120 l60 80 l60 40 z" stroke="black" strokewidth="1" fill="none"/>
+//                             <path d="m40 50 l30 80 l35 100 l40 80 z" stroke="black" strokewidth="1" fill="none"/>
+//                             <path d="m60 50 l70 80 l65 100 l60 80 z" stroke="black" strokewidth="1" fill="none"/>
+//                         </svg>
+//                         <div classname="relative w-fit [font-family: 'montserrat-bold',helvetica] font-bold text-[#7d7d7d] text-base tracking-[0] leading-4 whitespace-nowrap">
+//                             selecciona un músculo...
+//                         </div>
+//                     </div>
+
+//                     <div classname="flex flex-col w-full">
+//                         {/* pestañas */}
+//                         <div classname="mb-6">
+//                             <tabs
+//                                 tabs={[
+//                                 { id: 'rutina-actual', label: 'rutina actual' },
+//                                 { id: 'todas-rutinas', label: 'todas las rutinas' }
+//                                 ]}
+//                                 activetab={activetab}
+//                                 ontabchange={setactivetab}
+//                             />
+//                         </div>
+//                         <animatepresence mode="wait">
+//                             {activetab === 'rutina-actual' && currentroutine && (
+//                                 <motion.div
+//                                     key="rutina-actual"
+//                                     initial={{ opacity: 0, y: 20 }}
+//                                     animate={{ opacity: 1, y: 0 }}
+//                                     exit={{ opacity: 0, y: -20 }}
+//                                     transition={{ duration: 0.3 }}
+//                                     classname="flex flex-col gap-4"
+//                                 >
+//                                     <h2 classname="text-2xl font-bold">{currentroutine.name}</h2>
+//                                     <p classname="relative w-fit mt-[-1.00px] [font-family: 'montserrat-bold',helvetica]font-family text-gray-700">{currentroutine.description}</p>
+//                                     <exercisecarousel exercises={currentroutine.exercises} />
+//                                 </motion.div>
+//                             )}
+//                             {activetab === 'todas-rutinas' && (
+//                                     <motion.div
+//                                     key="todas-rutinas"
+//                                     initial={{ opacity: 0, y: 20 }}
+//                                     animate={{ opacity: 1, y: 0 }}
+//                                     exit={{ opacity: 0, y: -20 }}
+//                                     transition={{ duration: 0.3 }}
+//                                     classname="flex flex-col gap-4"
+//                                 >
+//                                     <h2 classname="text-2xl font-bold mb-4">tus rutinas</h2>
+//                                     <routinecarousel routines={routines} />
+//                                 </motion.div>
+//                             )}
+//                         </animatepresence>
+
+//                         <h2 classname="text-2xl font-bold mt-8 mb-4">rutinas recomendadas</h2>
+//                         <routinecarousel routines={recommendedroutines} />
+//                     </div>
+//                 </div>
+//             </div>
+//         </pagetransitionwrapper>
+//     )
+// }
 
 // Dynamically import the 3D component to prevent SSR issues
 const BodyCanvasInteractive = dynamic(

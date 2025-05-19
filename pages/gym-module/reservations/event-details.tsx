@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { Return } from "@/components/Return";
 import { withRoleProtection } from "@/hoc/withRoleProtection";
 import { ReservationStatus, getReservationDetails, cancelReservation } from '@/api/gymServicesIndex';
+import { PageTransitionWrapper } from '@/components/PageTransitionWrapper';
 
 /**
  * ReservationDetails component displays detailed information about a reservation.
@@ -87,84 +88,86 @@ const ReservationDetails = () => {
     };
 
     return (
-        <div className='flex flex-col gap-6'>
-            <Return 
-                className="!self-stretch !flex-[0_0_auto] !w-full"
-                text="Detalles de reserva"
-                returnPoint="/gym-module/reservations"
-            />
-            <div>
-                <h2 className="text-xl font-semibold mb-4">Detalles de Reserva</h2>
+        <PageTransitionWrapper>
+            <div className='flex flex-col gap-6'>
+                <Return 
+                    className="!self-stretch !flex-[0_0_auto] !w-full"
+                    text="Detalles de reserva"
+                    returnPoint="/gym-module/reservations"
+                />
+                <div>
+                    <h2 className="text-xl font-semibold mb-4">Detalles de Reserva</h2>
 
-                {successMessage && <div className="mb-4 text-green-600">{successMessage}</div>}
-                {errorMessage && <div className="mb-4 text-red-600">{errorMessage}</div>}
+                    {successMessage && <div className="mb-4 text-green-600">{successMessage}</div>}
+                    {errorMessage && <div className="mb-4 text-red-600">{errorMessage}</div>}
 
-                <div className="space-y-4">
-                    <div>
-                        <label className="block font-medium mb-1">ID de Sesión</label>
-                        <input
-                            type="text"
-                            name="sessionId"
-                            value={formData.sessionId}
-                            disabled
-                            className="w-full border rounded p-2 bg-gray-100 cursor-not-allowed"
-                        />
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block font-medium mb-1">ID de Sesión</label>
+                            <input
+                                type="text"
+                                name="sessionId"
+                                value={formData.sessionId}
+                                disabled
+                                className="w-full border rounded p-2 bg-gray-100 cursor-not-allowed"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block font-medium mb-1">Fecha de Reserva</label>
+                            <input
+                                type="datetime-local"
+                                name="reservationDate"
+                                value={formData.reservationDate}
+                                disabled
+                                className="w-full border rounded p-2 bg-gray-100 cursor-not-allowed"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block font-medium mb-1">Equipos (IDs separados por coma)</label>
+                            <input
+                                type="text"
+                                name="equipmentIds"
+                                value={formData.equipmentIds}
+                                disabled
+                                className="w-full border rounded p-2 bg-gray-100 cursor-not-allowed"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block font-medium mb-1">Notas</label>
+                            <textarea
+                                name="notes"
+                                value={formData.notes}
+                                disabled
+                                className="w-full border rounded p-2 bg-gray-100 cursor-not-allowed"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block font-medium mb-1">Estado</label>
+                            <input
+                                type="text"
+                                name="status"
+                                value={formData.status}
+                                disabled
+                                className="w-full border rounded p-2 bg-gray-100 cursor-not-allowed"
+                            />
+                        </div>
+
+                        {formData.status !== ReservationStatus.CANCELLED && (
+                            <button
+                                onClick={handleCancelReservation}
+                                className="bg-[var(--primary-red)] text-white px-4 py-2 rounded cursor-pointer"
+                            >
+                                Cancelar Reserva
+                            </button>
+                        )}
                     </div>
-
-                    <div>
-                        <label className="block font-medium mb-1">Fecha de Reserva</label>
-                        <input
-                            type="datetime-local"
-                            name="reservationDate"
-                            value={formData.reservationDate}
-                            disabled
-                            className="w-full border rounded p-2 bg-gray-100 cursor-not-allowed"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block font-medium mb-1">Equipos (IDs separados por coma)</label>
-                        <input
-                            type="text"
-                            name="equipmentIds"
-                            value={formData.equipmentIds}
-                            disabled
-                            className="w-full border rounded p-2 bg-gray-100 cursor-not-allowed"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block font-medium mb-1">Notas</label>
-                        <textarea
-                            name="notes"
-                            value={formData.notes}
-                            disabled
-                            className="w-full border rounded p-2 bg-gray-100 cursor-not-allowed"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block font-medium mb-1">Estado</label>
-                        <input
-                            type="text"
-                            name="status"
-                            value={formData.status}
-                            disabled
-                            className="w-full border rounded p-2 bg-gray-100 cursor-not-allowed"
-                        />
-                    </div>
-
-                    {formData.status !== ReservationStatus.CANCELLED && (
-                        <button
-                            onClick={handleCancelReservation}
-                            className="bg-[var(--primary-red)] text-white px-4 py-2 rounded cursor-pointer"
-                        >
-                            Cancelar Reserva
-                        </button>
-                    )}
                 </div>
             </div>
-        </div>
+        </PageTransitionWrapper>
     );
 };
 
