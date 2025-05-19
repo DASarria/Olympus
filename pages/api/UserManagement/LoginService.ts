@@ -22,16 +22,28 @@ api.interceptors.request.use(
   }
 );
 
+interface LogDTO{
+    fullname:string;
+    role:string;
+    token:string;
+  }
+  interface response{
+    status:string;
+    message:string;
+    data:LogDTO;
+  }
 
-async function login(credentials: { userName: string; password: string }): Promise<any> {
+async function login(credentials: { userName: string; password: string }): Promise<response> {
   try {
     const response = await api.post('authentication/login', credentials);
-    return response.data; // Devuelve la respuesta
-  } catch (error:unknown) {
+    return response.data;
+  } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
       const errorBody = error.response?.data;
       return errorBody;
     }
+    // Garantiza que la función no finaliza sin retornar
+    throw error;
   }
 }
 
