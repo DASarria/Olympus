@@ -47,7 +47,7 @@ const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, onTabChange }) => {
           className={`py-2 px-8 rounded-full text-sm cursor-pointer [font-family: "Montserrat-Bold",Helvetica] ${
             activeTab === tab.id
               ? 'bg-[var(--lavender)] text-white relative w-fit mt-[-1.00px] font-bold text-lg tracking-[0] leading-[18px] whitespace-nowrap'
-              : 'text-neutral-600 font-medium'
+              : 'text-[#716c6c] font-bold'
           }`}
           onClick={() => onTabChange(tab.id)}
         >

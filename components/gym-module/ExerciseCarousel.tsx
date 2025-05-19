@@ -28,11 +28,11 @@ const ExerciseCarousel = ({ exercises }: { exercises: any[] }) => {
     const next = () => setIndex((prev) => (prev + 1) % exercises.length);
 
     return (
-        <div className="flex items-center">
+        <div className="flex items-center justify-between">
             <Button onClick={prev} className="p-2">
                 <ChevronLeft />
             </Button>
-            <div className="overflow-hidden mx-4 flex-[0_0_auto]">
+            <div className="overflow-hidden mx-4 flex-1">
                 <div
                     className="inline-flex items-start gap-10 relative transition-transform duration-300 ease-in-out"
                     style={{ transform: `translateX(-${index * ITEM_WIDTH}px)` }}

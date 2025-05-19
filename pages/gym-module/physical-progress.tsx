@@ -300,8 +300,43 @@ const PhysicalProgress = () => {
                             </div>
 
                             {/* Line Chart for BMI */}
-                            <div className="w-full mt-10">
-                                <Line key={JSON.stringify(chartData)} data={chartData} />
+                            <div className="flex flex-col w-full h-[622px] items-start justify-center gap-2.5 px-20 py-[30px] relative bg-[#eaeaea] rounded-[20px] overflow-hidden border-box">
+                                <div className="flex flex-col flex-1 max-w-5xl mx-auto">
+                                     <Line
+                                        data={chartData}
+                                        options={{
+                                            responsive: true,
+                                            maintainAspectRatio: false, // Cambié esto a false para que el gráfico ocupe todo el contenedor
+                                            plugins: {
+                                                legend: {
+                                                    display: true,
+                                                    position: 'top',
+                                                },
+                                                title: {
+                                                    display: true,
+                                                    text: 'Progreso del IMC',
+                                                },
+                                            },
+                                            scales: {
+                                                x: {
+                                                    title: {
+                                                        display: true,
+                                                        text: 'Fecha',
+                                                    },
+                                                },
+                                                y: {
+                                                    title: {
+                                                        display: true,
+                                                        text: 'IMC',
+                                                    },
+                                                    min: 15,
+                                                    max: 40,
+                                                },
+                                            },
+                                        }}
+                                        style={{ width: "100%", height: "100%" }} // Asegura que la gráfica ocupe todo el contenedor
+                                    />
+                                </div>
                             </div>
                         </div>
                     </>
