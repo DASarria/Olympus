@@ -151,8 +151,6 @@ const Routines = () => {
                                 >
                                     <h2 className="text-2xl font-bold">{currentRoutine.name}</h2>
                                     <p className="relative w-fit mt-[-1.00px] [font-family: 'Montserrat-Bold',Helvetica]font-family text-gray-700">{currentRoutine.description}</p>
-
-                                    <h3 className="relative w-fit mt-[-1.00px] [font-family: 'Montserrat-Bold',Helvetica] text-lg font-medium">Ejercicios:</h3>
                                     <ExerciseCarousel exercises={currentRoutine.exercises} />
                                 </motion.div>
                             )}
