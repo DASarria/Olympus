@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+:root{
+    --color-eci: #990000;
+}
+
+.bg-eci{
+    background-color: var(--color-eci);
+}

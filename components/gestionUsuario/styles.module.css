@@ -1,0 +1,17 @@
+
+.campo-input::placeholder {
+  color: #474747;
+  opacity: 1;
+}
+
+
+.boton {
+  font-size: clamp(14px, 2vw, 20px);
+  padding: 0.6em 1.2em;
+  background-color: #990000;
+  color: white;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  font-family: 'Open Sans', sans-serif;
+}
