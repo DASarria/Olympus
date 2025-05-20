@@ -1,4 +1,4 @@
-import React, { useState , useEffect  } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import axios from "axios";
 
@@ -38,7 +38,9 @@ const CEAdminActividades = () => {
   const [profesor, setProfesor] = useState("");
   const [identificacion, setIdentificacion] = useState<number>(0);
   const [actividadSeleccionada, setActividadSeleccionada] = useState("");
-  const [actividades, setActividades] = useState<{ id: string; nombre: string }[]>([]);
+  const [actividades, setActividades] = useState<
+    { id: string; nombre: string }[]
+  >([]);
   const [recursos, setRecursos] = useState([{ name: "", amount: "" }]);
   const [actividadesTemp, setActividadesTemp] = useState<any[]>([]);
 
@@ -52,7 +54,7 @@ const CEAdminActividades = () => {
     } catch (error) {
       console.error("Error al obtener las actividades:", error);
     }*/
-  
+
     const actividadesMock = [
       {
         id: "68253eef60cbcc35c8cca21e",
@@ -97,26 +99,26 @@ const CEAdminActividades = () => {
           "68253eee60cbcc35c8cca21a",
           "68253eee60cbcc35c8cca21b",
           "68253eee60cbcc35c8cca21c",
-          "68253eee60cbcc35c8cca21d"
+          "68253eee60cbcc35c8cca21d",
         ],
         days: [
           {
             startHour: "13:30:00",
             endHour: "15:00:00",
-            dayWeek: "MONDAY"
+            dayWeek: "MONDAY",
           },
           {
             startHour: "13:30:00",
             endHour: "15:00:00",
-            dayWeek: "WEDNESDAY"
-          }
+            dayWeek: "WEDNESDAY",
+          },
         ],
         resources: [
           {
             name: "balls",
-            amount: "8"
-          }
-        ]
+            amount: "8",
+          },
+        ],
       },
       {
         id: "68253f7e60cbcc35c8cca241",
@@ -161,106 +163,106 @@ const CEAdminActividades = () => {
           "68253f7d60cbcc35c8cca23d",
           "68253f7e60cbcc35c8cca23e",
           "68253f7e60cbcc35c8cca23f",
-          "68253f7e60cbcc35c8cca240"
+          "68253f7e60cbcc35c8cca240",
         ],
         days: [
           {
             startHour: "15:00:00",
             endHour: "16:30:00",
-            dayWeek: "FRIDAY"
+            dayWeek: "FRIDAY",
           },
           {
             startHour: "16:30:00",
             endHour: "18:00:00",
-            dayWeek: "WEDNESDAY"
-          }
+            dayWeek: "WEDNESDAY",
+          },
         ],
         resources: [
           {
             name: "balls",
-            amount: "11"
-          }
-        ]
-      }
+            amount: "11",
+          },
+        ],
+      },
     ];
-  
+
     setActividadesTemp(actividadesMock);
     console.log("Actividades mock cargadas:", actividadesMock);
   };
-  
 
   useEffect(() => {
     fetchActividades();
   }, []);
 
-  
-
-
   const [days, setDays] = useState([
     { year: "", semester: "", dayWeek: "none", startHour: "", endHour: "" },
   ]);
 
-  const handleRecursoChange = (index: number, field: "name" | "amount", value: string) => {
+  const handleRecursoChange = (
+    index: number,
+    field: "name" | "amount",
+    value: string
+  ) => {
     const updated = [...recursos];
     updated[index][field] = value;
     setRecursos(updated);
   };
 
-  const handleHorarioChange = (index: number, field: keyof typeof days[0], value: string) => {
+  const handleHorarioChange = (
+    index: number,
+    field: keyof (typeof days)[0],
+    value: string
+  ) => {
     const updated = [...days];
     updated[index][field] = value;
     setDays(updated);
   };
-    
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-  
+
     // Validaciones básicas
     if (!nombreClase.trim()) {
       alert("El nombre de la clase es obligatorio.");
       return;
     }
-  
+
     if (!ubicacion.trim()) {
       alert("La ubicación es obligatoria.");
       return;
     }
-  
+
     if (capacidad <= 0) {
       alert("La capacidad debe ser un número mayor a cero.");
       return;
     }
-  
+
     if (!profesor.trim()) {
       alert("El nombre del profesor es obligatorio.");
       return;
     }
-  
-    
-  
+
     // Validar horarios
     const daysFiltrados = days.filter(
       (d) =>
-        d.year &&
-        d.semester &&
-        d.dayWeek !== "none" &&
-        d.startHour &&
-        d.endHour
+        d.year && d.semester && d.dayWeek !== "none" && d.startHour && d.endHour
     );
-  
+
     if (daysFiltrados.length === 0) {
       alert("Debe agregar al menos un horario válido.");
       return;
     }
-  
+
     // Validar que no haya recursos con cantidad negativa
     const recursosFiltrados = recursos.filter(
       (r) => r.name.trim() !== "" && parseInt(r.amount) > 0
     );
-  
-    const id = actividadSeleccionada === "null" ? String(Date.now()) : actividadSeleccionada;
-  
+
+    const id =
+      actividadSeleccionada === "null"
+        ? String(Date.now())
+        : actividadSeleccionada;
+
     const actividad = {
       id,
       activityType: nombreClase,
@@ -275,9 +277,9 @@ const CEAdminActividades = () => {
         semester: Number(d.semester),
       })),
     };
-  
+
     console.log("Actividad creada o actualizada:", actividad);
-  
+
     // Reset
     setNombreClase("");
     setUbicacion("");
@@ -285,29 +287,65 @@ const CEAdminActividades = () => {
     setProfesor("");
     setIdentificacion(0);
     setRecursos([{ name: "", amount: "" }]);
-    setDays([{ year: "", semester: "", dayWeek: "none", startHour: "", endHour: "" }]);
+    setDays([
+      { year: "", semester: "", dayWeek: "none", startHour: "", endHour: "" },
+    ]);
     setActividadSeleccionada("null");
-    
   };
-  
-  
 
   const addRecurso = () => setRecursos([...recursos, { name: "", amount: "" }]);
 
   const addHorario = () =>
-    setDays([...days, { year: "", semester: "", dayWeek: "none", startHour: "", endHour: "" }]);
+    setDays([
+      ...days,
+      { year: "", semester: "", dayWeek: "none", startHour: "", endHour: "" },
+    ]);
 
   // Después de fetchActividades y estados:
-useEffect(() => {
-  if (actividadesTemp.length > 0) {
-    const mapped = actividadesTemp.map(({ id, activityType }) => ({
-      id,
-      nombre: activityType,
-    }));
-    setActividades(mapped);
-  }
-}, [actividadesTemp]);
+  useEffect(() => {
+    if (actividadesTemp.length > 0) {
+      const mapped = actividadesTemp.map(({ id, activityType }) => ({
+        id,
+        nombre: activityType,
+      }));
+      setActividades(mapped);
+    }
+  }, [actividadesTemp]);
 
+  useEffect(() => {
+    if (actividadSeleccionada !== "null") {
+      const actividad = actividadesTemp.find(act => act.id === actividadSeleccionada);
+      if (actividad) {
+        setNombreClase(actividad.activityType);
+        setUbicacion(actividad.location);
+        setCapacidad(actividad.capacityMaximum);
+        setProfesor(actividad.teacher);
+        setIdentificacion(actividad.teacherId);
+        setRecursos(actividad.resources.length > 0 ? actividad.resources : [{ name: "", amount: "" }]);
+        setDays(
+          actividad.days.length > 0
+            ? actividad.days.map(d => ({
+                year: String(actividad.year),
+                semester: String(actividad.semester),
+                dayWeek: d.dayWeek,
+                startHour: d.startHour,
+                endHour: d.endHour,
+              }))
+            : [{ year: "", semester: "", dayWeek: "none", startHour: "", endHour: "" }]
+        );
+      }
+    } else {
+      // Si selecciona "Crear Nueva Actividad", limpiamos los estados
+      setNombreClase("");
+      setUbicacion("");
+      setCapacidad(0);
+      setProfesor("");
+      setIdentificacion(0);
+      setRecursos([{ name: "", amount: "" }]);
+      setDays([{ year: "", semester: "", dayWeek: "none", startHour: "", endHour: "" }]);
+    }
+  }, [actividadSeleccionada, actividadesTemp]);
+  
 
   return (
     <div className="flex flex-col w-[85%] mx-auto my-8 px-4 bg-white max-h-[80vh] overflow-auto">
@@ -365,7 +403,7 @@ useEffect(() => {
                 type="number"
                 value={capacidad}
                 onChange={(e) => {
-                  setCapacidad(Number(e.target.value))
+                  setCapacidad(Number(e.target.value));
                 }}
                 className={inputStyle}
                 placeholder="0"
@@ -401,7 +439,9 @@ useEffect(() => {
                 <input
                   type="text"
                   value={recurso.name}
-                  onChange={(e) => handleRecursoChange(index, "name", e.target.value)}
+                  onChange={(e) =>
+                    handleRecursoChange(index, "name", e.target.value)
+                  }
                   className={inputStyle}
                   placeholder="Nombre del Recurso"
                 />
@@ -411,7 +451,9 @@ useEffect(() => {
                 <input
                   type="number"
                   value={recurso.amount}
-                  onChange={(e) => handleRecursoChange(index, "amount", e.target.value)}
+                  onChange={(e) =>
+                    handleRecursoChange(index, "amount", e.target.value)
+                  }
                   className={inputStyle}
                   placeholder="0"
                 />
@@ -434,7 +476,9 @@ useEffect(() => {
                   <input
                     type="number"
                     value={horario.year}
-                    onChange={(e) => handleHorarioChange(index, "year", e.target.value)}
+                    onChange={(e) =>
+                      handleHorarioChange(index, "year", e.target.value)
+                    }
                     className={inputStyle}
                     placeholder="Año"
                   />
@@ -443,7 +487,9 @@ useEffect(() => {
                   <h3 className={h3Style}>Semestre</h3>
                   <select
                     value={horario.semester}
-                    onChange={(e) => handleHorarioChange(index, "semester", e.target.value)}
+                    onChange={(e) =>
+                      handleHorarioChange(index, "semester", e.target.value)
+                    }
                     className={inputStyle}
                   >
                     <option value="none">Seleccione Semestre</option>
@@ -460,7 +506,9 @@ useEffect(() => {
                   <h3 className={h3Style}>Día</h3>
                   <select
                     value={horario.dayWeek}
-                    onChange={(e) => handleHorarioChange(index, "dayWeek", e.target.value)}
+                    onChange={(e) =>
+                      handleHorarioChange(index, "dayWeek", e.target.value)
+                    }
                     className={inputStyle}
                   >
                     <option value="none">Seleccione Día</option>
@@ -476,7 +524,9 @@ useEffect(() => {
                   <input
                     type="time"
                     value={horario.startHour}
-                    onChange={(e) => handleHorarioChange(index, "startHour", e.target.value)}
+                    onChange={(e) =>
+                      handleHorarioChange(index, "startHour", e.target.value)
+                    }
                     className={inputStyle}
                   />
                 </div>
@@ -485,7 +535,9 @@ useEffect(() => {
                   <input
                     type="time"
                     value={horario.endHour}
-                    onChange={(e) => handleHorarioChange(index, "endHour", e.target.value)}
+                    onChange={(e) =>
+                      handleHorarioChange(index, "endHour", e.target.value)
+                    }
                     className={inputStyle}
                   />
                 </div>
@@ -501,7 +553,9 @@ useEffect(() => {
         <div className={buttonContainerStyle}>
           <button
             type="button"
-            onClick={() => router.push("/clasesExtracurriculares/CEAdminClases")}
+            onClick={() =>
+              router.push("/clasesExtracurriculares/CEAdminClases")
+            }
             className={buttonStyle}
           >
             Volver
