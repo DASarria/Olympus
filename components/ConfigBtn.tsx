@@ -13,7 +13,7 @@ export const ConfigBtn = ({ image, configurationName,intervalo, navigate }: Prop
         <Link href={navigate} passHref>
             <motion.div 
                 key={navigate}
-                className="max-w-[50vw]  flex flex-col items-center gap-2.5 px-4 py-5 max-h-[50vh]  overflow-hidden rounded-[20px] justify-center bg-red-100 relative hover:shadow-[0px_5px_27px_4px_#99000040] cursor-pointer"
+                className="max-w-[50vw]  flex flex-col items-center gap-2.5 px-4 py-5 max-h-[50vh]  overflow-hidden rounded-[15px] justify-center bg-red-50 relative hover:shadow-[0px_5px_27px_4px_#99000040] cursor-pointer"
                 whileHover={{
                     scale: 1.005,
                     transition: { duration: 0.15 },
