@@ -8,7 +8,7 @@ interface props {
 
 const ErrorMessage = ({ message, onClose}:props) => {
   return (
-    <div className="fixed top-4 left-1/2 transform -translate-x-1/2 w-96 p-4 bg-red-800 border border-red-900 text-white rounded-2xl shadow-xl">
+    <div className="fixed top-32 left-1/2 transform -translate-x-1/2 w-96 p-4 bg-red-800 border border-red-900 text-white rounded-2xl shadow-xl">
       <div className="flex justify-between items-center">
         <p className="text-lg font-medium">{message}</p>
         <button
