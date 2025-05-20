@@ -199,7 +199,7 @@ const HorarioClasesExacto = () => {
       <div className="flex justify-end">
         <button 
         className="bg-red-800 hover:bg-red-900 text-white px-4 py-2 rounded transition-colors"
-        onClick={() => navegarA('/clasesExtracurriculares/test')}
+        onClick={() => navegarA('/clasesExtracurriculares/CEAdminActividades')}
         >
           Nueva actividad
         </button>
