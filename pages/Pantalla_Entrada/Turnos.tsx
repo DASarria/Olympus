@@ -1,47 +1,107 @@
-import type React from "react"
+import { useState } from "react";
+import { useRouter } from "next/router";
 
-import { useState } from "react"
-import { useRouter } from "next/router"
+interface FormData {
+  nombre: string;
+  documento: string;
+  rol: string;
+  discapacidad: string;
+}
 
 const Turnos = () => {
-  const router = useRouter()
+  const router = useRouter();
+  const { especialidad } = router.query;
 
-  const initialFormState = {
+  const initialFormState: FormData = {
     nombre: "",
     documento: "",
     rol: "",
     discapacidad: "",
-  }
+  };
 
-  const [formData, setFormData] = useState(initialFormState)
+  const [formData, setFormData] = useState<FormData>(initialFormState);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const Roles = ["Estudiante", "Profesor", "Administrativo", "Servicios generales"]
-
-  const opcionesDiscapacidad = ["NoTiene", "MayorDeEdad", "DisfuncionMotriz", "Embarazo", "Otra"]
+  const Roles = ["Estudiante", "Profesor", "Administrativo", "ServiciosGenerales"];
+  const opcionesDiscapacidad = ["NoTiene", "MayorDeEdad", "DisfuncionMotriz", "Embarazo", "Otra"];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
-    }))
-  }
+    }));
+  };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log("Datos enviados:", formData)
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
 
-    // Guardar los datos en localStorage para accederlos en la página de confirmación
-    localStorage.setItem("turnoData", JSON.stringify(formData))
+    try {
+      // Validar especialidad
+      if (!especialidad) {
+        throw new Error("No se ha seleccionado una especialidad");
+      }
 
-    // Redireccionar a la página de confirmación
-    router.push("/Pantalla_Entrada/Confirmacion")
-  }
+      // Preparar datos para la API
+      const turnoDTO = {
+        userName: formData.nombre,
+        identityDocument: formData.documento,
+        role: formData.rol,
+        specialization: especialidad as string,
+        disabilitie: formData.discapacidad,
+      };
+
+      // Llamar al endpoint
+      const response = await fetch(
+        "https://eciturnos-e5egf4dyezdkdgfq.canadaeast-01.azurewebsites.net/api/turns/create",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify(turnoDTO),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Error al crear el turno");
+      }
+
+      const data = await response.json();
+
+      // Redirigir a confirmación con el código
+      router.push({
+        pathname: "/Pantalla_Entrada/Confirmacion",
+        query: { 
+          codigoTurno: data.code,
+          especialidad: especialidad as string 
+        },
+      });
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error desconocido");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
       <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg w-full max-w-md border border-red-100">
-        <h2 className="text-2xl font-bold text-gray-800 mb-8 text-center">Registro de Turno</h2>
+        <h2 className="text-2xl font-bold text-gray-800 mb-8 text-center">
+          Registro de Turno - {especialidad}
+        </h2>
+
+        {error && (
+          <div className="mb-4 p-2 bg-red-100 text-red-700 rounded">
+            Error: {error}
+          </div>
+        )}
 
         {/* Campo Nombre */}
         <div className="mb-6 border border-red-500 rounded p-1">
@@ -89,9 +149,9 @@ const Turnos = () => {
             required
           >
             <option value="">Seleccione una opción</option>
-            {Roles.map((esp) => (
-              <option key={esp} value={esp}>
-                {esp.replace(/([A-Z])/g, " $1").trim()}
+            {Roles.map((rol) => (
+              <option key={rol} value={rol}>
+                {rol.replace(/([A-Z])/g, " $1").trim()}
               </option>
             ))}
           </select>
@@ -123,24 +183,23 @@ const Turnos = () => {
         <div className="flex justify-between mt-8">
           <button
             type="button"
-            onClick={() => {
-              setFormData(initialFormState)
-              router.back()
-            }}
+            onClick={() => router.back()}
             className="px-6 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors border border-gray-600"
+            disabled={isLoading}
           >
             Cancelar
           </button>
           <button
             type="submit"
             className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors border border-blue-600"
+            disabled={isLoading}
           >
-            Siguiente
+            {isLoading ? "Creando turno..." : "Confirmar"}
           </button>
         </div>
       </form>
     </div>
-  )
-}
+  );
+};
 
-export default Turnos
+export default Turnos;

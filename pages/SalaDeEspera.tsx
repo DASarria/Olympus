@@ -4,13 +4,80 @@ import imagen1 from "../assets/images/1imagen.jpg";
 import imagen2 from "../assets/images/2imagen.jpg";
 import imagen3 from "../assets/images/3imagen.jpg";
 
+interface Turno {
+  code: string;
+  patient: string;
+  specialization: string;
+}
+
 export default function SalaDeEspera() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [turnos, setTurnos] = useState<{
+    MedicinaGeneral: {
+      actual: Turno | null;
+      siguientes: Turno[];
+    };
+    Odontologia: {
+      actual: Turno | null;
+      siguientes: Turno[];
+    };
+    Psicologia: {
+      actual: Turno | null;
+      siguientes: Turno[];
+    };
+  }>({
+    MedicinaGeneral: { actual: null, siguientes: [] },
+    Odontologia: { actual: null, siguientes: [] },
+    Psicologia: { actual: null, siguientes: [] }
+  });
+  const [loading, setLoading] = useState(true);
+
   const slides = [
     { id: 1, name: "Horarios de atención", url: imagen1 },
     { id: 2, name: "Información importante", url: imagen2 },
     { id: 3, name: "Promociones de salud", url: imagen3 },
   ];
+
+  // Obtener turnos actuales y siguientes
+  const fetchTurnos = async () => {
+    try {
+      const especialidades = ["MedicinaGeneral", "Odontologia", "Psicologia"];
+      const nuevosTurnos = { ...turnos };
+
+      for (const esp of especialidades) {
+        // Obtener turno actual
+        const actualRes = await fetch(
+          `https://eciturnos-e5egf4dyezdkdgfq.canadaeast-01.azurewebsites.net/api/turns/actualTurn?specialization=${esp}`
+        );
+        const actualData = await actualRes.json();
+        
+        // Obtener lista de turnos siguientes
+        const listRes = await fetch(
+          `https://eciturnos-e5egf4dyezdkdgfq.canadaeast-01.azurewebsites.net/api/turns/list?specialization=${esp}`
+        );
+        const listData = await listRes.json();
+
+        nuevosTurnos[esp as keyof typeof nuevosTurnos] = {
+          actual: actualData,
+          siguientes: listData.slice(0, 3) // Tomamos los próximos 3 turnos
+        };
+      }
+
+      setTurnos(nuevosTurnos);
+    } catch (error) {
+      console.error("Error fetching turnos:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Configurar intervalo para actualización automática
+  useEffect(() => {
+    fetchTurnos();
+    const interval = setInterval(fetchTurnos, 30000); // Actualizar cada 30 segundos
+
+    return () => clearInterval(interval);
+  }, []);
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
@@ -21,11 +88,17 @@ export default function SalaDeEspera() {
   };
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      nextSlide();
-    }, 5000);
-    return () => clearInterval(interval);
+    const slideInterval = setInterval(nextSlide, 5000);
+    return () => clearInterval(slideInterval);
   }, []);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col min-h-screen bg-gray-50 items-center justify-center">
+        <p>Cargando información de turnos...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
@@ -36,7 +109,7 @@ export default function SalaDeEspera() {
 
       {/* Contenido principal */}
       <main className="flex-1 p-4 max-w-7xl mx-auto w-full space-y-6">
-        {/* Carrusel de imágenes con fondo transparente */}
+        {/* Carrusel de imágenes */}
         <div className="relative rounded-lg shadow-lg overflow-hidden mt-2">
           <div className="relative h-64 md:h-96">
             <div className="absolute inset-0 flex items-center justify-center bg-transparent">
@@ -89,14 +162,22 @@ export default function SalaDeEspera() {
             <div className="bg-slate-700 text-white p-3 rounded-md flex items-center justify-center h-12">
               <span className="font-medium">Medicina General</span>
             </div>
-            <div className="bg-blue-500 text-white p-3 rounded-md h-[120px] flex flex-col justify-center items-center">
-              <div className="text-lg font-bold">M - 001</div>
-              <div className="text-center">Nicolás Toro Criollo</div>
-            </div>
-            <div className="bg-white border border-gray-200 rounded-md p-3 shadow-sm h-[120px] flex flex-col justify-center items-center">
-              <div className="text-gray-800">Ana María Gómez</div>
-              <div className="text-gray-500 text-sm">M - 002</div>
-            </div>
+            {turnos.MedicinaGeneral.actual ? (
+              <div className="bg-blue-500 text-white p-3 rounded-md h-[120px] flex flex-col justify-center items-center">
+                <div className="text-lg font-bold">{turnos.MedicinaGeneral.actual.code}</div>
+                <div className="text-center">{turnos.MedicinaGeneral.actual.patient}</div>
+              </div>
+            ) : (
+              <div className="bg-gray-200 p-3 rounded-md h-[120px] flex items-center justify-center">
+                <p className="text-gray-500">No hay turno actual</p>
+              </div>
+            )}
+            {turnos.MedicinaGeneral.siguientes.map((turno, index) => (
+              <div key={index} className="bg-white border border-gray-200 rounded-md p-3 shadow-sm h-[120px] flex flex-col justify-center items-center">
+                <div className="text-gray-800">{turno.patient}</div>
+                <div className="text-gray-500 text-sm">{turno.code}</div>
+              </div>
+            ))}
           </div>
 
           {/* Columna Odontología */}
@@ -104,14 +185,22 @@ export default function SalaDeEspera() {
             <div className="bg-slate-700 text-white p-3 rounded-md flex items-center justify-center h-12">
               <span className="font-medium">Odontología</span>
             </div>
-            <div className="bg-blue-500 text-white p-3 rounded-md h-[120px] flex flex-col justify-center items-center">
-              <div className="text-lg font-bold">O - 001</div>
-              <div className="text-center">Laura Martínez</div>
-            </div>
-            <div className="bg-white border border-gray-200 rounded-md p-3 shadow-sm h-[120px] flex flex-col justify-center items-center">
-              <div className="text-gray-800">Pedro Sánchez</div>
-              <div className="text-gray-500 text-sm">O - 002</div>
-            </div>
+            {turnos.Odontologia.actual ? (
+              <div className="bg-blue-500 text-white p-3 rounded-md h-[120px] flex flex-col justify-center items-center">
+                <div className="text-lg font-bold">{turnos.Odontologia.actual.code}</div>
+                <div className="text-center">{turnos.Odontologia.actual.patient}</div>
+              </div>
+            ) : (
+              <div className="bg-gray-200 p-3 rounded-md h-[120px] flex items-center justify-center">
+                <p className="text-gray-500">No hay turno actual</p>
+              </div>
+            )}
+            {turnos.Odontologia.siguientes.map((turno, index) => (
+              <div key={index} className="bg-white border border-gray-200 rounded-md p-3 shadow-sm h-[120px] flex flex-col justify-center items-center">
+                <div className="text-gray-800">{turno.patient}</div>
+                <div className="text-gray-500 text-sm">{turno.code}</div>
+              </div>
+            ))}
           </div>
 
           {/* Columna Psicología */}
@@ -119,14 +208,22 @@ export default function SalaDeEspera() {
             <div className="bg-slate-700 text-white p-3 rounded-md flex items-center justify-center h-12">
               <span className="font-medium">Psicología</span>
             </div>
-            <div className="bg-blue-500 text-white p-3 rounded-md h-[120px] flex flex-col justify-center items-center">
-              <div className="text-lg font-bold">P - 001</div>
-              <div className="text-center">Juan Pérez</div>
-            </div>
-            <div className="bg-white border border-gray-200 rounded-md p-3 shadow-sm h-[120px] flex flex-col justify-center items-center">
-              <div className="text-gray-800">Sofía López</div>
-              <div className="text-gray-500 text-sm">P - 002</div>
-            </div>
+            {turnos.Psicologia.actual ? (
+              <div className="bg-blue-500 text-white p-3 rounded-md h-[120px] flex flex-col justify-center items-center">
+                <div className="text-lg font-bold">{turnos.Psicologia.actual.code}</div>
+                <div className="text-center">{turnos.Psicologia.actual.patient}</div>
+              </div>
+            ) : (
+              <div className="bg-gray-200 p-3 rounded-md h-[120px] flex items-center justify-center">
+                <p className="text-gray-500">No hay turno actual</p>
+              </div>
+            )}
+            {turnos.Psicologia.siguientes.map((turno, index) => (
+              <div key={index} className="bg-white border border-gray-200 rounded-md p-3 shadow-sm h-[120px] flex flex-col justify-center items-center">
+                <div className="text-gray-800">{turno.patient}</div>
+                <div className="text-gray-500 text-sm">{turno.code}</div>
+              </div>
+            ))}
           </div>
         </div>
       </main>
