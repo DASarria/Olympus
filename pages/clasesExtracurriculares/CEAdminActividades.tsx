@@ -37,157 +37,60 @@ const CEAdminActividades = () => {
   const [capacidad, setCapacidad] = useState<number>(0);
   const [profesor, setProfesor] = useState("");
   const [identificacion, setIdentificacion] = useState<number>(0);
-  const [actividadSeleccionada, setActividadSeleccionada] = useState("");
+  const [actividadSeleccionada, setActividadSeleccionada] = useState("none");
   const [actividades, setActividades] = useState<
     { id: string; nombre: string }[]
   >([]);
   const [recursos, setRecursos] = useState([{ name: "", amount: "" }]);
   const [actividadesTemp, setActividadesTemp] = useState<any[]>([]);
 
+  const { id } = router.query;
+  useEffect(() => {
+    if (!id || actividadesTemp.length === 0) return;
+
+    const actividad = actividadesTemp.find((a) => a.id === id);
+    
+    if (actividad) {
+      setActividadSeleccionada(actividad.id);
+    }
+  }, [id, actividadesTemp]);
+
+  const tokenJWT =
+    "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEwMDAwNTExMzciLCJ1c2VyTmFtZSI6Im1pZ3VlbC5tYXJ0aW5leiIsImVtYWlsIjoibWlndWVsLm1hcnRpbmV6QG1haWwuZXNjdWVsYWluZy5lZHUuY28iLCJuYW1lIjoiTWlndWVsIE1hcnTDrW5leiIsInJvbGUiOiJTVFVERU5UIiwic3BlY2lhbHR5IjoibnVsbCIsImV4cCI6MTc0Nzg3MTIzMH0.HFwmKin2ZScCf8rr-ZJDWUX0N-wHHFjNLBcrTraj93Y";
+
   const fetchActividades = async () => {
-    /*try {
+    try {
       const response = await axios.get(
-        "https://hadesback-app-c5fwbybjd0gnf0fx.canadacentral-01.azurewebsites.net/api/activity/all"
+        "https://hadesback-app-c5fwbybjd0gnf0fx.canadacentral-01.azurewebsites.net/api/activity/all",
+        {
+          headers: {
+            Authorization: tokenJWT,
+          },
+        }
       );
       setActividadesTemp(response.data);
-      console.log("Actividades obtenidas:", response.data);
+      //console.log("Actividades obtenidas:", response.data);
     } catch (error) {
       console.error("Error al obtener las actividades:", error);
-    }*/
+    }
+  };
 
-    const actividadesMock = [
-      {
-        id: "68253eef60cbcc35c8cca21e",
-        year: 2025,
-        semester: 1,
-        activityType: "Aerobicos",
-        teacher: "Rodrigo",
-        teacherId: 823,
-        location: "coliseo",
-        capacityMaximum: 15,
-        schedules: [
-          "68253eeb60cbcc35c8cca1fc",
-          "68253eeb60cbcc35c8cca1fd",
-          "68253eec60cbcc35c8cca1fe",
-          "68253eec60cbcc35c8cca1ff",
-          "68253eec60cbcc35c8cca200",
-          "68253eec60cbcc35c8cca201",
-          "68253eec60cbcc35c8cca202",
-          "68253eec60cbcc35c8cca203",
-          "68253eec60cbcc35c8cca204",
-          "68253eec60cbcc35c8cca205",
-          "68253eec60cbcc35c8cca206",
-          "68253eec60cbcc35c8cca207",
-          "68253eec60cbcc35c8cca208",
-          "68253eed60cbcc35c8cca209",
-          "68253eed60cbcc35c8cca20a",
-          "68253eed60cbcc35c8cca20b",
-          "68253eed60cbcc35c8cca20c",
-          "68253eed60cbcc35c8cca20d",
-          "68253eed60cbcc35c8cca20e",
-          "68253eed60cbcc35c8cca20f",
-          "68253eed60cbcc35c8cca210",
-          "68253eed60cbcc35c8cca211",
-          "68253eed60cbcc35c8cca212",
-          "68253eee60cbcc35c8cca213",
-          "68253eee60cbcc35c8cca214",
-          "68253eee60cbcc35c8cca215",
-          "68253eee60cbcc35c8cca216",
-          "68253eee60cbcc35c8cca217",
-          "68253eee60cbcc35c8cca218",
-          "68253eee60cbcc35c8cca219",
-          "68253eee60cbcc35c8cca21a",
-          "68253eee60cbcc35c8cca21b",
-          "68253eee60cbcc35c8cca21c",
-          "68253eee60cbcc35c8cca21d",
-        ],
-        days: [
-          {
-            startHour: "13:30:00",
-            endHour: "15:00:00",
-            dayWeek: "MONDAY",
+  const CrearActividades = async (actividad) => {
+    try {
+      /*const response = await axios.post(
+        "https://hadesback-app-c5fwbybjd0gnf0fx.canadacentral-01.azurewebsites.net/api/activity",
+        actividad,
+        {
+          headers: {
+            Authorization: tokenJWT,
           },
-          {
-            startHour: "13:30:00",
-            endHour: "15:00:00",
-            dayWeek: "WEDNESDAY",
-          },
-        ],
-        resources: [
-          {
-            name: "balls",
-            amount: "8",
-          },
-        ],
-      },
-      {
-        id: "68253f7e60cbcc35c8cca241",
-        year: 2025,
-        semester: 1,
-        activityType: "Futbol Femenino",
-        teacher: "Gualdron",
-        teacherId: 956,
-        location: "cancha",
-        capacityMaximum: 20,
-        schedules: [
-          "68253f7b60cbcc35c8cca21f",
-          "68253f7b60cbcc35c8cca220",
-          "68253f7b60cbcc35c8cca221",
-          "68253f7b60cbcc35c8cca222",
-          "68253f7b60cbcc35c8cca223",
-          "68253f7b60cbcc35c8cca224",
-          "68253f7b60cbcc35c8cca225",
-          "68253f7b60cbcc35c8cca226",
-          "68253f7b60cbcc35c8cca227",
-          "68253f7c60cbcc35c8cca228",
-          "68253f7c60cbcc35c8cca229",
-          "68253f7c60cbcc35c8cca22a",
-          "68253f7c60cbcc35c8cca22b",
-          "68253f7c60cbcc35c8cca22c",
-          "68253f7c60cbcc35c8cca22d",
-          "68253f7c60cbcc35c8cca22e",
-          "68253f7c60cbcc35c8cca22f",
-          "68253f7c60cbcc35c8cca230",
-          "68253f7c60cbcc35c8cca231",
-          "68253f7c60cbcc35c8cca232",
-          "68253f7d60cbcc35c8cca233",
-          "68253f7d60cbcc35c8cca234",
-          "68253f7d60cbcc35c8cca235",
-          "68253f7d60cbcc35c8cca236",
-          "68253f7d60cbcc35c8cca237",
-          "68253f7d60cbcc35c8cca238",
-          "68253f7d60cbcc35c8cca239",
-          "68253f7d60cbcc35c8cca23a",
-          "68253f7d60cbcc35c8cca23b",
-          "68253f7d60cbcc35c8cca23c",
-          "68253f7d60cbcc35c8cca23d",
-          "68253f7e60cbcc35c8cca23e",
-          "68253f7e60cbcc35c8cca23f",
-          "68253f7e60cbcc35c8cca240",
-        ],
-        days: [
-          {
-            startHour: "15:00:00",
-            endHour: "16:30:00",
-            dayWeek: "FRIDAY",
-          },
-          {
-            startHour: "16:30:00",
-            endHour: "18:00:00",
-            dayWeek: "WEDNESDAY",
-          },
-        ],
-        resources: [
-          {
-            name: "balls",
-            amount: "11",
-          },
-        ],
-      },
-    ];
-
-    setActividadesTemp(actividadesMock);
-    console.log("Actividades mock cargadas:", actividadesMock);
+        }
+      );
+      console.log("Actividad Creada:", response.data);*/
+      console.log("Actividad Creada:", actividad);
+    } catch (error) {
+      console.error("Error al crear las actividades:", error);
+    }
   };
 
   useEffect(() => {
@@ -220,6 +123,8 @@ const CEAdminActividades = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    
 
     // Validaciones básicas
     if (!nombreClase.trim()) {
@@ -258,13 +163,8 @@ const CEAdminActividades = () => {
       (r) => r.name.trim() !== "" && parseInt(r.amount) > 0
     );
 
-    const id =
-      actividadSeleccionada === "null"
-        ? String(Date.now())
-        : actividadSeleccionada;
-
     const actividad = {
-      id,
+      id: actividadSeleccionada,
       activityType: nombreClase,
       location: ubicacion,
       capacityMaximum: capacidad,
@@ -278,7 +178,12 @@ const CEAdminActividades = () => {
       })),
     };
 
-    console.log("Actividad creada o actualizada:", actividad);
+    if (actividad.id === "none") {
+      actividad.id = "null";
+      CrearActividades(actividad);
+    }else{
+      console.log("ERROR");
+    }
 
     // Reset
     setNombreClase("");
@@ -290,7 +195,8 @@ const CEAdminActividades = () => {
     setDays([
       { year: "", semester: "", dayWeek: "none", startHour: "", endHour: "" },
     ]);
-    setActividadSeleccionada("null");
+    setActividadSeleccionada("none");
+    fetchActividades();
   };
 
   const addRecurso = () => setRecursos([...recursos, { name: "", amount: "" }]);
@@ -313,25 +219,39 @@ const CEAdminActividades = () => {
   }, [actividadesTemp]);
 
   useEffect(() => {
-    if (actividadSeleccionada !== "null") {
-      const actividad = actividadesTemp.find(act => act.id === actividadSeleccionada);
+    if (actividadSeleccionada !== "none") {
+      const actividad = actividadesTemp.find(
+        (act) => act.id === actividadSeleccionada
+      );
       if (actividad) {
         setNombreClase(actividad.activityType);
         setUbicacion(actividad.location);
         setCapacidad(actividad.capacityMaximum);
         setProfesor(actividad.teacher);
         setIdentificacion(actividad.teacherId);
-        setRecursos(actividad.resources.length > 0 ? actividad.resources : [{ name: "", amount: "" }]);
+        setRecursos(
+          actividad.resources.length > 0
+            ? actividad.resources
+            : [{ name: "", amount: "" }]
+        );
         setDays(
           actividad.days.length > 0
-            ? actividad.days.map(d => ({
+            ? actividad.days.map((d) => ({
                 year: String(actividad.year),
                 semester: String(actividad.semester),
                 dayWeek: d.dayWeek,
                 startHour: d.startHour,
                 endHour: d.endHour,
               }))
-            : [{ year: "", semester: "", dayWeek: "none", startHour: "", endHour: "" }]
+            : [
+                {
+                  year: "",
+                  semester: "",
+                  dayWeek: "none",
+                  startHour: "",
+                  endHour: "",
+                },
+              ]
         );
       }
     } else {
@@ -342,10 +262,11 @@ const CEAdminActividades = () => {
       setProfesor("");
       setIdentificacion(0);
       setRecursos([{ name: "", amount: "" }]);
-      setDays([{ year: "", semester: "", dayWeek: "none", startHour: "", endHour: "" }]);
+      setDays([
+        { year: "", semester: "", dayWeek: "none", startHour: "", endHour: "" },
+      ]);
     }
   }, [actividadSeleccionada, actividadesTemp]);
-  
 
   return (
     <div className="flex flex-col w-[85%] mx-auto my-8 px-4 bg-white max-h-[80vh] overflow-auto">
@@ -362,7 +283,7 @@ const CEAdminActividades = () => {
                 onChange={(e) => setActividadSeleccionada(e.target.value)}
                 className={inputStyle}
               >
-                <option value="null">Crear Nueva Actividad</option>
+                <option value="none">Crear Nueva Actividad</option>
                 {actividades.map((actividad, index) => (
                   <option key={index} value={actividad.id}>
                     {actividad.nombre}
