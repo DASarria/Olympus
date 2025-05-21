@@ -6,6 +6,7 @@ import { useRouter } from 'next/router';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import localizer from '@/lib/Localizer';
 import { ReservationStatus, getUserReservations } from '@/api/gymServicesIndex';
+import { PageTransitionWrapper } from '@/components/PageTransitionWrapper';
 
 /**
  * Main component of the reservation page, which displays the calendar and manages the creation of reservations.
@@ -175,55 +176,57 @@ const Reservations = () => {
      * @returns {JSX.Element} The rendered calendar component.
      */
     return (
-        <div className='flex flex-col gap-6'>
-            <Return 
-                className="!self-stretch !flex-[0_0_auto] !w-full"
-                text="Reserva de salon"
-                returnPoint="/gym-module"
-            />
+        <PageTransitionWrapper>
+            <div className='flex flex-col gap-6'>
+                <Return 
+                    className="!self-stretch !flex-[0_0_auto] !w-full"
+                    text="Reserva de salon"
+                    returnPoint="/gym-module"
+                />
 
-            <div>
-                {loading ? (
-                    <div className="flex justify-center items-center h-screen">
-                        <div className="w-16 h-16 border-4 border-t-4 border-gray-500 border-solid rounded-full animate-spin"></div>
-                    </div>
-                ) : (
-                    <Calendar
-                        className={currentView === Views.DAY ? 'day-view-calendar' : ''}
-                        localizer={localizer}
-                        events={events}
-                        startAccessor="start"
-                        endAccessor="end"
-                        style={{ height: 600 }}
-                        selectable
-                        onSelectSlot={handleSelectSlot}
-                        onSelectEvent={handleSelectEvent}
-                        views={[Views.MONTH, Views.WEEK, Views.DAY]}
-                        defaultView={Views.MONTH}
-                        defaultDate={new Date()}
-                        view={currentView}
-                        onView={handleViewChange}
-                        date={currentDate}
-                        onNavigate={handleNavigate}
-                        culture="es"
-                        messages={messages}
-                        components={{
-                            event: CustomEvent
-                        }}
-                        eventPropGetter={() => ({
-                            style: {
-                            backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--primary-red').trim()
-                            }
-                        })}
-                    />
-                )}
-                <style jsx global>{`
-                    .day-view-calendar .rbc-time-slot {
-                        cursor: pointer !important;
-                    }
-                `}</style>
+                <div>
+                    {loading ? (
+                        <div className="flex justify-center items-center h-screen">
+                            <div className="w-16 h-16 border-4 border-t-4 border-gray-500 border-solid rounded-full animate-spin"></div>
+                        </div>
+                    ) : (
+                        <Calendar
+                            className={currentView === Views.DAY ? 'day-view-calendar' : ''}
+                            localizer={localizer}
+                            events={events}
+                            startAccessor="start"
+                            endAccessor="end"
+                            style={{ height: 600 }}
+                            selectable
+                            onSelectSlot={handleSelectSlot}
+                            onSelectEvent={handleSelectEvent}
+                            views={[Views.MONTH, Views.WEEK, Views.DAY]}
+                            defaultView={Views.MONTH}
+                            defaultDate={new Date()}
+                            view={currentView}
+                            onView={handleViewChange}
+                            date={currentDate}
+                            onNavigate={handleNavigate}
+                            culture="es"
+                            messages={messages}
+                            components={{
+                                event: CustomEvent
+                            }}
+                            eventPropGetter={() => ({
+                                style: {
+                                backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--primary-red').trim()
+                                }
+                            })}
+                        />
+                    )}
+                    <style jsx global>{`
+                        .day-view-calendar .rbc-time-slot {
+                            cursor: pointer !important;
+                        }
+                    `}</style>
+                </div>
             </div>
-        </div>
+        </PageTransitionWrapper>
     )
 }
 
