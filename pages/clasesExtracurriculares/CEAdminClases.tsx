@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const HorarioClasesExacto = () => {
-  // Estados
   const [diaActual, setDiaActual] = useState(0);
   const [actividadSeleccionada, setActividadSeleccionada] = useState(null);
   const [actividades, setActividades] = useState([]);
@@ -297,7 +296,10 @@ const HorarioClasesExacto = () => {
 
       {/* Botón de nueva actividad */}
       <div className="flex justify-end">
-        <button className="bg-red-800 hover:bg-red-900 text-white px-4 py-2 rounded transition-colors">
+        <button 
+        className="bg-red-800 hover:bg-red-900 text-white px-4 py-2 rounded transition-colors"
+        onClick={() => navegarA('/clasesExtracurriculares/CEAdminActividades')}
+        >
           Nueva actividad
         </button>
       </div>
