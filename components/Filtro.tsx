@@ -1,47 +1,34 @@
-"use client";
-import { useState, useCallback } from "react";
-
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  imageSrc: string;
-}
+// components/Filtro.tsx
+import { useState } from 'react';
 
 interface FiltroProps {
-  products: Product[];
-  onFilter: (filteredProducts: Product[]) => void;
-}
-
-function normalizeString(str: string) {
-  return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  products: any[];
+  onFilter: (filteredProducts: any[]) => void;
 }
 
 export default function Filtro({ products, onFilter }: FiltroProps) {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
 
-  const handleSearch = useCallback(
-    (value: string) => {
-      const normalizedSearchTerm = normalizeString(value);
-      const filtered = products.filter((product) =>
-        normalizeString(product.name).includes(normalizedSearchTerm)
-      );
-      onFilter(filtered);
-    },
-    [products, onFilter]
-  );
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const term = e.target.value.toLowerCase();
+    setSearchTerm(term);
+    
+    const filtered = products.filter(product => 
+      product.name.toLowerCase().includes(term) ||
+      product.description.toLowerCase().includes(term)
+    );
+    
+    onFilter(filtered);
+  };
 
   return (
-    <div className="mb-6">
+    <div className="mb-4">
       <input
         type="text"
-        placeholder="Buscar productos..."
-        value={searchTerm}
-        onChange={(e) => {
-          setSearchTerm(e.target.value);
-          handleSearch(e.target.value);
-        }}
+        placeholder="Buscar por nombre o descripción..."
         className="w-full p-2 border border-gray-300 rounded"
+        value={searchTerm}
+        onChange={handleSearch}
       />
     </div>
   );

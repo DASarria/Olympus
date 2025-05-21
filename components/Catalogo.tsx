@@ -1,22 +1,17 @@
-import { useState } from 'react';
+// components/Catalogo.tsx
+import { useState, useEffect } from 'react';
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from 'next/router';
-import Filtro from '../components/Filtro';
-import FiltroAvanzado from '../components/FiltroAvanzado';
+import Filtro from './Filtro';
+import FiltroAvanzado from './FiltroAvanzado';
+import ArticleService from '../services/articleService';
 
-import balonfut from '../assets/images/balonfut.png';
-import balonbasquet from '../assets/images/balonbasquet.png';
-import raqueta from '../assets/images/raqueta.jpg';
-import pingpong from '../assets/images/pingpong.png';
-import cuerda from '../assets/images/cuerda.png';
-
-// Definición de la interfaz Product
+// Definición de la interfaz Product actualizada
 interface Product {
   id: string;
   name: string;
   description: string;
-  imageSrc: any; // TODO: Replace 'any' with proper type after importing StaticImageData from 'next/image'
+  imageUrl: string; // Cambiado para coincidir con el backend
   status: 'disponible' | 'mantenimiento' | 'dañado';
   horariosDisponibles?: {
     manana: boolean;
@@ -25,78 +20,101 @@ interface Product {
   };
 }
 
-// Datos de ejemplo (reemplazar con tus datos reales)
-export const productosIniciales: Product[] = [
-  {
-    id: "001",
-    name: "Balón de Fútbol",
-    description: "Balón oficial de competición",
-    imageSrc: balonfut,
-    status: "disponible",
-    horariosDisponibles: {
-      manana: true,
-      tarde: true,
-      noche: false
-    }
-  },
-  {
-    id: "002",
-    name: "Balón de Baloncesto",
-    description: "Balón profesional de baloncesto, tamaño oficial",
-    imageSrc: balonbasquet,
-    status: "disponible"
-  },
-  {
-    id: "003",
-    name: "Raqueta de Tenis",
-    description: "Raqueta profesional con cordaje de alta tensión",
-    imageSrc: raqueta,
-    status: "mantenimiento"
-  },
-  {
-    id: "003",
-    name: "Raquetas de Ping pong",
-    description: "Raquetas ping pong para entrenamiento",
-    imageSrc: pingpong,
-    status: "mantenimiento"
-  },
-  {
-    id: "008",
-    name: "Cuerda para Saltar",
-    description: "Cuerda ajustable para entrenamiento cardiovascular",
-    imageSrc: cuerda,
-    status: "disponible"
-  },
-];
+// Definición de la interfaz Article del backend
+interface Article {
+  id: number;
+  name: string;
+  description: string;
+  articleStatus: string;
+  imageUrl: string;
+}
+
+// Imágenes por defecto
+import balonfut from '../assets/images/balonfut.png';
+import balonbasquet from '../assets/images/balonbasquet.png';
+import raqueta from '../assets/images/raqueta.jpg';
+import pingpong from '../assets/images/pingpong.png';
+import cuerda from '../assets/images/cuerda.png';
+
+const defaultImages: Record<string, string> = {
+  'Balón de Fútbol': balonfut.src,
+  'Balón de Baloncesto': balonbasquet.src,
+  'Raqueta de Tenis': raqueta.src,
+  'Raquetas de Ping pong': pingpong.src,
+  'Cuerda para Saltar': cuerda.src
+};
 
 export default function CatalogoPage() {
-  // Filtrar solo productos disponibles al inicializar
-  const [productos, setProductos] = useState<Product[]>(
-    productosIniciales.filter(p => p.status === 'disponible')
-  );
+  const [productos, setProductos] = useState<Product[]>([]);
+  const [productosIniciales, setProductosIniciales] = useState<Product[]>([]);
   const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   
+  useEffect(() => {
+    const fetchArticles = async () => {
+      try {
+        const articles = await ArticleService.getAvailableArticles();
+        
+        const mappedProducts: Product[] = articles.map((article: Article) => {
+          // Mapear el estado del backend al usado en el frontend
+          let status: 'disponible' | 'mantenimiento' | 'dañado';
+          switch(article.articleStatus.toLowerCase()) {
+            case 'disponible':
+              status = 'disponible';
+              break;
+            case 'requiremantenimiento':
+              status = 'mantenimiento';
+              break;
+            case 'dañado':
+            case 'danado':
+              status = 'dañado';
+              break;
+            default:
+              status = 'mantenimiento'; // Valor por defecto
+          }
+          
+          return {
+            id: article.id.toString(),
+            name: article.name,
+            description: article.description,
+            imageUrl: article.imageUrl || defaultImages[article.name] || balonfut.src,
+            status,
+            horariosDisponibles: {
+              manana: true,
+              tarde: true,
+              noche: false
+            }
+          };
+        });
+        
+        setProductosIniciales(mappedProducts);
+        setProductos(mappedProducts);
+        setLoading(false);
+      } catch (err) {
+        setError('Error al cargar los artículos');
+        setLoading(false);
+        console.error(err);
+      }
+    };
+    
+    fetchArticles();
+  }, []);
+
+  // Resto del código permanece igual...
   const handleFilter = (filteredProducts: Product[]) => {
-    // Asegurar que solo se muestren productos disponibles después de filtrar
     setProductos(filteredProducts.filter(p => p.status === 'disponible'));
   };
 
-  // Función para manejar la selección de productos
   const handleProductSelection = (product: Product) => {
-    // Validación redundante (aunque ya no debería ser necesaria)
-    if (product.status !== 'disponible') {
-      return; // No debería ocurrir ya que solo mostramos disponibles
-    }
+    if (product.status !== 'disponible') return;
     
-    // Verificar si el producto ya está seleccionado
     const isSelected = selectedProducts.some(p => p.id === product.id);
     
     if (isSelected) {
-      // Si ya está seleccionado, lo quitamos de la lista
       setSelectedProducts(selectedProducts.filter(p => p.id !== product.id));
     } else {
-      // Si no está seleccionado y no hemos llegado al límite, lo añadimos
       if (selectedProducts.length < 3) {
         setSelectedProducts([...selectedProducts, product]);
       } else {
@@ -105,35 +123,33 @@ export default function CatalogoPage() {
     }
   };
   
-  // Función para ir a la página de reserva
   const handleReservar = () => {
     if (selectedProducts.length === 0) {
       alert('Debes seleccionar al menos un producto para reservar');
       return;
     }
     
-    // Guardar los productos seleccionados en localStorage para accederlos en la página de reserva
     localStorage.setItem('productosSeleccionados', JSON.stringify(selectedProducts));
-    
-    // Navegar a la página de generación de reserva
     router.push('/prestamosDeportivos/generarReserva');
   };
   
+  if (loading) return <div className="text-center py-10">Cargando catálogo...</div>;
+  if (error) return <div className="text-center py-10 text-red-500">{error}</div>;
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-3xl font-bold mb-6">Catálogo de Equipos Deportivos</h1>
       
-      {/* Filtro de búsqueda por nombre */}
       <Filtro 
         products={productosIniciales.filter(p => p.status === 'disponible')} 
-        onFilter={(filteredProducts) => {
-          handleFilter(filteredProducts as Product[]);
-        }}
+        onFilter={handleFilter}
       />
-      {/* Filtro avanzado por ID y estado */}
-      <FiltroAvanzado products={productosIniciales} onFilter={handleFilter} />
+      
+      <FiltroAvanzado 
+        products={productosIniciales.filter(p => p.status === 'disponible')} 
+        onFilter={handleFilter} 
+      />
 
-      {/* Información de selección */}
       <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
         <p className="text-sm text-blue-800">
           Productos seleccionados: {selectedProducts.length}/3
@@ -143,14 +159,13 @@ export default function CatalogoPage() {
         </p>
       </div>
       
-      {/* Catálogo de productos */}
       <div className="container mx-auto">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {productos.map((product) => (
             <div key={product.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
               <div className="relative h-32 w-full">
                 <Image
-                  src={product.imageSrc}
+                  src={product.imageUrl}
                   alt={product.name}
                   fill
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -164,7 +179,6 @@ export default function CatalogoPage() {
                 </div>
                 <p className="text-xs text-gray-600 mb-2 line-clamp-2">{product.description}</p>
                 
-                {/* Etiqueta de estado y checkbox de selección */}
                 <div className="flex items-center justify-between">
                   <span className={`text-xs px-2 py-1 rounded-full ${
                     product.status === 'disponible' ? 'bg-green-100 text-green-800' :
@@ -189,7 +203,6 @@ export default function CatalogoPage() {
                 </div>
               </div>
               
-              {/* Mostrar horarios disponibles */}
               <div className="p-3 pt-0">
                 <p className="text-xs font-medium mb-1">Horarios:</p>
                 <div className="flex flex-wrap gap-1">
@@ -209,11 +222,6 @@ export default function CatalogoPage() {
         </div>
       </div>
       
-      
-      
-      
-      
-      {/* Botón de reservar */}
       <div className="mt-8 mb-16 flex justify-center">
         <button
           onClick={handleReservar}
@@ -228,7 +236,6 @@ export default function CatalogoPage() {
         </button>
       </div>
       
-      {/* Espacio adicional al final para permitir scroll completo */}
       <div className="h-24 md:h-16"></div>
     </div>
   );

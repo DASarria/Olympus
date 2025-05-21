@@ -5,8 +5,13 @@ interface Product {
   id: string;
   name: string;
   description: string;
-  imageSrc: string;
+  imageUrl: string;  // Changed from imageSrc to imageUrl
   status: 'disponible' | 'mantenimiento' | 'dañado';
+  horariosDisponibles?: {
+    manana: boolean;
+    tarde: boolean;
+    noche: boolean;
+  };
 }
 
 interface FiltroAvanzadoProps {
