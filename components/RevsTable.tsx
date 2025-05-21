@@ -1,12 +1,13 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus, Clock } from "lucide-react"
+import { Plus, Clock, Pencil, Trash } from "lucide-react"
 import ReservaModal from "./ReservaModal"
 import ReservaExpandida from "./ReservaExpandida"
 import React from "react"
 import Swal from "sweetalert2"
 import "sweetalert2/dist/sweetalert2.min.css"
+
 
 interface Reserva {
   id?: string
@@ -34,6 +35,12 @@ interface RoomsProps {
   elements: string[]
 }
 
+const stateColors: Record<string, string> = {
+  RESERVA_CONFIRMADA: "bg-yellow-400",
+  RESERVA_CANCELADA: "bg-red-700",
+  RESERVA_TERMINADA: "bg-green-600",
+}
+
 const RevsTable = () => {
   const token = sessionStorage.getItem("token")
   const url = process.env.NEXT_PUBLIC_API_URL
@@ -48,7 +55,17 @@ const RevsTable = () => {
   const [rooms, setRooms] = useState<RoomsProps[]>([])
 
 
-  
+  const getRowColor = (reserva: Reserva) => {
+    switch(reserva.state.toLowerCase()){
+      case "reserva_confirmada":
+        return stateColors.RESERVA_CONFIRMADA
+      case "reserva_cancelada":
+        return stateColors.RESERVA_CANCELADA
+      case "reserva_terminada":
+        return stateColors.RESERVA_TERMINADA
+    }
+  }
+
 
   const fetchReservas = async () => {
     try {
@@ -56,7 +73,7 @@ const RevsTable = () => {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `${token}`,
         },
         cache: "no-store", // Evitar caché
       })
@@ -78,7 +95,7 @@ const RevsTable = () => {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `${token}`,
         },
       })
 
@@ -107,7 +124,7 @@ const RevsTable = () => {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        Authorization: `${token}`,
       },
     })
     if (!response.ok) throw new Error("Error al cargar salas")
@@ -161,7 +178,7 @@ const RevsTable = () => {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `${token}`,
           },
         })
 
@@ -175,7 +192,7 @@ const RevsTable = () => {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `${token}`,
           },
           body: JSON.stringify({
             ...element,
@@ -229,7 +246,7 @@ const RevsTable = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `${token}`,
         },
         body: JSON.stringify(datosParaEnviar),
       })
@@ -302,7 +319,7 @@ const RevsTable = () => {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `${token}`,
         },
         body: JSON.stringify(datosParaEnviar),
       })
@@ -310,7 +327,7 @@ const RevsTable = () => {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `${token}`,
         },
         body: JSON.stringify(datosParaEnviar),
       })
@@ -375,7 +392,7 @@ const RevsTable = () => {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `${token}`,
         },
       })
 
@@ -463,7 +480,7 @@ const RevsTable = () => {
           </div>
           <div>
             <button onClick={() => setShowModal(true)} className="bg-white rounded-xl p-2 drop-shadow-xl">
-              <Plus className="text-red-500 w-5 h-5" />
+              <Plus className="text-[#990000] w-5 h-5" />
             </button>
           </div>
         </div>
@@ -489,7 +506,12 @@ const RevsTable = () => {
                       key={reserva.id}
                       className="bg-white rounded-xl hover:bg-[#990000] hover:text-white drop-shadow-xl"
                     >
-                      <td className="px-4 py-2 rounded-xl">{reserva.userName}</td>
+                      <td className={`px-4 py-2 rounded-xl`}>
+                        <div>
+                          <div className={`absolute left-0 top-0 h-full w-2 rounded-l-xl ${getRowColor(reserva)}`} />
+                          <span>{reserva.userName}</span>
+                        </div>
+                      </td>
                       <td className="px-4 py-2 rounded-xl">{reserva.userId}</td>
                       <td className="px-4 py-2 rounded-xl">{reserva.date.day}</td>
                       <td className="px-4 py-2 rounded-xl">
@@ -500,15 +522,6 @@ const RevsTable = () => {
                       </td>
                       <td className="px-4 py-2 rounded-xl">
                         <span>{reserva.roomId.split("-").join(" ")}</span>
-                        {/* {reserva.roomId.toLowerCase() === "sala-crea" ? (
-                          <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">Sala Crea</span>
-                        ) : reserva.roomId.toLowerCase() === "sala-de-descanso" ? (
-                          <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
-                            Sala De Descanso
-                          </span>
-                        ) : (
-                          <span>{reserva.roomId}</span>
-                        )} */}
                       </td>
                       <td className="px-4 py-2 rounded-xl">
                         {reserva.loans.length > 0 ? (
@@ -527,22 +540,18 @@ const RevsTable = () => {
                         )}
                       </td>
                       <td className="rounded-xl">
-                        <div className="flex gap-2 justify-center">
-                          <button
-                            className="px-3 py-1 rounded-full text-sm bg-blue-600 text-white hover:bg-blue-700"
+                        <div className="flex gap-2 justify-center gap-4">
+                          <Pencil
+                            className="cursor-pointer"
                             onClick={() => {
                               setEditingReserva(reserva)
                               setHiddenRows((prev) => ({ ...prev, [reserva.id!]: true }))
                             }}
-                          >
-                            Editar
-                          </button>
-                          <button
-                            className="px-3 py-1 rounded-full text-sm bg-red-600 text-white hover:bg-red-700"
+                          />
+                          <Trash
+                            className="cursor-pointer"
                             onClick={() => handleDeleteReserva(reserva.id!)}
-                          >
-                            Eliminar
-                          </button>
+                          />
                         </div>
                       </td>
                     </tr>
