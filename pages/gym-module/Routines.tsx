@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { Return } from "@/components/Return"
 import { withRoleProtection } from "@/hoc/withRoleProtection";
 import { getCurrentRoutine, getUserRoutines, getRecommendedRoutines } from "@/api/gymServicesIndex";
@@ -7,6 +8,27 @@ import RoutineCarousel from "@/components/gym-module/RoutineCarousel";
 import ExerciseCarousel from "@/components/gym-module/ExerciseCarousel";
 import { AnimatePresence, motion } from "framer-motion";
 import { PageTransitionWrapper } from "@/components/PageTransitionWrapper";
+
+// Dynamically import the 3D component to prevent SSR issues
+const BodyCanvasInteractive = dynamic(
+  () => import('@/components/gym-module/BodyCanvasInteractive'),
+  { ssr: false } // Disable server-side rendering
+);
+
+// Mapping from zone ID to muscle group name
+const zoneToMuscle: Record<number, string> = {
+    1: 'pecho',
+    2: 'espalda',
+    3: 'bíceps',
+    4: 'tríceps',
+    5: 'hombros',
+    6: 'abdomen',
+    7: 'glúteos',
+    8: 'cuádriceps',
+    9: 'isquiotibiales',
+    10: 'pantorrillas',
+};
+
 
 /**
  * Routines Component that renders the main content of the "Routines" page.
@@ -74,14 +96,16 @@ const Routines = () => {
                     sets: 3,
                     repetitions: 12,
                     restTime: 60,
-                    sequenceOrder: 1
+                    sequenceOrder: 1,
+                    muscleGroup: zoneToMuscle[1]
                 },
                 {
                     baseExerciseId: 'otro-ejercicio-uuid-aquí',
                     sets: 3,
                     repetitions: 10,
                     restTime: 90,
-                    sequenceOrder: 2
+                    sequenceOrder: 2,
+                    muscleGroup: zoneToMuscle[8]
                 }
             ]
         };
@@ -94,6 +118,24 @@ const Routines = () => {
                 name: 'Rutina intermedia de resistencia',
                 difficulty: 'INTERMEDIATE',
                 goal: 'ENDURANCE',
+                exercises: [
+                    {
+                        baseExerciseId: 'ejercicio-uuid-aquí',
+                        sets: 4,
+                        repetitions: 15,
+                        restTime: 60,
+                        sequenceOrder: 1,
+                        muscleGroup: zoneToMuscle[2]
+                    },
+                    {
+                        baseExerciseId: 'otro-ejercicio-uuid-aquí',
+                        sets: 4,
+                        repetitions: 12,
+                        restTime: 90,
+                        sequenceOrder: 2,
+                        muscleGroup: zoneToMuscle[5]
+                    }
+                ]
             }
         ];
 
@@ -103,6 +145,32 @@ const Routines = () => {
         setLoading(false);
     }, [userId]);
 
+    const [selectedMuscleGroup, setSelectedMuscleGroup] = useState<number | null>(null);
+    const [filteredRoutines, setFilteredRoutines] = useState(routines);
+    const [filteredRecommended, setFilteredRecommended] = useState(recommendedRoutines);
+    useEffect(() => {
+      if (selectedMuscleGroup !== null) {
+        const muscle = zoneToMuscle[selectedMuscleGroup].toLowerCase();
+        
+        setFilteredRoutines(
+          routines.filter(routine => 
+            routine.muscleGroup.toLowerCase().includes(muscle) || 
+            routine.muscleGroup === 'completo'
+          )
+        );
+        
+        setFilteredRecommended(
+          recommendedRoutines.filter(routine => 
+            routine.muscleGroup.toLowerCase().includes(muscle) || 
+            routine.muscleGroup === 'completo'
+          )
+        );
+      } else {
+        setFilteredRoutines(routines);
+        setFilteredRecommended(recommendedRoutines);
+      }
+    }, [selectedMuscleGroup, routines, recommendedRoutines]);
+
     return (
         <PageTransitionWrapper>
             <div className="flex flex-col gap-6">
@@ -111,20 +179,18 @@ const Routines = () => {
                     text="Rutinas"
                     returnPoint="/gym-module"
                 />
-
                 <div className="flex flex-col md:flex-row gap-6">
-                    {/* Selector de anatomía */}
-                    <div className="flex flex-col items-center justify-center gap-5 relative flex-[0_0_auto]">
-                        {/* Silueta humana simplificada */}
-                        <svg width="200" viewBox="0 0 100 200" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative w-[550px] h-[500px] bg-gray-100 object-cover">
-                            <path d="M50 10 C60 10 60 20 60 25 C60 35 55 40 50 40 C45 40 40 35 40 25 C40 20 40 10 50 10 Z" stroke="black" strokeWidth="1" fill="none"/>
-                            <path d="M40 40 L40 80 L35 120 L40 170 L45 170 L50 120 L55 170 L60 170 L65 120 L60 80 L60 40 Z" stroke="black" strokeWidth="1" fill="none"/>
-                            <path d="M40 50 L30 80 L35 100 L40 80 Z" stroke="black" strokeWidth="1" fill="none"/>
-                            <path d="M60 50 L70 80 L65 100 L60 80 Z" stroke="black" strokeWidth="1" fill="none"/>
-                        </svg>
-                        <div className="relative w-fit [font-family: 'Montserrat-Bold',Helvetica] font-bold text-[#7d7d7d] text-base tracking-[0] leading-4 whitespace-nowrap">
-                            Selecciona un músculo...
-                        </div>
+                    <div className="w-full md:w-1/2 lg:w-5/12 flex flex-col items-center justify-center gap-5">
+                        {/* Selector de anatomía */}
+                        <BodyCanvasInteractive
+                            modelPath="/models/male/scene.gltf"
+                            onSelectZone={setSelectedMuscleGroup}
+                        />
+                        {selectedMuscleGroup && (
+                            <div className="mt-2 text-center">
+                                <span className="font-semibold">Grupo muscular seleccionado:</span> {zoneToMuscle[selectedMuscleGroup]}
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex flex-col w-full">
@@ -138,39 +204,57 @@ const Routines = () => {
                                 activeTab={activeTab}
                                 onTabChange={setActiveTab}
                             />
-                        </div>
                         <AnimatePresence mode="wait">
-                            {activeTab === 'rutina-actual' && currentRoutine && (
-                                <motion.div
-                                    key="rutina-actual"
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -20 }}
-                                    transition={{ duration: 0.3 }}
-                                    className="flex flex-col gap-4"
-                                >
-                                    <h2 className="text-2xl font-bold">{currentRoutine.name}</h2>
-                                    <p className="relative w-fit mt-[-1.00px] [font-family: 'Montserrat-Bold',Helvetica]font-family text-gray-700">{currentRoutine.description}</p>
-                                    <ExerciseCarousel exercises={currentRoutine.exercises} />
-                                </motion.div>
-                            )}
-                            {activeTab === 'todas-rutinas' && (
-                                    <motion.div
-                                    key="todas-rutinas"
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -20 }}
-                                    transition={{ duration: 0.3 }}
-                                    className="flex flex-col gap-4"
-                                >
-                                    <h2 className="text-2xl font-bold mb-4">Tus Rutinas</h2>
-                                    <RoutineCarousel routines={routines} />
-                                </motion.div>
+                            {filteredRecommended.length > 0 ? (
+                                <>
+                                    {activeTab === 'rutina-actual' && currentRoutine && (
+                                        <motion.div
+                                            key="rutina-actual"
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: -20 }}
+                                            transition={{ duration: 0.3 }}
+                                            className="flex flex-col gap-4"
+                                        >
+                                            <h2 className="text-2xl font-bold">{currentRoutine.name}</h2>
+                                            <p className="relative w-fit mt-[-1.00px] [font-family: 'Montserrat-Bold',Helvetica]font-family text-gray-700">{currentRoutine.description}</p>
+                                            <ExerciseCarousel exercises={currentRoutine.exercises} />
+                                        </motion.div>
+                                    )}
+                                    {activeTab === 'todas-rutinas' && (
+                                            <motion.div
+                                            key="todas-rutinas"
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: -20 }}
+                                            transition={{ duration: 0.3 }}
+                                            className="flex flex-col gap-4"
+                                        >
+                                            <h2 className="text-2xl font-bold mb-4">Tus Rutinas</h2>
+                                            <RoutineCarousel routines={routines} />
+                                        </motion.div>
+                                    )}
+                                </>
+                            ) : (
+                                <div className="col-span-full text-center py-6 text-gray-500">
+                                    No hay rutinas disponibles para este grupo muscular
+                                </div>
                             )}
                         </AnimatePresence>
 
                         <h2 className="text-2xl font-bold mt-8 mb-4">Rutinas Recomendadas</h2>
-                        <RoutineCarousel routines={recommendedRoutines} />
+                        <div>
+                            {filteredRecommended.length > 0 ? (
+                                filteredRecommended.map((routine) => (
+                                    <RoutineCarousel routines={recommendedRoutines} />
+                                ))
+                            ) : (
+                                <div className="col-span-full text-center py-6 text-gray-500">
+                                    No hay rutinas recomendadas para este grupo muscular
+                                </div>
+                            )}
+                        </div>
+                        </div>
                     </div>
                 </div>
             </div>
