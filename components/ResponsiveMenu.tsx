@@ -15,9 +15,9 @@ const modules = [
     },
     {
         moduleName: "module 2",
-        roleCanUse: ["ADMIN"],
-        urlToNavigate: "/Module2",
-        image: modulo2,
+        roleCanUse: ["STUDENT"],
+        urlToNavigate: "/salasCrea/InicioSalasCreaUsuario",
+        image: modulo3,
     },
     {
         moduleName: "module 2_Admin",
