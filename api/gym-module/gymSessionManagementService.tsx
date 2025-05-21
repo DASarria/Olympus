@@ -17,14 +17,12 @@ const USER_API = "/users";
  */
 export interface GymSessionDTO {
     id: string;
-    sessionDate: string;
+    date: string;
     startTime: string;
     endTime: string;
     capacity: number;
     reservedSpots: number;
     trainerId: string;
-    sessionType: string;
-    location: string;
     description: string;
 }
 

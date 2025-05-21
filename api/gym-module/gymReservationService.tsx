@@ -32,6 +32,7 @@ export enum ReservationStatus {
  * @property {string} [notes] - Any additional notes related to the reservation (optional).
  */
 export interface ReservationDTO {
+  id?: string;
   userId: string;
   sessionId: string;
   status: ReservationStatus; 

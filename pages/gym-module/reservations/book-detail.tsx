@@ -96,7 +96,6 @@ const ReservationDetails = () => {
                     returnPoint="/gym-module/reservations"
                 />
                 <div>
-                    <h2 className="text-xl font-semibold mb-4">Detalles de Reserva</h2>
 
                     {successMessage && <div className="mb-4 text-green-600">{successMessage}</div>}
                     {errorMessage && <div className="mb-4 text-red-600">{errorMessage}</div>}
@@ -171,4 +170,4 @@ const ReservationDetails = () => {
     );
 };
 
-export default withRoleProtection(["USER", "TRAINER"], "/gym-module/reservations")(ReservationDetails);
+export default withRoleProtection(["STUDENT"], "/gym-module/reservations")(ReservationDetails);

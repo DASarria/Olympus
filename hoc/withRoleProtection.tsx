@@ -12,7 +12,7 @@ export function withRoleProtection<T extends object>(
 
       useEffect(() => {
         //const storedRole = sessionStorage.getItem("role");
-        const storedRole = "TRAINER";
+        const storedRole = "STUDENT";
 
 
         if (!AllowedRoles.includes(storedRole || "")) {

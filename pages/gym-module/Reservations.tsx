@@ -5,7 +5,7 @@ import { Calendar, Views, View } from 'react-big-calendar';
 import { useRouter } from 'next/router';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import localizer from '@/lib/Localizer';
-import { ReservationStatus, getUserReservations } from '@/api/gymServicesIndex';
+import { getSessionsByDate, ReservationStatus, getUserReservations, ReservationDTO, GymSessionDTO } from '@/api/gymServicesIndex';
 import { PageTransitionWrapper } from '@/components/PageTransitionWrapper';
 
 /**
@@ -18,7 +18,7 @@ import { PageTransitionWrapper } from '@/components/PageTransitionWrapper';
 const Reservations = () => {
     const userId = typeof window !== 'undefined' ? sessionStorage.getItem("id") : null;
     //const role = typeof window !== 'undefined' ? sessionStorage.getItem("role") : null;
-    const role: string = "TRAINER";
+    const [role, setRole] = useState('');
     const [events, setEvents] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -32,57 +32,132 @@ const Reservations = () => {
      */
     useEffect(() => {
         const fetchEvents = async () => {
-            // if (userId) {
-            //     try {
-            //         const userReservations = await getUserReservations(userId);
-            //         setEvents(userReservations);
-            //     } catch (error) {
-            //         console.error('Error fetching user reservations:', error);
-            //     } finally {
-            //         setLoading(false);
-            //     }
-            // } else {
-            //     console.error('No userId found in sessionStorage');
-            // }
+            //if (!userId) return console.error("No userId found");
+            const userId = "user123";
+            setRole("STUDENT");
+            try {
+                if (role === "STUDENT") {
+                    // const reservations = await getUserReservations(userId);
+                    // const sessionIds = reservations.map(r => r.sessionId);
+                    // const allSessions = await getSessionsByDate(currentDate.toISOString().split('T')[0]);
+                    // const combinedEvents = allSessions.map(session => {
+                    //     const reservation = reservations.find(r => r.sessionId === session.id);
+                    //     const isReserved = Boolean(reservation);
+                    //     return {
+                    //         id: isReserved ? reservation.id : session.id,
+                    //         title: session.description,
+                    //         start: new Date(`${session.date}T${session.startTime}`),
+                    //         end: new Date(`${session.date}T${session.endTime}`),
+                    //         notes: reservation?.notes || "",
+                    //         status: reservation?.status || "",
+                    //         sessionId: session.id,
+                    //         type: isReserved ? "reserved" : "available"
+                    //     };
+                    // });
 
-            const simulatedEvents = [
-                {
-                    id: '1',
-                    userId: userId || "user123",
-                    sessionId: 'session123',
-                    status: ReservationStatus.PENDING,
-                    reservationDate: '2025-05-01T10:00:00',
-                    checkInTime: '',
-                    cancellationDate: '',
-                    equipmentIds: ['equipment1', 'equipment2'],
-                    notes: 'Reserva para sesión de entrenamiento.',
-                },
-                {
-                    id: '2',
-                    userId: userId || "user123",
-                    sessionId: 'session124',
-                    status: ReservationStatus.CONFIRMED,
-                    reservationDate: '2025-05-02T11:00:00',
-                    checkInTime: '2025-05-02T10:45:00',
-                    cancellationDate: '',
-                    equipmentIds: ['equipment3'],
-                    notes: 'Sesión de yoga.',
+                    // setEvents(combinedEvents);
+
+                    const simulatedReservations: ReservationDTO[] = [
+                        {
+                            id: '1',
+                            userId,
+                            sessionId: 'session123',
+                            status: ReservationStatus.PENDING,
+                            reservationDate: '2025-05-01T10:00:00',
+                            checkInTime: '',
+                            cancellationDate: '',
+                            equipmentIds: [],
+                            notes: 'Entrenamiento funcional',
+                        }
+                    ];
+
+                    // 2. Simular todas las sesiones del día
+                    const simulatedSessions: GymSessionDTO[] = [
+                        {
+                            id: 'session123',
+                            date: '2025-05-01',
+                            startTime: '10:00:00',
+                            endTime: '11:00:00',
+                            capacity: 20,
+                            reservedSpots: 18,
+                            trainerId: 'trainer1',
+                            description: 'Entrenamiento funcional'
+                        },
+                        {
+                            id: 'session124',
+                            date: '2025-05-01',
+                            startTime: '11:00:00',
+                            endTime: '12:00:00',
+                            capacity: 15,
+                            reservedSpots: 10,
+                            trainerId: 'trainer2',
+                            description: 'Clase de yoga'
+                        }
+                    ];
+
+                    const sessionIdsReserved = simulatedReservations.map(r => r.sessionId);
+
+                    const combinedEvents = simulatedSessions.map(session => {
+                        const reservation = simulatedReservations.find(r => r.sessionId === session.id);
+                        const isReserved = Boolean(reservation);
+
+                        return {
+                            id: isReserved ? reservation!.id : session.id,
+                            title: session.description,
+                            start: new Date(`${session.date}T${session.startTime}`),
+                            end: new Date(`${session.date}T${session.endTime}`),
+                            notes: reservation?.notes || "",
+                            status: reservation?.status || "",
+                            sessionId: session.id,
+                            type: isReserved ? "reserved" : "available"
+                        };
+                    });
+
+                    setEvents(combinedEvents);
+                } else if (role === "TRAINER") {
+                    // const sessions = await getSessionsByDate(currentDate.toISOString().split('T')[0]);
+                    // const sessionEvents = sessions.map(session => ({
+                    //     id: session.id,
+                    //     title: session.description,
+                    //     start: new Date(`${session.date}T${session.startTime}`),
+                    //     end: new Date(`${session.date}T${session.endTime}`),
+                    //     sessionId: session.id
+                    // }));
+                    // setEvents(sessionEvents);
+
+                    const simulatedTrainerSessions: GymSessionDTO[] = [
+                        {
+                            id: 'session125',
+                            date: '2025-05-03',
+                            startTime: '09:00:00',
+                            endTime: '10:00:00',
+                            capacity: 25,
+                            reservedSpots: 20,
+                            trainerId: userId,
+                            description: 'Clase HIIT'
+                        }
+                    ];
+
+                    const sessionEvents = simulatedTrainerSessions.map(session => ({
+                        id: session.id,
+                        title: session.description,
+                        start: new Date(`${session.date}T${session.startTime}`),
+                        end: new Date(`${session.date}T${session.endTime}`),
+                        sessionId: session.id,
+                        type: "trainer"
+                    }));
+
+                    setEvents(sessionEvents);
                 }
-            ];
-
-            const eventsWithDates = simulatedEvents.map(event => ({
-                ...event,
-                start: new Date(event.reservationDate),
-                end: new Date(new Date(event.reservationDate).getTime() + 60 * 60 * 1000)
-            }));
-
-            setEvents(eventsWithDates);
-            setLoading(false);
-
+            } catch (error) {
+                console.error('Error fetching sessions:', error);
+            } finally {
+                setLoading(false);
+            }
         };
 
         fetchEvents();
-    }, [userId]);
+    }, [userId, role, currentDate]);
 
     /**
      * Custom component that renders a custom event in the calendar.
@@ -93,9 +168,21 @@ const Reservations = () => {
      */
     const CustomEvent = ({ event }: { event: any }) => {
         return (
-            <div>
-                <strong>{event.status}</strong>
-                <div style={{ fontSize: '0.8em' }}>{event.notes}</div>
+            <div className='flex flex-col'>
+                <strong>Sesión</strong>
+                {event.type === 'reserved' && (
+                    <small style={{ fontStyle: 'italic'}}>
+                        Reservado
+                    </small>
+                )}
+                {event.type === 'available' && (
+                    <small style={{ fontStyle: 'italic'}}>
+                        Disponible
+                    </small>
+                )}
+                <small className="text-sm overflow-hidden text-ellipsis max-w-full line-clamp-2">
+                    {event.description}
+                </small>
             </div>
         );
     };
@@ -133,8 +220,11 @@ const Reservations = () => {
             setCurrentDate(slotInfo.start);
         } else {
             router.push({
-                pathname: '/gym-module/reservations/create-routine',
-                query: { startDate: slotInfo.start.toISOString(), endDate: slotInfo.end.toISOString() }
+                pathname: '/gym-module/reservations/create-session',
+                query: {
+                    startDate: slotInfo.start.toISOString(),
+                    endDate: slotInfo.end.toISOString()
+                }
             });
         }
     };
@@ -145,10 +235,29 @@ const Reservations = () => {
      * @param {Object} event - The selected event.
      */
     const handleSelectEvent = (event: any) => {
-        router.push({
-            pathname: '/gym-module/reservations/event-details',
-            query: event.id
-        });
+        if (role === "TRAINER") {
+            router.push({
+                pathname: '/gym-module/reservations/session-details',
+                query: { id: event.id }
+            });
+        } else if (role === "STUDENT") {
+            if (event.type === "available") {
+                router.push({
+                    pathname: '/gym-module/reservations/book-session',
+                    query: {
+                        id: event.sessionId,
+                        startDate: event.start.toISOString(),
+                        endDate: event.end.toISOString(),
+                        description: event.description,
+                    }
+                });
+            } else if (event.type === "reserved") {
+                router.push({
+                    pathname: '/gym-module/reservations/book-detail',
+                    query: { id: event.id }
+                });
+            }
+        }
     };
 
     /**
@@ -197,7 +306,7 @@ const Reservations = () => {
                             startAccessor="start"
                             endAccessor="end"
                             style={{ height: 600 }}
-                            selectable
+                            selectable={role === "TRAINER"}
                             onSelectSlot={handleSelectSlot}
                             onSelectEvent={handleSelectEvent}
                             views={[Views.MONTH, Views.WEEK, Views.DAY]}
@@ -214,7 +323,7 @@ const Reservations = () => {
                             }}
                             eventPropGetter={() => ({
                                 style: {
-                                backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--primary-red').trim()
+                                    backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--primary-red').trim()
                                 }
                             })}
                         />
@@ -231,4 +340,4 @@ const Reservations = () => {
 }
 
 
-export default withRoleProtection(["USER", "TRAINER"], "/gym-module")(Reservations);
+export default withRoleProtection(["STUDENT", "TRAINER"], "/gym-module")(Reservations);

@@ -195,7 +195,7 @@ const Routines = () => {
 
                     <div className="flex flex-col w-full">
                         {/* Pestañas */}
-                        <div className="mb-6">
+                        <div className="flex mb-6 justify-center">
                             <Tabs
                                 tabs={[
                                 { id: 'rutina-actual', label: 'Rutina actual' },
@@ -204,6 +204,7 @@ const Routines = () => {
                                 activeTab={activeTab}
                                 onTabChange={setActiveTab}
                             />
+                        </div>
                         <AnimatePresence mode="wait">
                             {filteredRecommended.length > 0 ? (
                                 <>
@@ -217,7 +218,7 @@ const Routines = () => {
                                             className="flex flex-col gap-4"
                                         >
                                             <h2 className="text-2xl font-bold">{currentRoutine.name}</h2>
-                                            <p className="relative w-fit mt-[-1.00px] [font-family: 'Montserrat-Bold',Helvetica]font-family text-gray-700">{currentRoutine.description}</p>
+                                            <p className="relative w-fit mt-[-1.00px] [font-family: 'Montserrat-Bold',Helvetica] font-family text-gray-700">{currentRoutine.description}</p>
                                             <ExerciseCarousel exercises={currentRoutine.exercises} />
                                         </motion.div>
                                     )}
@@ -254,7 +255,6 @@ const Routines = () => {
                                 </div>
                             )}
                         </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -263,4 +263,4 @@ const Routines = () => {
 }
 
 
-export default withRoleProtection(["USER", "TRAINER"], "/gym-module")(Routines);
+export default withRoleProtection(["STUDENT", "TRAINER"], "/gym-module")(Routines);

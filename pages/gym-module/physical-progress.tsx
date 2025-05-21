@@ -347,4 +347,4 @@ const PhysicalProgress = () => {
 }
 
 
-export default withRoleProtection(["USER", "TRAINER"], "/gym-module")(PhysicalProgress);
+export default withRoleProtection(["STUDENT", "TRAINER"], "/gym-module")(PhysicalProgress);

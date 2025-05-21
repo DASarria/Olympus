@@ -19,17 +19,13 @@ import { PageTransitionWrapper } from '@/components/PageTransitionWrapper';
  */
 const ReservationForm = () => {
     const router = useRouter();
-    const { startDate } = router.query;
+    const { id, startDate, description } = router.query;
 
     const userId = typeof window !== 'undefined' ? sessionStorage.getItem("id") : null;
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
-
+    const [formattedDate, setFormattedDate] = useState('');
     const [formData, setFormData] = useState({
-        sessionId: '',
-        status: ReservationStatus.PENDING,
-        reservationDate: '',
-        equipmentIds: '',
         notes: ''
     });
 
@@ -40,11 +36,7 @@ const ReservationForm = () => {
          */
         if (typeof startDate === 'string') {
             const localDate = new Date(startDate);
-            const formatted = localDate.toISOString().slice(0, 16);
-            setFormData(prev => ({
-                ...prev,
-                reservationDate: formatted
-            }));
+            setFormattedDate(localDate.toLocaleString());
         }
     }, [startDate]);
 
@@ -70,32 +62,27 @@ const ReservationForm = () => {
      */
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        const sessionId = typeof id === 'string' ? id : Array.isArray(id) ? id[0] : undefined;
 
-        if (!userId) {
-            setErrorMessage("No se encontró el ID de usuario.");
+
+        if (!userId || !sessionId) {
+            setErrorMessage("No se encontró el ID de usuario o el ID de la sesión.");
             return;
         }
 
         try {
             const reservation: ReservationDTO = {
                 userId,
-                sessionId: formData.sessionId,
-                status: formData.status as ReservationStatus,
-                reservationDate: formData.reservationDate,
-                equipmentIds: formData.equipmentIds.split(',').map(id => id.trim()),
+                sessionId,
+                status: ReservationStatus.PENDING,
+                reservationDate: startDate as string,
                 notes: formData.notes
             };
 
             await createReservation(userId, reservation);
             setSuccessMessage("Reserva creada exitosamente.");
             setErrorMessage('');
-            setFormData({
-                sessionId: '',
-                status: ReservationStatus.PENDING,
-                reservationDate: '',
-                equipmentIds: '',
-                notes: ''
-            });
+            setFormData({ notes: ''});
         } catch (error) {
             console.error('Error al crear la reserva:', error);
             setErrorMessage("Ocurrió un error al crear la reserva.");
@@ -108,11 +95,10 @@ const ReservationForm = () => {
             <div className='flex flex-col gap-6'>
                 <Return 
                     className="!self-stretch !flex-[0_0_auto] !w-full"
-                    text="Reserva de salon"
+                    text="Crear nueva reserva"
                     returnPoint="/gym-module/reservations"
                 />
                 <div>
-                    <h2 className="text-xl font-semibold mb-4">Crear nueva reserva</h2>
 
                     {successMessage && <div className="mb-4 text-green-600">{successMessage}</div>}
                     {errorMessage && <div className="mb-4 text-red-600">{errorMessage}</div>}
@@ -122,35 +108,29 @@ const ReservationForm = () => {
                             <label className="block font-medium mb-1">ID de Sesión</label>
                             <input
                                 type="text"
-                                name="sessionId"
-                                value={formData.sessionId}
-                                onChange={handleChange}
-                                required
-                                className="w-full border rounded p-2"
+                                value={id as string}
+                                disabled
+                                className="w-full border rounded p-2 bg-gray-100"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block font-medium mb-1">Descripción</label>
+                            <input
+                                type="text"
+                                value={description as string ?? ''}
+                                disabled
+                                className="w-full border rounded p-2 bg-gray-100"
                             />
                         </div>
 
                         <div>
                             <label className="block font-medium mb-1">Fecha de Reserva</label>
                             <input
-                                type="datetime-local"
-                                name="reservationDate"
-                                value={formData.reservationDate}
-                                onChange={handleChange}
-                                required
-                                className="w-full border rounded p-2"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block font-medium mb-1">Equipos (IDs separados por coma)</label>
-                            <input
                                 type="text"
-                                name="equipmentIds"
-                                value={formData.equipmentIds}
-                                onChange={handleChange}
-                                placeholder="equipment1,equipment2"
-                                className="w-full border rounded p-2"
+                                value={formattedDate}
+                                disabled
+                                className="w-full border rounded p-2 bg-gray-100"
                             />
                         </div>
 
@@ -162,20 +142,6 @@ const ReservationForm = () => {
                                 onChange={handleChange}
                                 className="w-full border rounded p-2"
                             />
-                        </div>
-
-                        <div>
-                            <label className="block font-medium mb-1">Estado</label>
-                            <select
-                                name="status"
-                                value={formData.status}
-                                onChange={handleChange}
-                                className="w-full border rounded p-2"
-                            >
-                                <option value={ReservationStatus.PENDING}>Pendiente</option>
-                                <option value={ReservationStatus.CONFIRMED}>Confirmada</option>
-                                <option value={ReservationStatus.CANCELLED}>Cancelada</option>
-                            </select>
                         </div>
 
                         <button
@@ -191,4 +157,4 @@ const ReservationForm = () => {
     )
 }
 
-export default withRoleProtection(["USER", "TRAINER"], "/gym-module/reservations")(ReservationForm);
+export default withRoleProtection(["STUDENT"], "/gym-module/reservations")(ReservationForm);
