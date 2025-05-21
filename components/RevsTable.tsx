@@ -27,21 +27,31 @@ interface RevsTableProps {
   reservas: Reserva[]
 }
 
+interface RoomsProps {
+  roomId: string
+  building: string
+  capacity: number
+  elements: string[]
+}
+
 const RevsTable = () => {
   const token = sessionStorage.getItem("token")
   const url = process.env.NEXT_PUBLIC_API_URL
   const [reservas, setReservas] = useState<Reserva[]>([])
   const [showModal, setShowModal] = useState(false)
-  const [editingReservaId, setEditingReservaId] = useState<string | null>(null)
+  const [editingReserva, setEditingReserva] = useState<Reserva | null>(null)
   const [hiddenRows, setHiddenRows] = useState<{ [key: string]: boolean }>({})
   const [searchId, setSearchId] = useState("")
   const [searchName, setSearchName] = useState("")
   const [searchRoom, setSearchRoom] = useState("")
   const [elementNames, setElementNames] = useState<Record<string, string>>({})
+  const [rooms, setRooms] = useState<RoomsProps[]>([])
+
+
+  
 
   const fetchReservas = async () => {
     try {
-      console.log("Obteniendo reservas...")
       const response = await fetch(`${url}/revs`, {
         method: "GET",
         headers: {
@@ -54,11 +64,6 @@ const RevsTable = () => {
         throw new Error("Error cargando datos: " + response.statusText)
       }
       const data = await response.json()
-      console.log("Reservas obtenidas:", data)
-      // Verificar que las reservas tienen sus préstamos
-      data.forEach((reserva: Reserva) => {
-        console.log(`Reserva ${reserva.id} - Préstamos:`, reserva.loans)
-      })
       setReservas(data)
       localStorage.setItem("reservationsUpdated", "true")
     } catch (error) {
@@ -96,9 +101,27 @@ const RevsTable = () => {
     }
   }
 
+  const fetchRooms = async () => {
+  try {
+    const response = await fetch(`${url}/rooms`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    })
+    if (!response.ok) throw new Error("Error al cargar salas")
+    const data = await response.json()
+    setRooms(data)
+  } catch (error) {
+    console.error("Error cargando salas:", error)
+  }
+}
+
   useEffect(() => {
     fetchReservas()
     fetchElementNames()
+    fetchRooms()
   const intervalId = setInterval(() => {
     checkReservationsForQuantityUpdates()
   }, 60000) // revisa cada minuto
@@ -201,8 +224,6 @@ const RevsTable = () => {
         people: nueva.people,
       }
 
-      console.log("Datos que se enviarán:", JSON.stringify(datosParaEnviar))
-
       // Realizar la solicitud POST directamente
       const response = await fetch(`${url}/revs`, {
         method: "POST",
@@ -215,8 +236,6 @@ const RevsTable = () => {
 
       // Obtener el texto de la respuesta para diagnóstico
       const responseText = await response.text()
-      console.log("Respuesta del servidor:", response.status, response.statusText)
-      console.log("Texto de la respuesta:", responseText)
 
       if (!response.ok) {
         // Mostrar información más detallada sobre el error
@@ -231,8 +250,6 @@ const RevsTable = () => {
         })
         throw new Error(`Error del servidor: ${response.status} ${response.statusText} - ${responseText}`)
       }
-
-      console.log("Reserva creada exitosamente")
 
       // Actualizar la lista de reservas
       await fetchReservas()
@@ -261,9 +278,6 @@ const RevsTable = () => {
   // Modificar la función handleUpdateReserva para usar el formato exacto requerido
   const handleUpdateReserva = async (updatedReserva: Reserva) => {
     try {
-      console.log("Actualizando reserva:", updatedReserva)
-      console.log("Préstamos en la reserva:", updatedReserva.loans)
-
       // Asegurarse de que el formato de la hora sea correcto (HH:MM:00)
       const formattedTime = updatedReserva.date.time.includes(":00")
         ? updatedReserva.date.time
@@ -283,8 +297,16 @@ const RevsTable = () => {
         state: updatedReserva.state,
         people: updatedReserva.people,
       }
-      console.log("Datos que se enviarán para actualizar:", JSON.stringify(datosParaEnviar))
-      const response = await fetch(`${url}/revs/${updatedReserva.id}`, {
+
+        const response = await fetch(`${url}/revs/${updatedReserva.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(datosParaEnviar),
+      })
+      await fetch(`${url}/revs/state/${updatedReserva.id}/${datosParaEnviar.state}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -293,28 +315,21 @@ const RevsTable = () => {
         body: JSON.stringify(datosParaEnviar),
       })
       if (!response.ok) {
-  const errorText = await response.text()
-  console.error("Error en la respuesta:", errorText)
-  console.log("Error en la respuesta del servidor:", errorText) 
-console.error("Error en la respuesta:", errorText)
-console.log("Error en la respuesta del servidor:", errorText)
-throw new Error("Error actualizando reserva: " + errorText)
+      const errorText = await response.text()
+      console.error("Error en la respuesta:", errorText)
+      throw new Error("Error actualizando reserva: " + errorText)
+      }
 
-  throw new Error("Error actualizando reserva: " + errorText)
-}
       const contentType = response.headers.get("content-type")
       if (contentType && contentType.includes("application/json")) {
         try {
           const updatedData = await response.json()
-          console.log("Respuesta de actualización (JSON):", updatedData)
         } catch (jsonError) {
           console.warn("No se pudo analizar la respuesta como JSON, pero la actualización fue exitosa")
         }
       } else {
         const responseText = await response.text()
-        console.log("Respuesta de actualización (texto):", responseText)
       }
-      console.log("Actualización exitosa. Refrescando datos...")
       await fetchReservas()
       localStorage.setItem("reservationsUpdated", "true")
       Swal.fire({
@@ -324,6 +339,9 @@ throw new Error("Error actualizando reserva: " + errorText)
         timer: 2000,
         showConfirmButton: false,
       })
+      
+
+      
     } catch (error) {
       console.error("Error FATAL actualizando reserva:", error)
       Swal.fire({
@@ -404,7 +422,7 @@ throw new Error("Error actualizando reserva: " + errorText)
 
   // Filter reservations based on search criteria
   const filteredReservas = reservas.filter((reserva) => {
-    const matchesId = searchId ? reserva.id?.toLowerCase().includes(searchId.toLowerCase()) : true
+    const matchesId = searchId ? reserva.userId?.toLowerCase().includes(searchId.toLowerCase()) : true
     const matchesName = searchName ? reserva.userName.toLowerCase().includes(searchName.toLowerCase()) : true
     const matchesRoom = searchRoom ? reserva.roomId.toLowerCase().includes(searchRoom.toLowerCase()) : true
     return matchesId && matchesName && matchesRoom
@@ -430,13 +448,18 @@ throw new Error("Error actualizando reserva: " + errorText)
               value={searchName}
               onChange={(e) => setSearchName(e.target.value)}
             />
-            <input
-              type="text"
-              placeholder="Sala"
+            <select
               className="px-3 py-1 rounded-xl bg-white drop-shadow-xl"
               value={searchRoom}
               onChange={(e) => setSearchRoom(e.target.value)}
-            />
+            >
+              <option value="">Todas las salas</option>
+              {rooms.map((room) => (
+                <option key={room.roomId} value={room.roomId}>
+                  {room.roomId.split("-").join(" ")}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <button onClick={() => setShowModal(true)} className="bg-white rounded-xl p-2 drop-shadow-xl">
@@ -476,15 +499,16 @@ throw new Error("Error actualizando reserva: " + errorText)
                         </div>
                       </td>
                       <td className="px-4 py-2 rounded-xl">
-                        {reserva.roomId.toLowerCase() === "sala-crea" ? (
+                        <span>{reserva.roomId.split("-").join(" ")}</span>
+                        {/* {reserva.roomId.toLowerCase() === "sala-crea" ? (
                           <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">Sala Crea</span>
-                        ) : reserva.roomId.toLowerCase() === "sala-descanso" ? (
+                        ) : reserva.roomId.toLowerCase() === "sala-de-descanso" ? (
                           <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
                             Sala De Descanso
                           </span>
                         ) : (
                           <span>{reserva.roomId}</span>
-                        )}
+                        )} */}
                       </td>
                       <td className="px-4 py-2 rounded-xl">
                         {reserva.loans.length > 0 ? (
@@ -507,7 +531,7 @@ throw new Error("Error actualizando reserva: " + errorText)
                           <button
                             className="px-3 py-1 rounded-full text-sm bg-blue-600 text-white hover:bg-blue-700"
                             onClick={() => {
-                              setEditingReservaId(reserva.id!)
+                              setEditingReserva(reserva)
                               setHiddenRows((prev) => ({ ...prev, [reserva.id!]: true }))
                             }}
                           >
@@ -524,11 +548,11 @@ throw new Error("Error actualizando reserva: " + errorText)
                     </tr>
                   )}
 
-                  {editingReservaId === reserva.id && (
+                  {editingReserva === reserva && (
                     <ReservaExpandida
                       reserva={reserva}
                       onClose={() => {
-                        setEditingReservaId(null)
+                        setEditingReserva(null)
                         setHiddenRows((prev) => ({ ...prev, [reserva.id!]: false }))
                       }}
                       onSave={handleUpdateReserva}

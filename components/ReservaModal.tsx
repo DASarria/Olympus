@@ -68,9 +68,6 @@ const ReservaModal: React.FC<ReservaModalProps> = ({ onClose, onSubmit }) => {
       state: "RESERVA_CONFIRMADA",
       people,
     }
-
-    console.log("Enviando nueva reserva:", newReserva)
-
     try {
       onSubmit(newReserva)
     } catch (error) {
@@ -174,9 +171,9 @@ const ReservaModal: React.FC<ReservaModalProps> = ({ onClose, onSubmit }) => {
                 <input
                   type="radio"
                   name="roomType"
-                  value="Sala-Descanso"
-                  checked={selectedRoom === "Sala-Descanso"}
-                  onChange={() => setSelectedRoom("Sala-Descanso")}
+                  value="Sala-De-Descanso"
+                  checked={selectedRoom === "Sala-De-Descanso"}
+                  onChange={() => setSelectedRoom("Sala-De-Descanso")}
                   className="mr-2"
                   disabled={isSubmitting}
                 />

@@ -32,6 +32,13 @@ interface Props {
   onSave: (updatedReserva: Reserva) => void
 }
 
+interface RoomsProps {
+  roomId: string
+  building: string
+  capacity: number
+  elements: string[]
+}
+
 const ReservaExpandida: React.FC<Props> = ({ reserva, onClose, onSave }) => {
   const [editedReserva, setEditedReserva] = useState<Reserva>(reserva)
   const [originalLoans, setOriginalLoans] = useState<string[]>([])
@@ -41,13 +48,16 @@ const ReservaExpandida: React.FC<Props> = ({ reserva, onClose, onSave }) => {
   const token = sessionStorage.getItem("token")
   const url = process.env.NEXT_PUBLIC_API_URL
   const [elementoSeleccionado, setElementoSeleccionado] = useState<string>("")
+  const [rooms, setRooms] = useState<RoomsProps[]>([])
 
   // Store the original loans when component mounts
   useEffect(() => {
     setOriginalLoans([...reserva.loans])
     fetchAvailableElements()
+    fetchRooms()
     checkTimeWindow(reserva.date)
   }, [reserva])
+  
 
   // Check if the reservation time is within 1.5 hours of current time
   const checkTimeWindow = (date: { day: string; time: string }) => {
@@ -63,6 +73,23 @@ const ReservaExpandida: React.FC<Props> = ({ reserva, onClose, onSave }) => {
 
     return isWithin
   }
+
+  const fetchRooms = async () => {
+  try {
+    const response = await fetch(`${url}/rooms`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    })
+    if (!response.ok) throw new Error("Error al cargar salas")
+    const data = await response.json()
+    setRooms(data)
+  } catch (error) {
+    console.error("Error cargando salas:", error)
+  }
+}
 
   // Fetch available elements to show in dropdown
   const fetchAvailableElements = async () => {
@@ -149,8 +176,6 @@ const ReservaExpandida: React.FC<Props> = ({ reserva, onClose, onSave }) => {
   // Modificar la función handleSave para asegurar que los cambios se guarden correctamente
   const handleSave = async () => {
     try {
-      // Asegurarse de que los préstamos se guarden correctamente
-      console.log("Guardando reserva con préstamos:", editedReserva.loans)
 
       // Asegurarse de que roomId tiene el formato correcto
       const updatedReserva = {
@@ -160,8 +185,6 @@ const ReservaExpandida: React.FC<Props> = ({ reserva, onClose, onSave }) => {
 
       }
 
-      // Primero, actualizar la reserva
-      console.log("Datos enviados para actualizar:", updatedReserva)
 await onSave(updatedReserva)
 
       await onSave(updatedReserva)
@@ -187,9 +210,6 @@ await onSave(updatedReserva)
   const updateElementQuantities = async () => {
     // Only update quantities if within the time window
     if (!isWithinTimeWindow) {
-      console.log(
-        "No se actualizarán las cantidades porque la reserva no está dentro de la ventana de tiempo (1.5 horas)",
-      )
       return
     }
 
@@ -483,8 +503,11 @@ await onSave(updatedReserva)
                 onChange={(e) => setEditedReserva({ ...editedReserva, roomId: e.target.value })}
                 className="px-3 py-1 rounded-xl bg-white drop-shadow-md"
               >
-                <option value="Sala-Crea">Sala Crea</option>
-                <option value="Sala-Descanso">Sala De Descanso</option>
+                {rooms.map((room) => (
+                <option key={room.roomId} value={room.roomId}>
+                  {room.roomId.split("-").join(" ")}
+                </option>
+              ))}
               </select>
             </div>
           </div>
