@@ -1,27 +1,34 @@
-import React, { useState } from 'react';
-import { useRouter } from 'next/router';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
-// Versión simplificada del componente de horario de clases
 const HorarioClasesExacto = () => {
-  const router = useRouter();
-  
-  const navegarA = (ruta) => {
-    router.push(ruta);
-  };
-
-  // Estados básicos
   const [diaActual, setDiaActual] = useState(0);
   const [actividadSeleccionada, setActividadSeleccionada] = useState(null);
+  const [actividades, setActividades] = useState([]);
+  const [horarios, setHorarios] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Datos estáticos
+  // Datos estáticos que no cambian
   const diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-
-  const actividades = [
-    { id: 1, nombre: 'Taekwondo', color: 'bg-yellow-200', borderColor: 'border-l-4 border-yellow-500' },
-    { id: 2, nombre: 'Tenis', color: 'bg-purple-200', borderColor: 'border-l-4 border-purple-500' },
-    { id: 3, nombre: 'Basketball', color: 'bg-blue-200', borderColor: 'border-l-4 border-blue-500' },
-    { id: 4, nombre: 'Ping Pong', color: 'bg-green-200', borderColor: 'border-l-4 border-green-500' },
-    { id: 5, nombre: 'Fútbol', color: 'bg-rose-200', borderColor: 'border-l-4 border-rose-500' },
+  const mapDiaSemana = {
+    'MONDAY': 0,
+    'TUESDAY': 1,
+    'WEDNESDAY': 2,
+    'THURSDAY': 3,
+    'FRIDAY': 4,
+    'SATURDAY': 5,
+  };
+  
+  const coloresActividades = [
+    { color: 'bg-yellow-200', borderColor: 'border-l-4 border-yellow-500' },
+    { color: 'bg-purple-200', borderColor: 'border-l-4 border-purple-500' },
+    { color: 'bg-blue-200', borderColor: 'border-l-4 border-blue-500' },
+    { color: 'bg-green-200', borderColor: 'border-l-4 border-green-500' },
+    { color: 'bg-rose-200', borderColor: 'border-l-4 border-rose-500' },
+    { color: 'bg-orange-200', borderColor: 'border-l-4 border-orange-500' },
+    { color: 'bg-teal-200', borderColor: 'border-l-4 border-teal-500' },
+    { color: 'bg-indigo-200', borderColor: 'border-l-4 border-indigo-500' },
   ];
 
   const horas = [
@@ -29,22 +36,97 @@ const HorarioClasesExacto = () => {
     '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'
   ];
 
-  const horarios = [
-    [0, 'Taekwondo', '7:00', '9:00'],
-    [0, 'Tenis', '8:00', '10:00'],
-    [0, 'Basketball', '9:00', '12:00'],
-    [1, 'Taekwondo', '9:00', '12:00'],
-    [1, 'Ping Pong', '14:00', '16:00'],
-    [2, 'Tenis', '7:00', '10:00'],
-    [2, 'Fútbol', '10:00', '11:00'],
-    [3, 'Tenis', '10:00', '13:00'],
-    [3, 'Fútbol', '16:00', '18:00'],
-    [4, 'Tenis', '7:00', '9:00'],
-    [4, 'Ping Pong', '12:00', '14:00'],
-    [5, 'Tenis', '8:00', '9:00'],
-  ];
+  // Cargar datos de la API
+  useEffect(() => {
+    const fetchActividades = async () => {
+      setCargando(true);
+      try {
+        // Usando el endpoint para obtener las actividades y horarios
+        const response = await axios.post(
+          'https://hadesback-app-c5fwbybjd0gnf0fx.canadacentral-01.azurewebsites.net/api/activity/find/options',
+          {
+            year: new Date().getFullYear(),
+            semester: 1, // Esto podría ser dinámico
+            activityType: "", // Obtener todos los tipos
+            teacherName: "",
+            teacherId: 0,
+            days: [],
+            newActivity: "",
+            resources: []
+          },
+          {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }
+        );
 
-  // Funciones simplificadas
+        // Procesar actividades y formatear para su uso en el componente
+        const actividadesData = processActivityData(response.data);
+        setActividades(actividadesData.actividades);
+        setHorarios(actividadesData.horarios);
+        setCargando(false);
+      } catch (err) {
+        console.error("Error al obtener datos de actividades:", err);
+        setError("No se pudieron cargar las actividades. Por favor, intente nuevamente más tarde.");
+        setCargando(false);
+      }
+    };
+
+    fetchActividades();
+  }, []);
+
+  // Función para procesar los datos de la API
+  const processActivityData = (data) => {
+    const procesadas = {
+      actividades: [],
+      horarios: []
+    };
+    
+    // Mapa para asignar colores a las actividades
+    const actividadesMap = new Map();
+    
+    // Si data es un array, procesarlo; si no, podría ser un objeto único
+    const dataArray = Array.isArray(data) ? data : [data];
+    
+    dataArray.forEach((item, index) => {
+      // Si la actividad no existe en nuestro mapa, agregarla
+      if (!actividadesMap.has(item.activityType)) {
+        const colorIndex = actividadesMap.size % coloresActividades.length;
+        actividadesMap.set(item.activityType, {
+          id: actividadesMap.size + 1,
+          nombre: item.activityType,
+          ...coloresActividades[colorIndex]
+        });
+      }
+      
+      // Procesar los horarios para cada día
+      if (item.days && Array.isArray(item.days)) {
+        item.days.forEach(day => {
+          const diaIndice = mapDiaSemana[day.dayWeek] || 0;
+          
+          // Transformar la hora de formato "HH:MM:SS" a "HH:MM"
+          const horaInicio = day.startHour.substring(0, 5);
+          const horaFin = day.endHour.substring(0, 5);
+          
+          // Agregar a la lista de horarios
+          procesadas.horarios.push([
+            diaIndice,
+            item.activityType,
+            horaInicio,
+            horaFin
+          ]);
+        });
+      }
+    });
+    
+    // Convertir el mapa a un array de actividades
+    procesadas.actividades = Array.from(actividadesMap.values());
+    
+    return procesadas;
+  };
+
+  // Funciones para navegar entre días
   const cambiarDia = (direccion) => {
     const nuevoDia = (diaActual + direccion + diasSemana.length) % diasSemana.length;
     setDiaActual(nuevoDia);
@@ -105,62 +187,79 @@ const HorarioClasesExacto = () => {
         </button>
       </div>
 
-      {/* Tabla de horarios */}
-      <div className="border border-gray-200 rounded-lg overflow-hidden mb-4 shadow-sm">
-        <div className="grid" style={{ gridTemplateColumns: "150px repeat(12, 1fr)" }}>
-          {/* Cabecera */}
-          <div className="p-2 border-b border-r border-gray-200 bg-gray-50 font-medium text-sm text-center">
-            Actividad
-          </div>
-          {horas.map(hora => (
-            <div key={hora} className="p-2 border-b border-r border-gray-200 bg-gray-50 font-medium text-sm text-center">
-              {hora}
-            </div>
-          ))}
-
-          {/* Filas de actividades */}
-          {actividades.map(actividad => {
-            const sesiones = getHorariosDelDia()[actividad.nombre] || [];
-
-            return (
-              <React.Fragment key={actividad.id}>
-                {/* Nombre de actividad */}
-                <div className="p-2 border-b border-r border-gray-200 bg-gray-50 font-medium text-sm">
-                  {actividad.nombre}
-                </div>
-
-                {/* Bloques de horario */}
-                <div className="col-span-12 border-b border-gray-200 relative grid grid-cols-12">
-                  {sesiones.map((sesion, idx) => (
-                    <div
-                      key={`${actividad.id}-${idx}`}
-                      className={`${actividad.color} ${actividad.borderColor} cursor-pointer h-12 flex items-center justify-center`}
-                      style={{
-                        gridColumnStart: sesion.inicioIdx + 1,
-                        gridColumnEnd: `span ${sesion.finIdx - sesion.inicioIdx}`
-                      }}
-                      onClick={() => setActividadSeleccionada({
-                        nombre: actividad.nombre,
-                        inicio: sesion.inicio,
-                        fin: sesion.fin
-                      })}
-                    />
-                  ))}
-
-                  {/* Líneas divisorias */}
-                  {[...Array(11)].map((_, i) => (
-                    <div
-                      key={`line-${i}`}
-                      className="absolute border-r border-gray-200 h-full"
-                      style={{ left: `${(i + 1) * (100 / 12)}%` }}
-                    />
-                  ))}
-                </div>
-              </React.Fragment>
-            );
-          })}
+      {/* Estado de carga */}
+      {cargando && (
+        <div className="flex justify-center items-center py-10">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-red-800"></div>
+          <span className="ml-3 text-red-800">Cargando horarios...</span>
         </div>
-      </div>
+      )}
+
+      {/* Mensaje de error */}
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <p>{error}</p>
+        </div>
+      )}
+
+      {/* Tabla de horarios */}
+      {!cargando && !error && (
+        <div className="border border-gray-200 rounded-lg overflow-hidden mb-4 shadow-sm">
+          <div className="grid" style={{ gridTemplateColumns: "150px repeat(12, 1fr)" }}>
+            {/* Cabecera */}
+            <div className="p-2 border-b border-r border-gray-200 bg-gray-50 font-medium text-sm text-center">
+              Actividad
+            </div>
+            {horas.map(hora => (
+              <div key={hora} className="p-2 border-b border-r border-gray-200 bg-gray-50 font-medium text-sm text-center">
+                {hora}
+              </div>
+            ))}
+
+            {/* Filas de actividades */}
+            {actividades.map(actividad => {
+              const sesiones = getHorariosDelDia()[actividad.nombre] || [];
+
+              return (
+                <React.Fragment key={actividad.id}>
+                  {/* Nombre de actividad */}
+                  <div className="p-2 border-b border-r border-gray-200 bg-gray-50 font-medium text-sm">
+                    {actividad.nombre}
+                  </div>
+
+                  {/* Bloques de horario */}
+                  <div className="col-span-12 border-b border-gray-200 relative grid grid-cols-12">
+                    {sesiones.map((sesion, idx) => (
+                      <div
+                        key={`${actividad.id}-${idx}`}
+                        className={`${actividad.color} ${actividad.borderColor} cursor-pointer h-12 flex items-center justify-center`}
+                        style={{
+                          gridColumnStart: sesion.inicioIdx + 1,
+                          gridColumnEnd: `span ${sesion.finIdx - sesion.inicioIdx}`
+                        }}
+                        onClick={() => setActividadSeleccionada({
+                          nombre: actividad.nombre,
+                          inicio: sesion.inicio,
+                          fin: sesion.fin
+                        })}
+                      />
+                    ))}
+
+                    {/* Líneas divisorias */}
+                    {[...Array(11)].map((_, i) => (
+                      <div
+                        key={`line-${i}`}
+                        className="absolute border-r border-gray-200 h-full"
+                        style={{ left: `${(i + 1) * (100 / 12)}%` }}
+                      />
+                    ))}
+                  </div>
+                </React.Fragment>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Panel de actividad seleccionada */}
       {actividadSeleccionada && (
