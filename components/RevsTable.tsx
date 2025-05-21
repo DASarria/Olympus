@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus, Clock, Pencil, Trash } from "lucide-react"
+import { Plus, Clock, Pencil, Trash, Calendar  } from "lucide-react"
 import ReservaModal from "./ReservaModal"
 import ReservaExpandida from "./ReservaExpandida"
 import React from "react"
@@ -53,7 +53,7 @@ const RevsTable = () => {
   const [searchRoom, setSearchRoom] = useState("")
   const [elementNames, setElementNames] = useState<Record<string, string>>({})
   const [rooms, setRooms] = useState<RoomsProps[]>([])
-
+  const [dateFilter, setDateFilter] = useState<string>("")
 
   const getRowColor = (reserva: Reserva) => {
     switch(reserva.state.toLowerCase()){
@@ -442,7 +442,8 @@ const RevsTable = () => {
     const matchesId = searchId ? reserva.userId?.toLowerCase().includes(searchId.toLowerCase()) : true
     const matchesName = searchName ? reserva.userName.toLowerCase().includes(searchName.toLowerCase()) : true
     const matchesRoom = searchRoom ? reserva.roomId.toLowerCase().includes(searchRoom.toLowerCase()) : true
-    return matchesId && matchesName && matchesRoom
+    const matchesDate = dateFilter === "" || reserva.date.day === dateFilter
+    return matchesId && matchesName && matchesRoom && matchesDate
   })
 
   return (
@@ -477,6 +478,15 @@ const RevsTable = () => {
                 </option>
               ))}
             </select>
+            <div className="relative w-full md:w-64">
+            <input
+              type="date"
+              className="w-full px-4 py-2 rounded-xl bg-white drop-shadow-xl pl-10"
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+            />
+            <Calendar className="absolute left-3 top-2.5 text-gray-400 w-4 h-4" />
+            </div>
           </div>
           <div>
             <button onClick={() => setShowModal(true)} className="bg-white rounded-xl p-2 drop-shadow-xl">
