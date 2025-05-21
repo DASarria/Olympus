@@ -17,16 +17,16 @@ const BodyCanvasInteractive = dynamic(
 
 // Mapping from zone ID to muscle group name
 const zoneToMuscle: Record<number, string> = {
-  1: 'pecho',
-  2: 'espalda',
-  3: 'bíceps',
-  4: 'tríceps',
-  5: 'hombros',
-  6: 'abdomen',
-  7: 'glúteos',
-  8: 'cuádriceps',
-  9: 'isquiotibiales',
-  10: 'pantorrillas',
+    1: 'pecho',
+    2: 'espalda',
+    3: 'bíceps',
+    4: 'tríceps',
+    5: 'hombros',
+    6: 'abdomen',
+    7: 'glúteos',
+    8: 'cuádriceps',
+    9: 'isquiotibiales',
+    10: 'pantorrillas',
 };
 
 
@@ -179,19 +179,18 @@ const Routines = () => {
                     text="Rutinas"
                     returnPoint="/gym-module"
                 />
-                    <div className="flex flex-col md:flex-row gap-6">
-                        <div className="w-full md:w-1/2 lg:w-5/12 flex flex-col items-center justify-center gap-5">
-                            {/* Selector de anatomía */}
-                            <BodyCanvasInteractive
-                                modelPath="/models/male/scene.gltf"
-                                onSelectZone={setSelectedMuscleGroup}
-                            />
-                            {selectedMuscleGroup && (
-                                <div className="mt-2 text-center">
-                                    <span className="font-semibold">Grupo muscular seleccionado:</span> {zoneToMuscle[selectedMuscleGroup]}
-                                </div>
-                            )}
-                        </div>
+                <div className="flex flex-col md:flex-row gap-6">
+                    <div className="w-full md:w-1/2 lg:w-5/12 flex flex-col items-center justify-center gap-5">
+                        {/* Selector de anatomía */}
+                        <BodyCanvasInteractive
+                            modelPath="/models/male/scene.gltf"
+                            onSelectZone={setSelectedMuscleGroup}
+                        />
+                        {selectedMuscleGroup && (
+                            <div className="mt-2 text-center">
+                                <span className="font-semibold">Grupo muscular seleccionado:</span> {zoneToMuscle[selectedMuscleGroup]}
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex flex-col w-full">
@@ -244,15 +243,18 @@ const Routines = () => {
                         </AnimatePresence>
 
                         <h2 className="text-2xl font-bold mt-8 mb-4">Rutinas Recomendadas</h2>
-                        {filteredRecommended.length > 0 ? (
-                            filteredRecommended.map((routine) => (
-                                <RoutineCarousel routines={recommendedRoutines} />
-                            ))
-                        ) : (
-                            <div className="col-span-full text-center py-6 text-gray-500">
-                                No hay rutinas recomendadas para este grupo muscular
-                            </div>
-                        )}
+                        <div>
+                            {filteredRecommended.length > 0 ? (
+                                filteredRecommended.map((routine) => (
+                                    <RoutineCarousel routines={recommendedRoutines} />
+                                ))
+                            ) : (
+                                <div className="col-span-full text-center py-6 text-gray-500">
+                                    No hay rutinas recomendadas para este grupo muscular
+                                </div>
+                            )}
+                        </div>
+                        </div>
                     </div>
                 </div>
             </div>
