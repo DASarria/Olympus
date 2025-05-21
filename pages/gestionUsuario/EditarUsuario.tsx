@@ -1,174 +1,196 @@
-import { Return } from "@/components/Return";
-import { withRoleProtection } from "@/hoc/withRoleProtection";
-import CampoSelect from "@/components/gestionUsuario/CampoSelect";
-import CampoTexto from "@/components/gestionUsuario/CampoTexto";
-import RectanguloConTexto from "@/components/gestionUsuario/RectanguloConTexto";
+import { useState } from "react";
+import axios from "axios";
+import styles from "@/components/gestionUsuario/styles.module.css";
 
-const Routines = () => {
-  const role: string = "TRAINER";
+import { Return } from "@/components/Return";
+import CampoTexto from "@/components/gestionUsuario/CampoTexto";
+import CampoSelect from "@/components/gestionUsuario/CampoSelect";
+import RectanguloConTexto from "@/components/gestionUsuario/RectanguloConTexto";
+import { withRoleProtection } from "@/hoc/withRoleProtection";
+
+const EditarUsuario = () => {
+
+  type FiltroKey = "academicProgram" | "codeStudent" | "userName" | "fullName" | "role" | "id";
+
+  interface Filtros {
+  academicProgram: string;
+  codeStudent: string;
+  userName: string;
+  fullName: string;
+  role: string;
+  id: string;
+  }
+
+
+  const [filtros, setFiltros] = useState<Filtros>({
+    academicProgram: "",
+    codeStudent: "",
+    userName: "",
+    fullName: "",
+    role: "",
+    id: ""
+  });
+
+  const [filtroSeleccionado, setFiltroSeleccionado] = useState<FiltroKey>("fullName");
+  const [resultados, setResultados] = useState([]);
+
+  const opcionesFiltro = [
+    { label: "Programa académico", value: "academicProgram" },
+    { label: "Código estudiante", value: "codeStudent" },
+    { label: "Usuario", value: "userName" },
+    { label: "Nombre completo", value: "fullName" },
+    { label: "ID", value: "id" },
+    { label: "Rol", value: "role" }
+  ];
+
+  const filtrosConSoloUno = Object.fromEntries(
+    Object.keys(filtros).map((k) => [k, k === filtroSeleccionado ? filtros[k] || null : null])
+  );
+
+  const consultar = async () => {
+    try {
+      const res = await axios.post("http://localhost:8080/user/query", filtrosConSoloUno, {
+        headers: { "Content-Type": "application/json" }
+      });
+      setResultados(res.data.data);
+      alert("Consulta realizada con éxito");
+    } catch (e) {
+      console.error(e);
+      alert("Error al consultar usuarios");
+    }
+  };
+
+  const editarUsuario = (id: string) => {
+    alert(`Editar usuario con ID: ${id}`);
+  };
+
+  const borrarUsuario = (id: string) => {
+    alert(`Borrar usuario con ID: ${id}`);
+  };
 
   return (
-    <div
-      style={{
-        padding: "20px",
-        fontFamily: "'Open Sans', sans-serif",
-      }}
-    >
+    <div style={{ padding: "20px", fontFamily: "'Open Sans', sans-serif" }}>
       <Return
         className="!self-stretch !flex-[0_0_auto] !w-full mb-6"
-        text="Gestión de Usuarios"
-        returnPoint="/gym-module/Routines"
+        text="Consultar usuarios"
+        returnPoint="/Module6"
       />
 
-      <RectanguloConTexto texto="Agregar Usuario" ancho="100%" alto="auto">
-  <div
-    style={{
-      display: "flex",
-      flexWrap: "wrap",
-      gap: "5px 40px",
-      width: "100%",
-      boxSizing: "border-box",
-    }}
-  >
-    {[
-      {
-        comp: (
-          <CampoSelect
-            etiqueta="Tipo de usuario"
-            marcador="Selecciona un tipo de usuario"
-            opciones={["Usuario", "Administrador"]}
-          />
-        ),
-        ancho: "100%",
-      },
-    ].map(({ comp, ancho }, i) => (
-      <div
-        key={i}
-        style={{
-          flex: `1 1 ${ancho || "calc(50% - 20px)"}`,
-          minWidth: "200px",
-        }}
-      >
-        {comp}
+      <RectanguloConTexto texto="Filtros de búsqueda">
+        <div style={{ display: "flex", gap: "20px", alignItems: "center", flexWrap: "wrap" }}>
+          <div style={{ minWidth: "200px", flex: "1" }}>
+            <CampoSelect
+              etiqueta="Buscar por"
+              marcador="Seleccione filtro"
+              opciones={opcionesFiltro.map(op => op.label)}
+              valor={opcionesFiltro.find(op => op.value === filtroSeleccionado)?.label || ""}
+              onChange={(labelSeleccionado) => {
+                const filtro = opcionesFiltro.find(op => op.label === labelSeleccionado);
+                if (filtro) setFiltroSeleccionado(filtro.value as FiltroKey);
+
+              }}
+            />
+          </div>
+
+          <div style={{ flex: "2", minWidth: "250px" }}>
+            {filtroSeleccionado === "academicProgram" && (
+              <CampoSelect
+                etiqueta="Programa académico"
+                marcador="Seleccione programa"
+                opciones={[
+                  "Ingeniería de Sistemas", "Ingeniería Electrónica", "Ingeniería Mecánica",
+                  "Ingeniería Eléctrica", "Matemática", "Estadística", "Ingeniería Biomédica"
+                ]}
+                valor={filtros.academicProgram}
+                onChange={(v) => setFiltros({ ...filtros, academicProgram: v })}
+              />
+            )}
+            {filtroSeleccionado === "role" && (
+              <CampoSelect
+                etiqueta="Rol"
+                marcador="Seleccione rol"
+                opciones={["STUDENT", "ADMIN", "TEACHER"]}
+                valor={filtros.role}
+                onChange={(v) => setFiltros({ ...filtros, role: v })}
+              />
+            )}
+            
+            {["codeStudent", "userName", "fullName", "id"].includes(filtroSeleccionado) && (
+              <CampoTexto
+                etiqueta={
+                  filtroSeleccionado === "codeStudent" ? "Código estudiante" :
+                  filtroSeleccionado === "userName" ? "Usuario" :
+                  filtroSeleccionado === "id" ? "ID" :
+                  "Nombre completo"
+                }
+                marcador="Ingrese valor"
+                valor={filtros[filtroSeleccionado]}
+                onChange={(v) => setFiltros({ ...filtros, [filtroSeleccionado]: v })}
+              />
+            )}
+
+
+            
+          </div>
+          
+        </div>
+      </RectanguloConTexto>
+
+      <div style={{ width: "90%", margin: "30px auto 30px" }}>
+        <button className={styles.boton} onClick={consultar} style={{ width: "100%" }}>
+          Consultar
+        </button>
       </div>
-    ))}
 
-    <div style={{ marginTop: "10px" }}>
-      <button
-        onClick={() => (window.location.href = "/gym-module/Reservations")}
-        style={{
-          backgroundColor: "#990000",
-          color: "#ffffff",
-          fontFamily: "'Open Sans', sans-serif",
-          borderRadius: "16px",
-          padding: "10px 20px",
-          border: "none",
-          cursor: "pointer",
-          fontSize: "20px",
-        }}
-      >
-        Crear Usuario
-      </button>
-    </div>
-  </div>
-</RectanguloConTexto>
-
-
-      <div style={{ marginTop: "30px" }}>
-        <RectanguloConTexto texto="Editar usuario" ancho="100%" alto="auto">
+      {resultados.length > 0 && (
+        <RectanguloConTexto texto="Resultados de búsqueda">
           <div
             style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "5px 40px",
-              width: "100%",
-              boxSizing: "border-box",
+              marginTop: "30px",
+              fontFamily: "'Open Sans', sans-serif",
+              fontSize: "clamp(14px, 2vw, 20px)",
+              textAlign: "center"
             }}
           >
-            {[
-              {
-                comp: <CampoTexto etiqueta="Nombre" marcador="Digite nombre completo" />,
-              },
-              {
-                comp: (
-                  <CampoSelect
-                    etiqueta="Programa académico"
-                    marcador="Seleccione programa académico"
-                    opciones={[
-                      "Ingeniería de Sistemas",
-                      "Ingeniería Electrónica",
-                      "Ingeniería Mecánica",
-                      "Ingeniería Eléctrica",
-                      "Matemática",
-                      "Estadística",
-                      "Ingeniería Biomédica",
-                    ]}
-                  />
-                ),
-              },
-              {
-                comp: (
-                  <CampoTexto
-                    etiqueta="Número de documento"
-                    marcador="Digite número de documento"
-                  />
-                ),
-                ancho: "32.8%",
-              },
-              {
-                comp: (
-                  <CampoTexto
-                    etiqueta="Carnet estudiantil"
-                    marcador="Digite número de Carnet estudiantil"
-                  />
-                ),
-                ancho: "32.8%",
-              },
-              {
-                comp: (
-                  <CampoSelect
-                    etiqueta="Tipo de usuario"
-                    marcador="Selecciona un tipo de usuario"
-                    opciones={["Usuario", "Administrador"]}
-                  />
-                ),
-                ancho: "32.8%",
-              },
-            ].map(({ comp, ancho }, i) => (
-              <div
-                key={i}
-                style={{
-                  flex: `1 1 ${ancho || "calc(50% - 20px)"}`,
-                  minWidth: "200px",
-                }}
-              >
-                {comp}
-              </div>
-            ))}
-
-            <div style={{ marginTop: "40px" }}>
-              <button
-                onClick={() => (window.location.href = "/gym-module/Routines")}
-                style={{
-                  backgroundColor: "#990000",
-                  color: "#ffffff",
-                  fontFamily: "'Open Sans', sans-serif",
-                  borderRadius: "16px",
-                  padding: "10px 20px",
-                  border: "none",
-                  cursor: "pointer",
-                  fontSize: "20px",
-                }}
-              >
-                Buscar
-              </button>
+            <div
+              style={{
+                border: "1px solid #ccc",
+                borderRadius: "16px",
+                overflow: "hidden",
+                backgroundColor: "#FFFFFF"
+              }}
+            >
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead style={{ backgroundColor: "#FFFFFF" }}>
+                  <tr>
+                    <th style={{ padding: "12px", borderBottom: "1px solid #ccc", borderRight: "1px solid #ccc" }}>Nombre</th>
+                    <th style={{ padding: "12px", borderBottom: "1px solid #ccc", borderRight: "1px solid #ccc" }}>ID</th>
+                    <th style={{ padding: "12px", borderBottom: "1px solid #ccc" }}>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {resultados.map((u: any, i: number) => (
+                    <tr key={i} style={{ borderBottom: "1px solid #eee" }}>
+                      <td style={{ padding: "12px", borderRight: "1px solid #ccc" }}>{u.fullName}</td>
+                      <td style={{ padding: "12px", borderRight: "1px solid #ccc" }}>{u.id}</td>
+                      <td style={{ padding: "12px" }}>
+                        <button className={styles.boton} onClick={() => editarUsuario(u.id)} style={{ marginRight: "10px", width: "30%" }}>
+                          Editar
+                        </button>
+                        <button className={styles.boton} onClick={() => borrarUsuario(u.id)} style={{ marginRight: "10px", width: "30%" }}>
+                          Borrar
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </RectanguloConTexto>
-      </div>
+      )}
     </div>
   );
 };
 
-
-export default withRoleProtection(["USER", "TRAINER"], "/Module5")(Routines);
+export default withRoleProtection(["USER", "TRAINER"], "/Module5")(EditarUsuario);

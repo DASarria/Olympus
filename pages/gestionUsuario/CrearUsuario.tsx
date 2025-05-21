@@ -9,7 +9,13 @@ import CampoSelect from "@/components/gestionUsuario/CampoSelect";
 import CampoTexto from "@/components/gestionUsuario/CampoTexto";
 import RectanguloConTexto from "@/components/gestionUsuario/RectanguloConTexto";
 
+
+
 const CrearUsuario = () => {
+
+  const opcionesRol = ["ADMIN", "SALA_ADMIN", "TRAINER", "MEDICAL_SECRETARY", "DOCTOR", "TEACHER", "EXTRACURRICULAR_TEACHER", "BIENESTAR"];
+  const especialidades = ["GENERAL_MEDICINE", "DENTIST" , "PSYCHOLOGY"];
+
   const [datos, setDatos] = useState({
     tipoUsuario: "", 
 
@@ -30,7 +36,7 @@ const CrearUsuario = () => {
 
     especialidad: "",
     rol: "",
-    contrasena: "123456",
+    contrasena: "",
   });
 
   const handleSubmit = async () => {
@@ -40,7 +46,7 @@ const CrearUsuario = () => {
     if (datos.tipoUsuario === "Usuario") {
       const payload = {
         codeStudent: datos.carnet,
-        studentPassword: "123456", // temporal
+        studentPassword: datos.doc,
         fullNameStudent: datos.nombre,
         academicProgram: datos.programa,
         emailAddress: datos.correo,
@@ -69,8 +75,8 @@ const CrearUsuario = () => {
         role: datos.rol,
         emailAddress: datos.correo,
         contactNumber: datos.tel,
-        adminPassword: datos.contrasena,
-        // dataSchedule pendiente si aplica
+        adminPassword: datos.doc,
+        schedule: [],
       };
 
       res = await axios.post("http://localhost:8080/authentication/admin", payload);
@@ -90,7 +96,7 @@ const CrearUsuario = () => {
       <Return
         className="!self-stretch !flex-[0_0_auto] !w-full mb-6"
         text="Crear usuario"
-        returnPoint="/gym-module/Routines"
+        returnPoint="/Module6"
       />
 
       <RectanguloConTexto texto="Tipo de usuario">
@@ -99,7 +105,7 @@ const CrearUsuario = () => {
         >
           {[
             <CampoSelect etiqueta="Tipo de usuario" marcador="Seleccione tipo de usuario" opciones={["Usuario", "Administrador"]} 
-              valor={datos.tipoId} onChange={(v) => setDatos({ ...datos, tipoId: v })} />,
+              valor={datos.tipoUsuario} onChange={(v) => setDatos({ ...datos, tipoUsuario: v })} />,
 
           ].map((comp, i) => (
             <div key={i} style={{ flex: `1 1 ${i >= 6 ? "32.8%" : "calc(50% - 20px)"}`, minWidth: "200px" }}>
@@ -110,7 +116,7 @@ const CrearUsuario = () => {
       </RectanguloConTexto>
 
 
-      {datos.tipoId === "Usuario" && (
+      {datos.tipoUsuario=== "Usuario" && (
       <div style={{ marginTop: "30px" }}>
       <RectanguloConTexto texto="Información Personal">
         <div
@@ -151,14 +157,12 @@ const CrearUsuario = () => {
             </div>
           ))}
         </div>
-        
-
       </RectanguloConTexto>
       </div>
       )}
 
 
-      {datos.tipoId === "Usuario" && (
+      {datos.tipoUsuario === "Usuario" && (
       <div style={{ marginTop: "30px" }}>
         <RectanguloConTexto texto="Contacto de emergencia">
           <div
@@ -190,9 +194,7 @@ const CrearUsuario = () => {
       </div>
       )}
 
-
-
-      {datos.tipoId === "Administrador" && (
+      {datos.tipoUsuario=== "Administrador" && (
   <div style={{ marginTop: "30px" }}>
     <RectanguloConTexto texto="Información del Administrador">
       <div
@@ -208,11 +210,8 @@ const CrearUsuario = () => {
           <CampoTexto etiqueta="Nombre completo" marcador="Digite nombre" 
             valor={datos.nombre} onChange={(v) => setDatos({ ...datos, nombre: v })} />,
 
-          <CampoTexto etiqueta="Especialidad" marcador="Digite especialidad" 
-            valor={datos.programa} onChange={(v) => setDatos({ ...datos, programa: v })} />,
-
-          <CampoTexto etiqueta="Rol" marcador="Digite rol" 
-            valor={datos.contactoRelacion} onChange={(v) => setDatos({ ...datos, contactoRelacion: v })} />,
+          <CampoSelect etiqueta="Rol" marcador="Seleccione rol" opciones={opcionesRol}
+            valor={datos.rol} onChange={(v) => setDatos({ ...datos, rol: v })} />,
 
           <CampoTexto etiqueta="Correo" marcador="Digite correo" 
             valor={datos.correo} onChange={(v) => setDatos({ ...datos, correo: v })} />,
@@ -220,8 +219,9 @@ const CrearUsuario = () => {
           <CampoTexto etiqueta="Teléfono" marcador="Digite teléfono" 
             valor={datos.tel} onChange={(v) => setDatos({ ...datos, tel: v })} />,
 
-          <CampoTexto etiqueta="Contraseña" marcador="Digite contraseña" 
-            valor={"123456"} onChange={(v) => {}} />, // puedes manejar esto si quieres editarlo
+          datos.rol === "DOCTOR" && (
+          <CampoSelect etiqueta="Especialidad" marcador="Digite especialidad" opciones={especialidades}
+            valor={datos.especialidad} onChange={(v) => setDatos({ ...datos, especialidad: v })} />),
 
         ].map((comp, i) => (
           <div key={i} style={{ flex: "1 1 calc(50% - 20px)", minWidth: "200px" }}>

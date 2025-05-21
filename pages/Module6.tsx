@@ -28,13 +28,13 @@ const Module6 = () => {
           <>
             <NavBtn
               image={{ src: Usuario.src }}
-              texto="Gestión de usuarios"
+              texto="Agrgar usuario"
               navigate="/gestionUsuario/CrearUsuario"
             />
             <NavBtn
               image={{ src: Horario.src }}
-              texto="Gestión de horarios"
-              navigate="/"
+              texto="Editar Usuario"
+              navigate="/gestionUsuario/EditarUsuario"
             />
           </>
         )}
