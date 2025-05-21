@@ -80,7 +80,7 @@ const ReservaExpandida: React.FC<Props> = ({ reserva, onClose, onSave }) => {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        Authorization: `${token}`,
       },
     })
     if (!response.ok) throw new Error("Error al cargar salas")
@@ -98,7 +98,7 @@ const ReservaExpandida: React.FC<Props> = ({ reserva, onClose, onSave }) => {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `${token}`,
         },
       })
 
@@ -227,7 +227,7 @@ await onSave(updatedReserva)
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `${token}`,
           },
         })
 
@@ -241,7 +241,7 @@ await onSave(updatedReserva)
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `${token}`,
           },
           body: JSON.stringify({
             ...element,
@@ -261,7 +261,7 @@ await onSave(updatedReserva)
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `${token}`,
           },
         })
 
@@ -275,7 +275,7 @@ await onSave(updatedReserva)
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `${token}`,
           },
           body: JSON.stringify({
             ...element,

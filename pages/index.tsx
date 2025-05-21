@@ -28,7 +28,7 @@ const Index = () => {
     
     const loginResponse:response = await login({ userName, password });
     if(loginResponse.status== "200"){
-      sessionStorage.setItem("token", loginResponse.data.token.slice(7));
+      sessionStorage.setItem("token", loginResponse.data.token);
       sessionStorage.setItem("role", loginResponse.data.role);
       router.push("/Dashboard");
     }

@@ -93,7 +93,7 @@ const SCERAdmin = () => {
         method: "GET",
         headers: {
           "content-type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `${token}`,
         },
         cache: "no-store",
       })
@@ -106,7 +106,7 @@ const SCERAdmin = () => {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `${token}`,
         },
         cache: "no-store",
       })
@@ -219,7 +219,7 @@ const SCERAdmin = () => {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `${token}`,
         },
         body: JSON.stringify({
           description: nuevaDescripcion,
@@ -262,7 +262,7 @@ const SCERAdmin = () => {
           method: "DELETE",
           headers: {
             "content-type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `${token}`,
           },
         })
         if (!response.ok) {
@@ -309,7 +309,7 @@ const SCERAdmin = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `${token}`,
         },
         body: JSON.stringify({
           name: nuevoNombre,
@@ -330,7 +330,7 @@ const SCERAdmin = () => {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `${token}`,
           },
         })
         const allElements = await allResponse.json()
