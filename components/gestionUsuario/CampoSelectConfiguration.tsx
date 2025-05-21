@@ -1,27 +1,19 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
+
 
 interface Props {
   etiqueta: string;
   marcador: string;
   opciones: string[];
+  value:string;
+  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
 }
 
-const CampoSelect: React.FC<Props> = ({ etiqueta, opciones, marcador }) => {
-  const [valorSeleccionado, setValorSeleccionado] = useState("");
-
-  const manejarCambio = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setValorSeleccionado(event.target.value);
-  };
+const CampoSelectConfiguration: React.FC<Props> = ({ etiqueta, opciones, marcador, value, onChange }) => {
   
 
   return (
-    <motion.div
-        whileHover={{
-            scale: 1.005,
-            transition: { duration: 0.15 },
-        }}
-    >
+    
         <div
         style={{ marginBottom: "1rem", fontFamily: "'Open Sans', sans-serif" }}
         >
@@ -48,8 +40,8 @@ const CampoSelect: React.FC<Props> = ({ etiqueta, opciones, marcador }) => {
                 outline: "none",
                 fontFamily: "'Open Sans', sans-serif",
                 }}
-                value={valorSeleccionado}
-                onChange={manejarCambio}
+                value={value}
+                onChange={onChange}
             >
                 <option value="" disabled>
                 {marcador}
@@ -62,8 +54,8 @@ const CampoSelect: React.FC<Props> = ({ etiqueta, opciones, marcador }) => {
                 ))}
             </select>
         </div>
-    </motion.div>
+    
   );
 };
 
-export default CampoSelect;
+export default CampoSelectConfiguration;

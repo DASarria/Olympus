@@ -6,7 +6,7 @@ const api = axios.create({ baseURL: USER_API_BASE_URL });
 
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEyMTMyMTQxIiwidXNlck5hbWUiOiJhZG1pbiIsImVtYWlsIjoiYWRtaW5AZXNjdWVsYWluZy5lZHUuY28iLCJuYW1lIjoiZWwgYWRtaW4iLCJyb2xlIjoiQURNSU4iLCJzcGVjaWFsdHkiOiJudWxsIiwiZXhwIjoxNzQ3NzcyOTA0fQ.x8ggcUUnVcMDrT9mhCxLWdEMyQ9JW_XK4z73_Z9men0';
+    const token = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEyMTMyMTQxIiwidXNlck5hbWUiOiJhZG1pbiIsImVtYWlsIjoiYWRtaW5AZXNjdWVsYWluZy5lZHUuY28iLCJuYW1lIjoiZWwgYWRtaW4iLCJyb2xlIjoiQURNSU4iLCJzcGVjaWFsdHkiOiJudWxsIiwiZXhwIjoxNzQ3ODY3MTM5fQ.uzN559jXgkc--84_bxgzpAxDqZia74vLP3t9BpoUrRQ';
     if (token && config.headers) {
       config.headers.Authorization = token;
       config.headers['Content-Type'] = 'application/json';
@@ -49,13 +49,41 @@ async function getConfigurations():Promise<response> {
   }
 }
 
+interface responseDelete{
+        status:string;
+        message:string;
+        data:null;
+    }
+
+export async function deleteConfiguration(name:string):Promise<responseDelete> {
+    try {
+    const response = await api.delete("",{params:{
+      name:name
+    }
+    });
+    return response.data;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      const errorBody = error.response?.data;
+      return errorBody;
+    }
+    // Garantiza que la función no finaliza sin retornar
+    const errorResponse:response = {
+        status:"500",
+        message:"Error Desconocido",
+        data:[]
+    }
+    throw errorResponse;
+  }
+}
+
 interface Interval{
   startTime: string;        
   endTime: string; 
-  reazon:string;
+  reason:string;
 }
 interface Configuration{
-  id: number;               
+  id: string|null;               
   name: string;             
   startTime: string;        
   endTime: string;
@@ -74,6 +102,25 @@ export async function getConfigurationByName(name:String):Promise<ResponseName> 
         name:name
       }
     });
+    return response.data;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      const errorBody = error.response?.data;
+      return errorBody;
+    }
+    // Garantiza que la función no finaliza sin retornar
+    const errorResponse:response = {
+        status:"500",
+        message:"Error Desconocido",
+        data:[]
+    }
+    throw errorResponse;
+  }
+}
+
+export async function CreateConfiguration(configuration:Configuration):Promise<responseDelete>{
+  try {
+    const response = await api.post("",configuration);
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {

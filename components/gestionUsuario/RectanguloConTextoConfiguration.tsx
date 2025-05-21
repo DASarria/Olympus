@@ -8,7 +8,7 @@ interface Props {
   children?: ReactNode;
 }
 
-const RectanguloConTexto: React.FC<Props> = ({
+const RectanguloConTextoConfiguration: React.FC<Props> = ({
   texto,
   ancho = "100%",
   alto = "100%",
@@ -17,7 +17,7 @@ const RectanguloConTexto: React.FC<Props> = ({
   return (
     <motion.div
             whileHover={{
-                scale: 1.005,
+                scale: 1,
                 transition: { duration: 0.15 },
             }}
     >
@@ -61,4 +61,4 @@ const RectanguloConTexto: React.FC<Props> = ({
   );
 };
 
-export default RectanguloConTexto;
+export default RectanguloConTextoConfiguration;
