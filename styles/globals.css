@@ -7,3 +7,7 @@
 .bg-eci{
     background-color: var(--color-eci);
 }
+
+button{
+    cursor: pointer;
+}
