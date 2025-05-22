@@ -6,6 +6,7 @@ import modulo5 from "@/assets/images/5imagen.jpg";
 import modulo6 from "@/assets/images/6imagen.jpg";
 import logotransparente from "@/assets/images/logotransparente.png";
 import Module from "./Module";
+import Image from "next/image";
 
 const modules = [
     {
@@ -34,7 +35,7 @@ const modules = [
     },
     {
         moduleName: "module 5",
-        roleCanUse: ["ADMIN"],
+        roleCanUse: ["ADMIN", "STUDENT", "TRAINER"],
         urlToNavigate: "/gym-module",
         image: modulo5,
     },
@@ -54,11 +55,12 @@ const ResponsiveMenu = () => {
             {/* Vista de escritorio, le quité el logo para que se viera bien el body*/}
             <aside className="hidden md:inline-flex flex-col w-[7rem] items-start gap-[5px] relative bg-neutrallightgray h-full fixed left-0 top-0 z-50">
                 <div className="flex flex-col items-center justify-center px-0 py-2.5 relative self-stretch w-full flex-[0_0_auto] bg-[var(--primary-red)]">
-                    <img 
+                    <Image
+                        src={logotransparente}
                         alt="logo"
-                        src={logotransparente.src}
-                    >
-                    </img>
+                        width={200}
+                        height={100}
+                    />
                 </div>
                 <div className="flex flex-col items-center justify-center py-4">
                     {modules

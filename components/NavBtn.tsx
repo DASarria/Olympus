@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { motion } from "framer-motion";
+import Image from 'next/image';
 
 
 /**
@@ -42,10 +43,12 @@ export const NavBtn = ({ image, texto, navigate }: Props) => {
                     transition: { duration: 0.15 },
                 }}
             >
-                <img
-                className="w-[150px] object-cover h-[150px] relative"
-                alt="service"
-                src={image.src}
+                <Image
+                    src={image.src}
+                    alt="service"
+                    width={150}
+                    height={150}
+                    className="object-cover relative"
                 />
                 <div className="[font-family: 'Montserrat-Bold', Helvetica] self-stretch tracking-[0] text-2xl text-black font-bold text-center leading-[normal] relative">
                     {texto}

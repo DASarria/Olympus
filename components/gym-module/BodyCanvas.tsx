@@ -1,10 +1,13 @@
-import React, { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { Canvas, useFrame, extend } from '@react-three/fiber';
-import { OrbitControls, useGLTF } from '@react-three/drei';
+import { OrbitControls as DreiOrbitControls, useGLTF } from '@react-three/drei';
+import { OrbitControls } from 'three-stdlib';
 import * as THREE from 'three';
-import dynamic from 'next/dynamic';
-import ExerciseList from './ExerciseList';
-import { mockExercises } from '@/api/gym-module/exerciseMockData';
+//import dynamic from 'next/dynamic';
+//import ExerciseList from './ExerciseList';
+//import mockExercises from '@/api/gym-module/exerciseMockData';
+
+extend({ OrbitControls });
 
 // Only extend specific THREE objects that we need to use as JSX elements
 extend({
@@ -32,60 +35,60 @@ const zoneLabels: Record<number, string> = {
 };
 
 // Exercise popup modal component
-function ExercisePopup({ zoneId, onClose, exercises }: { 
-  zoneId: number; 
-  onClose: () => void;
-  exercises: any[];
-}) {
-  const [loading, setLoading] = useState(true);
-  const zoneKey: Record<number, string> = {
-    1: 'chest',
-    2: 'back',
-    3: 'biceps',
-    4: 'triceps',
-    5: 'shoulders',
-    6: 'abs',
-    7: 'glutes',
-    8: 'quads',
-    9: 'hamstrings',
-    10: 'calves',
-  };
+// function ExercisePopup({ zoneId, onClose, exercises }: { 
+//   zoneId: number; 
+//   onClose: () => void;
+//   exercises: any[];
+// }){
+//   const [loading, setLoading] = useState(true);
+//   const zoneKey: Record<number, string> = {
+//     1: 'chest',
+//     2: 'back',
+//     3: 'biceps',
+//     4: 'triceps',
+//     5: 'shoulders',
+//     6: 'abs',
+//     7: 'glutes',
+//     8: 'quads',
+//     9: 'hamstrings',
+//     10: 'calves',
+//   };
 
-  useEffect(() => {
-    // Simulate API loading for smoother UI
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-    }, 500);
-  }, [zoneId]);
+//   useEffect(() => {
+//     // Simulate API loading for smoother UI
+//     setLoading(true);
+//     setTimeout(() => {
+//       setLoading(false);
+//     }, 500);
+//   }, [zoneId]);
 
-  // Dynamic import of ExerciseList to avoid SSR issues
-  const ExerciseList = dynamic(() => import('./ExerciseList'), { ssr: false });
+//   // Dynamic import of ExerciseList to avoid SSR issues
+//   const ExerciseList = dynamic(() => import('./ExerciseList'), { ssr: false });
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
-      <div className="bg-white text-black rounded-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto p-6 relative">
-        <button 
-          onClick={onClose}
-          className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 text-xl"
-        >
-          ✕
-        </button>
-        <h2 className="text-2xl font-bold mb-4">
-          Ejercicios: {zoneLabels[zoneId]}
-        </h2>
+//   return (
+//     <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
+//       <div className="bg-white text-black rounded-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto p-6 relative">
+//         <button 
+//           onClick={onClose}
+//           className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 text-xl"
+//         >
+//           ✕
+//         </button>
+//         <h2 className="text-2xl font-bold mb-4">
+//           Ejercicios: {zoneLabels[zoneId]}
+//         </h2>
         
-        {loading ? (
-          <div className="flex justify-center py-8">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
-          </div>
-        ) : (
-          <ExerciseList exercises={exercises} />
-        )}
-      </div>
-    </div>
-  );
-}
+//         {loading ? (
+//           <div className="flex justify-center py-8">
+//             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+//           </div>
+//         ) : (
+//           <ExerciseList exercises={exercises} />
+//         )}
+//       </div>
+//     </div>
+//   );
+// }
 
 // Panel of vertical buttons
 function ZoneButtonPanel({ onSelectZone }: { onSelectZone: (zone: number) => void }) {
@@ -115,25 +118,29 @@ function Model({ modelPath }: Omit<BodyCanvasProps, 'onSelectZone'>) {
     <primitive object={scene} />
   );
 }
-
 function CameraControls() {
-  const orbitRef = useRef<any>(null);
-  
+  const orbitRef = useRef<OrbitControls>(null);
+
   useFrame(() => {
     if (orbitRef.current) {
-      // Slow rotation to help see all buttons
       orbitRef.current.autoRotateSpeed = 0.5;
       orbitRef.current.autoRotate = true;
     }
   });
-  
-  return <OrbitControls ref={orbitRef} enablePan={false} enableZoom={true} />;
+
+  return (
+    <DreiOrbitControls
+      ref={orbitRef}
+      enablePan={false}
+      enableZoom={true}
+    />
+  );
 }
 
 export default function BodyCanvas({ modelPath, onSelectZone }: BodyCanvasProps) {
   const [mounted, setMounted] = useState(false);
   const [selectedZoneId, setSelectedZoneId] = useState<number | null>(null);
-  const [exercises, setExercises] = useState<any[]>([]);
+  //const [exercises, setExercises] = useState<any[]>([]);
 
   // Custom handler for zone selection that shows popup
   const handleZoneSelect = (zoneId: number) => {
@@ -142,9 +149,9 @@ export default function BodyCanvas({ modelPath, onSelectZone }: BodyCanvasProps)
     onSelectZone(zoneId);
   };
 
-  const closePopup = () => {
-    setSelectedZoneId(null);
-  };
+  // const closePopup = () => {
+  //   setSelectedZoneId(null);
+  // };
 
   useEffect(() => {
     setMounted(true);
@@ -188,13 +195,13 @@ export default function BodyCanvas({ modelPath, onSelectZone }: BodyCanvasProps)
       </Canvas>
       
       {/* Exercise popup when a zone is selected */}
-      {selectedZoneId !== null && (
+      {/* {selectedZoneId !== null && (
         <ExercisePopup 
           zoneId={selectedZoneId} 
           onClose={closePopup} 
           exercises={exercises}
         />
-      )}
+      )} */}
     </div>
   );
 }

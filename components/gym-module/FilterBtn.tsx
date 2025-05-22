@@ -7,7 +7,7 @@ type DropdownType = 'search' | 'checkbox' | 'calendar';
 interface Props {
     icon: StaticImageData;
     text: string;
-    action: (value: any) => void;
+    action: (value: string | string[] | Date) => void;
     type: DropdownType;
     options?: string[]; // Only if type === 'checkbox'
 }
@@ -54,14 +54,14 @@ export const FilterBtn = ({icon, text, action, type, options} : Props) => {
             newValues = [...checkboxValues, value];
         }
         setCheckboxValues(newValues);
-        action(newValues); // call immediately
+        action(newValues);
     };
 
     // Handle calendar change
-    const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const date = e.target.value;
-        action(date); // call immediately
-    };
+    // const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    //     const date = e.target.value;
+    //     action(date);
+    // };
 
     const renderDropdownContent = () => {
         switch (type) {
@@ -70,6 +70,8 @@ export const FilterBtn = ({icon, text, action, type, options} : Props) => {
                     <input
                         type="text"
                         placeholder="Buscar..."
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
                         className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
                     />
                 );
@@ -78,7 +80,12 @@ export const FilterBtn = ({icon, text, action, type, options} : Props) => {
                     <div className="flex flex-col gap-1 max-h-40 overflow-y-auto">
                         {options?.map((option) => (
                             <label key={option} className="text-sm text-gray-700 flex items-center gap-2">
-                                <input type="checkbox" className="form-checkbox" />
+                                <input
+                                    type="checkbox"
+                                    className="form-checkbox"
+                                    checked={checkboxValues.includes(option)}
+                                    onChange={() => toggleCheckbox(option)}
+                                />
                                 {option}
                             </label>
                         )) ?? <p className="text-gray-500 text-sm">Sin opciones</p>}
@@ -88,6 +95,7 @@ export const FilterBtn = ({icon, text, action, type, options} : Props) => {
                 return (
                     <input
                         type="date"
+                        onChange={(e) => action(e.target.value)}
                         className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
                     />
                 );

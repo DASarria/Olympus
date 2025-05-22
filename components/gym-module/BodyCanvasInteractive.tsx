@@ -21,7 +21,7 @@ interface BodyCanvasProps {
 }
 
 interface Exercise {
-  id: string;
+  id?: string;
   name: string;
   sets: number;
   repetitions?: number;
@@ -47,11 +47,7 @@ const zoneLabels: Record<number, string> = {
   10: 'Pantorrillas',
 }
 
-// Exercise popup modal component with mock data
-function ExercisePopup({ zoneId, onClose }: { zoneId: number; onClose: () => void }) {
-  const [exercises, setExercises] = useState<Exercise[]>([])
-  const [loading, setLoading] = useState(true)
-  const zoneKey: Record<number, string> = {
+const zoneKey: Record<number, string> = {
     1: 'chest',
     2: 'back',
     3: 'biceps',
@@ -63,6 +59,11 @@ function ExercisePopup({ zoneId, onClose }: { zoneId: number; onClose: () => voi
     9: 'hamstrings',
     10: 'calves',
   }
+
+// Exercise popup modal component with mock data
+function ExercisePopup({ zoneId, onClose }: { zoneId: number; onClose: () => void }) {
+  const [exercises, setExercises] = useState<Exercise[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     // Simulate API loading with mock data

@@ -1,6 +1,3 @@
-import Image from 'next/image';
-import logotransparente from "../assets/images/logotransparente.png";
-
 interface HeaderProps {
   userName?: string;
   notificationsCount?: number;

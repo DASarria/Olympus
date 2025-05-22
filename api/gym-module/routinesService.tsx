@@ -51,14 +51,14 @@ export interface RoutineExercise {
  * @property {RoutineExerciseDTO[]} [exercises] - A list of exercises included in the routine (optional).
  */
 export interface RoutineDTO {
-  id?: string;
-  name?: string;
-  description?: string;
-  difficulty?: string;
-  goal?: string;
-  trainerId?: string;
-  creationDate?: string;
-  exercises?: RoutineExerciseDTO[];
+  id: string;
+  name: string;
+  description: string;
+  difficulty: string;
+  goal: string;
+  trainerId: string;
+  creationDate: string;
+  exercises: RoutineExerciseDTO[];
 }
 
 /**
@@ -73,14 +73,14 @@ export interface RoutineDTO {
  * @property {RoutineExercise[]} [exercises] - A list of exercises included in the routine (optional).
  */
 export interface Routine {
-  id?: string;
-  name?: string;
-  description?: string;
-  difficulty?: string;
-  goal?: string;
-  trainerId?: string;
-  creationDate?: string;
-  exercises?: RoutineExercise[];
+  id: string;
+  name: string;
+  description: string;
+  difficulty: string;
+  goal: string;
+  trainerId: string;
+  creationDate: string;
+  exercises: RoutineExercise[];
 }
 
 /**

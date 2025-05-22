@@ -1,9 +1,10 @@
 import { Return } from "@/components/Return"
 import { withRoleProtection } from "@/hoc/withRoleProtection";
-import { FilterBtn } from "@/components/gym-module/FilterBtn";
-import UserIcon from '@/assets/icons/user-filter.svg';
+// import { FilterBtn } from "@/components/gym-module/FilterBtn";
+// import UserIcon from '@/assets/icons/user-filter.svg';
 import { useState, useEffect } from "react";
-import { getLatestPhysicalMeasurement, getUserGoals, getPhysicalMeasurementHistory, getPhysicalProgressMetrics, ProgressMetrics } from '@/api/gymServicesIndex';
+// import { getLatestPhysicalMeasurement, getUserGoals, getPhysicalMeasurementHistory, getPhysicalProgressMetrics, ProgressMetrics } from '@/api/gymServicesIndex';
+//import { ProgressMetrics } from '@/api/gymServicesIndex';
 import { PageTransitionWrapper } from "@/components/PageTransitionWrapper";
 import { Line } from "react-chartjs-2";
 import { Chart as ChartJS, LineElement, CategoryScale, LinearScale, Title, Tooltip, Legend, PointElement } from 'chart.js';
@@ -29,6 +30,36 @@ const classifyBMI = (bmi: number) => {
     return { label: "Obesidad", color: "#FF0000" };
 };
 
+interface Measurements {
+  height: number;
+  chestCircumference: number;
+  waistCircumference: number;
+  hipCircumference: number;
+  bicepsCircumference: number;
+  thighCircumference: number;
+  additionalMeasures?: {
+    calves?: number;
+    shoulders?: number;
+    [key: string]: number | undefined;
+  };
+}
+
+interface LatestMeasurement {
+  weight: {
+    value: number;
+    unit: string;
+  };
+  measurements: Measurements;
+  physicalGoal: string;
+  bmi: number;
+}
+
+interface ProgressEntry {
+  recordDate: string;
+  weight?: { value: number };
+  measurements?: { height: number };
+}
+
 /**
  * PhysicalProgress component to display a user's physical progress such as weight, height, BMI, and goals.
  * Fetches and displays data, including BMI chart history.
@@ -39,14 +70,13 @@ const classifyBMI = (bmi: number) => {
 const PhysicalProgress = () => {
     const userId = typeof window !== 'undefined' ? sessionStorage.getItem("id") : null;
     //const role = typeof window !== 'undefined' ? sessionStorage.getItem("role") : null;
-    const role: string = "TRAINER";
 
-    const [searchTerm, setSearchTerm] = useState("");
-    const [students, setStudents] = useState(["Ana González", "Carlos Pérez", "María Rodríguez", "Juan Martínez"]); // Dummy list
-    const [latestMeasurement, setLatestMeasurement] = useState<any>(null);
+    //const [searchTerm, setSearchTerm] = useState("");
+    //const [students, setStudents] = useState(["Ana González", "Carlos Pérez", "María Rodríguez", "Juan Martínez"]); // Dummy list
+    const [latestMeasurement, setLatestMeasurement] = useState<LatestMeasurement | null>(null);
     const [userGoals, setUserGoals] = useState<string[]>([]);
     const [bmiData, setBmiData] = useState<{ date: string, bmi: number }[]>([]);
-    const [progressMetrics, setProgressMetrics] = useState<ProgressMetrics | null>(null);
+    //const [progressMetrics, setProgressMetrics] = useState<ProgressMetrics | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -77,7 +107,7 @@ const PhysicalProgress = () => {
 
             //     const progress = await getPhysicalMeasurementHistory(userId);
             //     const bmiHistory = progress
-            //         .map((entry: any) => {
+            //         .map((entry: ProgressEntry) => {
             //             const weight = entry.weight?.value;
             //             const height = entry.measurements?.height;
             //             if (!weight || !height) return null;
@@ -137,7 +167,7 @@ const PhysicalProgress = () => {
                 { recordDate: "2025-05-01", weight: { value: 72.5 }, measurements: { height: 1.75 } },
             ];
 
-            const bmiHistory = progress.map((entry: any) => {
+            const bmiHistory = progress.map((entry: ProgressEntry) => {
                 const weight = entry.weight?.value;
                 const height = entry.measurements?.height;
                 if (!weight || !height) return null;
@@ -149,21 +179,21 @@ const PhysicalProgress = () => {
             }).filter(item => item !== null);
             setBmiData(bmiHistory);
 
-            const metrics = {
-                weightChange: -5.5,
-                waistCircumferenceChange: -4,
-                chestCircumferenceChange: +2,
-            };
-            setProgressMetrics(metrics);
+            // const metrics = {
+            //     weightChange: -5.5,
+            //     waistCircumferenceChange: -4,
+            //     chestCircumferenceChange: +2,
+            // };
+            // setProgressMetrics(metrics);
             setLoading(false);
         }
 
         fetchData();
     }, [userId]);
 
-    const filteredStudents = students.filter(student =>
-        student.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    // const filteredStudents = students.filter(student =>
+    //     student.toLowerCase().includes(searchTerm.toLowerCase())
+    // );
 
     const latestBMI = latestMeasurement?.weight?.value && latestMeasurement?.measurements?.height
         ? parseFloat((latestMeasurement.weight.value / (latestMeasurement.measurements.height ** 2)).toFixed(2))
@@ -201,12 +231,12 @@ const PhysicalProgress = () => {
                         <div className="flex flex-col w-full items-center gap-5 pt-0 pb-20 px-0 relative flex-[0_0_auto]">
                             {/* Filter Input */}
                             <div className="flex items-start gap-2.5 relative self-stretch w-full flex-[0_0_auto]">
-                                <FilterBtn
+                                {/* <FilterBtn
                                     icon={UserIcon}
                                     text="Estudiante"
                                     type="search"
                                     action={(term: string) => setSearchTerm(term)}
-                                />
+                                /> */}
                             </div>
                             {/* Metrics blocks */}
                             <div className="flex w-full items-start gap-5 relative border-box">

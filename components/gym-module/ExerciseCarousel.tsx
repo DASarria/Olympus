@@ -1,9 +1,12 @@
 import Button from "@/components/gym-module/Button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { RoutineExercise } from "@/api/gymServicesIndex";
 import { useState } from "react";
 
 const ITEM_WIDTH = 280;
-const VISIBLE_ITEMS = 3; 
+interface Props {
+    exercises: RoutineExercise[];
+}
 
 /**
  * ExerciseCarousel Component
@@ -20,7 +23,7 @@ const VISIBLE_ITEMS = 3;
  * @param {Props} props - The props for the ExerciseCarousel component.
  * @returns {JSX.Element} The rendered carousel displaying exercise cards.
  */
-const ExerciseCarousel = ({ exercises }: { exercises: any[] }) => {
+const ExerciseCarousel = ({ exercises }: Props) => {
     const [index, setIndex] = useState(0);
 
 
@@ -42,7 +45,7 @@ const ExerciseCarousel = ({ exercises }: { exercises: any[] }) => {
                             key={i}
                             className="flex-shrink-0 w-[380px] h-[202px] max-h-[202px] border-box inline-flex flex-col items-start justify-center gap-3 px-10 py-[30px] relative bg-[#eaeaea] rounded-[20px] overflow-hidden"
                         >
-                            <div className="relative w-fit mt-[-1.00px] [font-family: 'Montserrat-Bold',Helvetica] font-bold text-black text-lg tracking-[0] leading-[18px] whitespace-nowrap">{exercise.name || "Ejercicio"}</div>
+                            <div className="relative w-fit mt-[-1.00px] [font-family: 'Montserrat-Bold',Helvetica] font-bold text-black text-lg tracking-[0] leading-[18px] whitespace-nowrap">Ejercicio</div>
                             <div className="inline-flex items-start gap-3 relatiove flex-[0_0_auto]">
                                 <div className="relative w-fit mt-[-1.00px] [font-family: 'Montserrat-Bold',Helvetica] font-bold text-black text-base tracking-[0] leading-4 whitespace-nowrap">Series: </div>
                                 <div className="relative w-fit mt-[-1.00px] [font-family: 'Montserrat-Medium',Helvetica] font-medium text-black text-base tracking-[0] leading-4 whitespace-nowrap">{exercise.sets}</div>

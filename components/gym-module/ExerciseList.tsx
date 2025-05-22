@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 
 interface Exercise {
   name: string;
@@ -77,10 +78,13 @@ function ExerciseList({ exercises }: { exercises: Exercise[] }) {
             {/* Image if it exists and there's no video */}
             {exercise.imageUrl && !exercise.videoUrl && (
               <div className="mt-4">
-                <img 
-                  src={exercise.imageUrl} 
+                <Image
+                  src={exercise.imageUrl}
                   alt={`Imagen de ${exercise.name}`}
-                  className="rounded-lg max-h-64 w-auto mx-auto"
+                  className="rounded-lg mx-auto max-h-64 w-auto"
+                  width={400}
+                  height={256}
+                  unoptimized
                 />
               </div>
             )}

@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { Return } from "@/components/Return"
 import { withRoleProtection } from "@/hoc/withRoleProtection";
-import { getCurrentRoutine, getUserRoutines, getRecommendedRoutines } from "@/api/gymServicesIndex";
+import { Routine } from "@/api/gymServicesIndex";
+// import { getCurrentRoutine, getUserRoutines, getRecommendedRoutines } from "@/api/gymServicesIndex";
 import Tabs from '@/components/gym-module/TabsProps';
 import RoutineCarousel from "@/components/gym-module/RoutineCarousel";
 import ExerciseCarousel from "@/components/gym-module/ExerciseCarousel";
@@ -38,10 +39,9 @@ const zoneToMuscle: Record<number, string> = {
 const Routines = () => {
     const userId = typeof window !== 'undefined' ? sessionStorage.getItem("id") : null;
     //const role = typeof window !== 'undefined' ? sessionStorage.getItem("role") : null;
-    const role: string = "TRAINER";
-    const [currentRoutine, setCurrentRoutine] = useState<any>();
-    const [routines, setRoutines] = useState<any[]>([]);
-    const [recommendedRoutines, setRecommendedRoutines] = useState<any[]>([]);
+    const [currentRoutine, setCurrentRoutine] = useState<Routine>();
+    const [routines, setRoutines] = useState<Routine[]>([]);
+    //const [recommendedRoutines, setRecommendedRoutines] = useState<Routine[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [activeTab, setActiveTab] = useState('rutina-actual');
 
@@ -90,6 +90,8 @@ const Routines = () => {
             description: 'Una rutina básica enfocada en desarrollar fuerza en los principales grupos musculares',
             difficulty: 'BEGINNER',
             goal: 'STRENGTH',
+            trainerId: 'trainer-uuid-aquí',
+            creationDate: new Date().toISOString(),
             exercises: [
                 {
                     baseExerciseId: 'ejercicio-uuid-aquí',
@@ -118,6 +120,8 @@ const Routines = () => {
                 name: 'Rutina intermedia de resistencia',
                 difficulty: 'INTERMEDIATE',
                 goal: 'ENDURANCE',
+                trainerId: 'trainer-uuid-aquí',
+                creationDate: new Date().toISOString(),
                 exercises: [
                     {
                         baseExerciseId: 'ejercicio-uuid-aquí',
@@ -141,35 +145,35 @@ const Routines = () => {
 
         setCurrentRoutine(simulatedRoutine);
         setRoutines(simulatedRoutines);
-        setRecommendedRoutines([simulatedRoutines[1]]);
+        //setRecommendedRoutines([simulatedRoutines[1]]);
         setLoading(false);
     }, [userId]);
 
     const [selectedMuscleGroup, setSelectedMuscleGroup] = useState<number | null>(null);
-    const [filteredRoutines, setFilteredRoutines] = useState(routines);
-    const [filteredRecommended, setFilteredRecommended] = useState(recommendedRoutines);
-    useEffect(() => {
-      if (selectedMuscleGroup !== null) {
-        const muscle = zoneToMuscle[selectedMuscleGroup].toLowerCase();
+    //const [filteredRoutines, setFilteredRoutines] = useState(routines);
+    //const [filteredRecommended, setFilteredRecommended] = useState(recommendedRoutines);
+    // useEffect(() => {
+    //   if (selectedMuscleGroup !== null) {
+    //     const muscle = zoneToMuscle[selectedMuscleGroup].toLowerCase();
         
-        setFilteredRoutines(
-          routines.filter(routine => 
-            routine.muscleGroup.toLowerCase().includes(muscle) || 
-            routine.muscleGroup === 'completo'
-          )
-        );
+    //     setFilteredRoutines(
+    //       routines.filter(routine => 
+    //         routine.muscleGroup.toLowerCase().includes(muscle) || 
+    //         routine.muscleGroup === 'completo'
+    //       )
+    //     );
         
-        setFilteredRecommended(
-          recommendedRoutines.filter(routine => 
-            routine.muscleGroup.toLowerCase().includes(muscle) || 
-            routine.muscleGroup === 'completo'
-          )
-        );
-      } else {
-        setFilteredRoutines(routines);
-        setFilteredRecommended(recommendedRoutines);
-      }
-    }, [selectedMuscleGroup, routines, recommendedRoutines]);
+    //     setFilteredRecommended(
+    //       recommendedRoutines.filter(routine => 
+    //         routine.muscleGroup.toLowerCase().includes(muscle) || 
+    //         routine.muscleGroup === 'completo'
+    //       )
+    //     );
+    //   } else {
+    //     setFilteredRoutines(routines);
+    //     setFilteredRecommended(recommendedRoutines);
+    //   }
+    // }, [selectedMuscleGroup, routines, recommendedRoutines]);
 
     return (
         <PageTransitionWrapper>
@@ -179,84 +183,92 @@ const Routines = () => {
                     text="Rutinas"
                     returnPoint="/gym-module"
                 />
-                <div className="flex flex-col md:flex-row gap-6">
-                    <div className="w-full md:w-1/2 lg:w-5/12 flex flex-col items-center justify-center gap-5">
-                        {/* Selector de anatomía */}
-                        <BodyCanvasInteractive
-                            modelPath="/models/male/scene.gltf"
-                            onSelectZone={setSelectedMuscleGroup}
-                        />
-                        {selectedMuscleGroup && (
-                            <div className="mt-2 text-center">
-                                <span className="font-semibold">Grupo muscular seleccionado:</span> {zoneToMuscle[selectedMuscleGroup]}
+                {loading ? (
+                    <div className="flex w-full justify-center items-center h-screen">
+                        <div className="w-16 h-16 border-4 border-t-4 border-gray-500 border-solid rounded-full animate-spin"></div>
+                    </div>
+                ) : (
+                    <>
+                        <div className="flex flex-col md:flex-row gap-6">
+                            <div className="w-full md:w-1/2 lg:w-5/12 flex flex-col items-center justify-center gap-5">
+                                {/* Selector de anatomía */}
+                                <BodyCanvasInteractive
+                                    modelPath="/models/male/scene.gltf"
+                                    onSelectZone={setSelectedMuscleGroup}
+                                />
+                                {selectedMuscleGroup && (
+                                    <div className="mt-2 text-center">
+                                        <span className="font-semibold">Grupo muscular seleccionado:</span> {zoneToMuscle[selectedMuscleGroup]}
+                                    </div>
+                                )}
                             </div>
-                        )}
-                    </div>
 
-                    <div className="flex flex-col w-full">
-                        {/* Pestañas */}
-                        <div className="flex mb-6 justify-center">
-                            <Tabs
-                                tabs={[
-                                { id: 'rutina-actual', label: 'Rutina actual' },
-                                { id: 'todas-rutinas', label: 'Todas las rutinas' }
-                                ]}
-                                activeTab={activeTab}
-                                onTabChange={setActiveTab}
-                            />
-                        </div>
-                        <AnimatePresence mode="wait">
-                            {filteredRecommended.length > 0 ? (
-                                <>
-                                    {activeTab === 'rutina-actual' && currentRoutine && (
-                                        <motion.div
-                                            key="rutina-actual"
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: -20 }}
-                                            transition={{ duration: 0.3 }}
-                                            className="flex flex-col gap-4"
-                                        >
-                                            <h2 className="text-2xl font-bold">{currentRoutine.name}</h2>
-                                            <p className="relative w-fit mt-[-1.00px] [font-family: 'Montserrat-Bold',Helvetica] font-family text-gray-700">{currentRoutine.description}</p>
-                                            <ExerciseCarousel exercises={currentRoutine.exercises} />
-                                        </motion.div>
-                                    )}
-                                    {activeTab === 'todas-rutinas' && (
-                                            <motion.div
-                                            key="todas-rutinas"
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: -20 }}
-                                            transition={{ duration: 0.3 }}
-                                            className="flex flex-col gap-4"
-                                        >
-                                            <h2 className="text-2xl font-bold mb-4">Tus Rutinas</h2>
-                                            <RoutineCarousel routines={routines} />
-                                        </motion.div>
-                                    )}
-                                </>
-                            ) : (
-                                <div className="col-span-full text-center py-6 text-gray-500">
-                                    No hay rutinas disponibles para este grupo muscular
+                            <div className="flex flex-col w-full">
+                                {/* Pestañas */}
+                                <div className="flex mb-6 justify-center">
+                                    <Tabs
+                                        tabs={[
+                                        { id: 'rutina-actual', label: 'Rutina actual' },
+                                        { id: 'todas-rutinas', label: 'Todas las rutinas' }
+                                        ]}
+                                        activeTab={activeTab}
+                                        onTabChange={setActiveTab}
+                                    />
                                 </div>
-                            )}
-                        </AnimatePresence>
+                                <AnimatePresence mode="wait">
+                                    {/* {filteredRecommended.length > 0 ? (
+                                        <> */}
+                                            {activeTab === 'rutina-actual' && currentRoutine && (
+                                                <motion.div
+                                                    key="rutina-actual"
+                                                    initial={{ opacity: 0, y: 20 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    exit={{ opacity: 0, y: -20 }}
+                                                    transition={{ duration: 0.3 }}
+                                                    className="flex flex-col gap-4"
+                                                >
+                                                    <h2 className="text-2xl font-bold">{currentRoutine.name}</h2>
+                                                    <p className="relative w-fit mt-[-1.00px] [font-family: 'Montserrat-Bold',Helvetica] font-family text-gray-700">{currentRoutine.description}</p>
+                                                    <ExerciseCarousel exercises={currentRoutine.exercises} />
+                                                </motion.div>
+                                            )}
+                                            {activeTab === 'todas-rutinas' && (
+                                                    <motion.div
+                                                    key="todas-rutinas"
+                                                    initial={{ opacity: 0, y: 20 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    exit={{ opacity: 0, y: -20 }}
+                                                    transition={{ duration: 0.3 }}
+                                                    className="flex flex-col gap-4"
+                                                >
+                                                    <h2 className="text-2xl font-bold mb-4">Tus Rutinas</h2>
+                                                    <RoutineCarousel routines={routines} />
+                                                </motion.div>
+                                            )}
+                                        {/* </>
+                                    ) : (
+                                        <div className="col-span-full text-center py-6 text-gray-500">
+                                            No hay rutinas disponibles para este grupo muscular
+                                        </div>
+                                    )} */}
+                                </AnimatePresence>
 
-                        <h2 className="text-2xl font-bold mt-8 mb-4">Rutinas Recomendadas</h2>
-                        <div>
-                            {filteredRecommended.length > 0 ? (
-                                filteredRecommended.map((routine) => (
-                                    <RoutineCarousel routines={recommendedRoutines} />
-                                ))
-                            ) : (
-                                <div className="col-span-full text-center py-6 text-gray-500">
-                                    No hay rutinas recomendadas para este grupo muscular
+                                <h2 className="text-2xl font-bold mt-8 mb-4">Rutinas Recomendadas</h2>
+                                <div>
+                                    {/* {filteredRecommended.length > 0 ? (
+                                        filteredRecommended.map((routine) => (
+                                            <RoutineCarousel routines={recommendedRoutines} />
+                                        ))
+                                    ) : (
+                                        <div className="col-span-full text-center py-6 text-gray-500">
+                                            No hay rutinas recomendadas para este grupo muscular
+                                        </div>
+                                    )} */}
                                 </div>
-                            )}
+                            </div>
                         </div>
-                    </div>
-                </div>
+                    </>
+                )}
             </div>
         </PageTransitionWrapper>
     )

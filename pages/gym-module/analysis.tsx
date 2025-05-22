@@ -5,13 +5,26 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Button from "@/components/gym-module/Button";
 import ExportIcon from "@/assets/icons/export-svgrepo-com 1.svg";
-import { Bar, Line, Pie } from "react-chartjs-2";
-import { getAttendanceStatistics, getRegisteredStudents } from "@/api/gymServicesIndex";
+import Image from "next/image";
+import { Bar, Line } from "react-chartjs-2";
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, PointElement, LineElement, ArcElement } from "chart.js";
 
 ChartJS.register( CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, PointElement, LineElement, ArcElement);
 
+// Tipos para los estados
+interface AttendanceStats {
+  usageByMonth: Record<string, number>;
+  attendanceBySession: Record<string, number>;
+}
 
+interface MonthlyUsage {
+  labels: string[];
+  datasets: {
+    label: string;
+    data: number[];
+    backgroundColor: string;
+  }[];
+}
 
 /**
  * Analysis Component
@@ -33,10 +46,9 @@ ChartJS.register( CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend
 const Analysis = () => {
     const router = useRouter();
     const userId = typeof window !== 'undefined' ? sessionStorage.getItem("id") : null;
-    //const role = typeof window !== 'undefined' ? sessionStorage.getItem("role") : null;
-    const role: string = "TRAINER";
-    const [attendanceStats, setAttendanceStats] = useState<any>(null);
-    const [monthlyUsage, setMonthlyUsage] = useState<any>(null);
+    const role = typeof window !== 'undefined' ? sessionStorage.getItem("role") : null;
+    const [attendanceStats, setAttendanceStats] = useState<AttendanceStats | null>(null);
+    const [monthlyUsage, setMonthlyUsage] = useState<MonthlyUsage | null>(null);
     const [loading, setLoading] = useState(true);
 
     /**
@@ -93,16 +105,16 @@ const Analysis = () => {
 
         const fakeStats = {
             usageByMonth: {
-            "2025-01": 12,
-            "2025-02": 15,
-            "2025-03": 10,
-            "2025-04": 18,
-            "2025-05": 22,
+                "2025-01": 12,
+                "2025-02": 15,
+                "2025-03": 10,
+                "2025-04": 18,
+                "2025-05": 22,
             },
             attendanceBySession: {
-            "Mañana": 20,
-            "Tarde": 14,
-            "Noche": 9,
+                "Mañana": 20,
+                "Tarde": 14,
+                "Noche": 9,
             },
         };
 
@@ -184,9 +196,12 @@ const Analysis = () => {
                                 className="inline-flex w-fit items-center gap-2.5 px-10 py-2.5 relative bg-[var(--lavender)] rounded-[15px] overflow-hidden border-box"
                                 onClick={handleExportClick}
                             >
-                                <img
-                                    className="relative w-[18px] h-[18px]"
-                                    src={ExportIcon.src}
+                                <Image
+                                    className="relative"
+                                    src={ExportIcon}
+                                    width={18}
+                                    height={18}
+                                    alt="Export icon"
                                 />
                                 <span className="relative w-fit mt-[-1.00px] [font-family: 'Montserrat-Regular',Helvetica] text-white tracking-[0] leading-[16px] whitespace-nowrap">Exportar</span>
                             </Button>

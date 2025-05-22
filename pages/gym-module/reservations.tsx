@@ -5,8 +5,20 @@ import { Calendar, Views, View } from 'react-big-calendar';
 import { useRouter } from 'next/router';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import localizer from '@/lib/Localizer';
-import { getSessionsByDate, ReservationStatus, getUserReservations, ReservationDTO, GymSessionDTO } from '@/api/gymServicesIndex';
+// import { getSessionsByDate, ReservationStatus, getUserReservations, ReservationDTO, GymSessionDTO } from '@/api/gymServicesIndex';
+import { ReservationStatus, ReservationDTO, GymSessionDTO } from '@/api/gymServicesIndex';
 import { PageTransitionWrapper } from '@/components/PageTransitionWrapper';
+
+interface CalendarEvent {
+    id?: string;
+    start: Date;
+    end: Date;
+    notes: string;
+    status: string;
+    sessionId: string;
+    description: string;
+    type: "reserved" | "available" | "trainer";
+}
 
 /**
  * Main component of the reservation page, which displays the calendar and manages the creation of reservations.
@@ -19,7 +31,7 @@ const Reservations = () => {
     const userId = typeof window !== 'undefined' ? sessionStorage.getItem("id") : null;
     //const role = typeof window !== 'undefined' ? sessionStorage.getItem("role") : null;
     const [role, setRole] = useState('');
-    const [events, setEvents] = useState<any[]>([]);
+    const [events, setEvents] = useState<CalendarEvent[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [currentDate, setCurrentDate] = useState(new Date());
     const [currentView, setCurrentView] = useState<View>(Views.MONTH);
@@ -40,17 +52,17 @@ const Reservations = () => {
                     // const reservations = await getUserReservations(userId);
                     // const sessionIds = reservations.map(r => r.sessionId);
                     // const allSessions = await getSessionsByDate(currentDate.toISOString().split('T')[0]);
-                    // const combinedEvents = allSessions.map(session => {
+                    // const combinedEvents: CalendarEvent[] = allSessions.map(session => {
                     //     const reservation = reservations.find(r => r.sessionId === session.id);
                     //     const isReserved = Boolean(reservation);
                     //     return {
                     //         id: isReserved ? reservation.id : session.id,
-                    //         title: session.description,
                     //         start: new Date(`${session.date}T${session.startTime}`),
                     //         end: new Date(`${session.date}T${session.endTime}`),
                     //         notes: reservation?.notes || "",
                     //         status: reservation?.status || "",
                     //         sessionId: session.id,
+                    //         description: session.description,
                     //         type: isReserved ? "reserved" : "available"
                     //     };
                     // });
@@ -95,20 +107,18 @@ const Reservations = () => {
                         }
                     ];
 
-                    const sessionIdsReserved = simulatedReservations.map(r => r.sessionId);
-
-                    const combinedEvents = simulatedSessions.map(session => {
+                    const combinedEvents: CalendarEvent[] = simulatedSessions.map(session => {
                         const reservation = simulatedReservations.find(r => r.sessionId === session.id);
                         const isReserved = Boolean(reservation);
 
                         return {
                             id: isReserved ? reservation!.id : session.id,
-                            title: session.description,
                             start: new Date(`${session.date}T${session.startTime}`),
                             end: new Date(`${session.date}T${session.endTime}`),
                             notes: reservation?.notes || "",
                             status: reservation?.status || "",
                             sessionId: session.id,
+                            description: session.description,
                             type: isReserved ? "reserved" : "available"
                         };
                     });
@@ -116,12 +126,12 @@ const Reservations = () => {
                     setEvents(combinedEvents);
                 } else if (role === "TRAINER") {
                     // const sessions = await getSessionsByDate(currentDate.toISOString().split('T')[0]);
-                    // const sessionEvents = sessions.map(session => ({
+                    // const sessionEvents: CalendarEvent[] = sessions.map(session => ({
                     //     id: session.id,
-                    //     title: session.description,
                     //     start: new Date(`${session.date}T${session.startTime}`),
                     //     end: new Date(`${session.date}T${session.endTime}`),
-                    //     sessionId: session.id
+                    //     sessionId: session.id,
+                    //     description: session.description,
                     // }));
                     // setEvents(sessionEvents);
 
@@ -138,13 +148,15 @@ const Reservations = () => {
                         }
                     ];
 
-                    const sessionEvents = simulatedTrainerSessions.map(session => ({
+                    const sessionEvents: CalendarEvent[] = simulatedTrainerSessions.map(session => ({
                         id: session.id,
-                        title: session.description,
                         start: new Date(`${session.date}T${session.startTime}`),
                         end: new Date(`${session.date}T${session.endTime}`),
                         sessionId: session.id,
-                        type: "trainer"
+                        description: session.description,
+                        notes: "",
+                        status: "",
+                        type: "trainer",
                     }));
 
                     setEvents(sessionEvents);
@@ -166,7 +178,7 @@ const Reservations = () => {
      * @param {Object} props.event - The event to display.
      * @returns {JSX.Element} The rendered event component.
      */
-    const CustomEvent = ({ event }: { event: any }) => {
+    const CustomEvent = ({ event }: { event: CalendarEvent }) => {
         return (
             <div className='flex flex-col'>
                 <strong>Sesión</strong>
@@ -234,7 +246,7 @@ const Reservations = () => {
      * 
      * @param {Object} event - The selected event.
      */
-    const handleSelectEvent = (event: any) => {
+    const handleSelectEvent = (event: CalendarEvent) => {
         if (role === "TRAINER") {
             router.push({
                 pathname: '/gym-module/reservations/session-details',

@@ -1,10 +1,13 @@
 import Button from "@/components/gym-module/Button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
+import { Routine } from "@/api/gymServicesIndex";
 import { RoutineCard } from "./RoutineCard";
 
 const ITEM_WIDTH = 280;
-const VISIBLE_ITEMS = 3;
+interface Props {
+  routines: Routine[];
+}
 
 /**
  * RoutineCarousel Component
@@ -22,7 +25,7 @@ const VISIBLE_ITEMS = 3;
  * @param {Array} props.routines - The array of routines to be displayed in the carousel.
  * @returns {JSX.Element} A carousel that displays the routine cards with navigation buttons.
  */
-const RoutineCarousel = ({ routines }: { routines: any[] }) => {
+const RoutineCarousel = ({ routines }: Props) => {
   const [index, setIndex] = useState(0);
 
   const prev = () => setIndex((prev) => (prev > 0 ? prev - 1 : routines.length - 1));
