@@ -1,45 +1,52 @@
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { NavBtn } from "@/components/NavBtn";
-import { ServiceContainer } from "@/components/ServiceContainer";
-import Horario from "@/assets/images/UserModule/horario.png"
-import Usuario from "@/assets/images/UserModule/usuarios.webp"
+import Horario from "@/assets/images/UserModule/horario.png";
+import Usuario from "@/assets/images/UserModule/usuarios.webp";
 
 const Module6 = () => {
-    const router = useRouter();
-    // const role = typeof window !== 'undefined' ? sessionStorage.getItem("role") : null;
-    const role: string = "ADMIN";
+  const router = useRouter();
+  const role: string = "ADMIN";
 
-    useEffect(() => {
-    
-    }, [role, router]);
+  useEffect(() => {
+    // Validación si es necesaria
+  }, [role, router]);
 
-    return (
-        <>
-            <ServiceContainer
-                title="MODULO DE GESTION DE USUARIOS Y HORARIOS"
-                text="Realiza el registro, modificacion y eliminacion de usuarios, tambien realiza el manejo de configuraciones para los distintos servicios."
+  return (
+    <>
+      <div className="flex flex-col w-full items-start p-6 mb-4 bg-[#990000] rounded-2xl">
+        <h2 className="text-white text-2xl font-semibold mb-2">
+          MODULO DE GESTIÓN DE USUARIOS Y HORARIOS
+        </h2>
+        <p className="text-white text-base">
+          Realiza el registro, modificación y eliminación de usuarios, también realiza el manejo de configuraciones para los distintos servicios.
+        </p>
+      </div>
+
+      <div className="flex flex-wrap items-start gap-[10px_10px] relative">
+        {role === "ADMIN" && (
+          <>
+            <NavBtn
+              image={{ src: Usuario.src }}
+              texto="Agrgar usuario"
+              navigate="/UserModule/gestionUsuario/CrearUsuario"
             />
-            <div className="flex flex-wrap items-start gap-[10px_10px] relative">
-                {(role === "ADMIN") && (
-                    <>
-                        <NavBtn
-                            image={{src:Usuario.src}}
-                            texto="Gestion de usuarios"
-                            navigate="/"
-                        />
-                        <NavBtn
-                            image={{ src: Horario.src }}
-                            texto="Gestion de horarios"
-                            navigate="/"
-                        />
-                        
-                    </>
-                )}
-
-            </div>
-        </>
-    );
+            <NavBtn
+              image={{ src: Horario.src }}
+              texto="Editar Usuario"
+              navigate="/UserModule/gestionUsuario/EditarUsuario"
+            />
+            <NavBtn
+                                image={{ src: Horario.src }}
+                                texto="Gestion de horarios"
+                                navigate="/UserModule/ScheduleManagement/SchedulePage"
+                            />
+          </>
+        )}
+      </div>
+    </>
+  );
 };
 
 export default Module6;
+

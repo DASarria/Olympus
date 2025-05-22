@@ -5,13 +5,14 @@ interface Props {
   ancho?: string;
   alto?: string;
   children?: ReactNode;
+  style?: React.CSSProperties;
 }
 
 const RectanguloConTexto: React.FC<Props> = ({
   texto,
-  ancho = "100%",
-  alto = "120px",
+
   children,
+  style,
 }) => {
   return (
     <div
@@ -21,9 +22,11 @@ const RectanguloConTexto: React.FC<Props> = ({
         boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
         position: "relative",
         padding: "20px",
-        width: ancho,
-        height: alto,
+        width: "90%",
+        height: "auto",
         boxSizing: "border-box",
+        margin: "0 auto",
+        ...style, // <- aquí debes aplicar el style
       }}
     >
       <div
@@ -33,13 +36,12 @@ const RectanguloConTexto: React.FC<Props> = ({
           left: "16px",
           color: "#990000",
           fontWeight: "bold",
-          fontSize: "26px",
+          fontSize: "clamp(20px, 2vw, 26px)"
         }}
       >
         {texto}
       </div>
 
-      {/* Contenido interno con estilos generales */}
       <div
         style={{
           marginTop: "40px",
@@ -52,5 +54,6 @@ const RectanguloConTexto: React.FC<Props> = ({
     </div>
   );
 };
+
 
 export default RectanguloConTexto;
