@@ -6,21 +6,19 @@ import { Return } from "@/components/Return";
 import CampoTexto from "@/components/gestionUsuario/CampoTexto";
 import CampoSelect from "@/components/gestionUsuario/CampoSelect";
 import RectanguloConTexto from "@/components/gestionUsuario/RectanguloConTexto";
-
+import FormularioEditarUsuario from "@/components/gestionUsuario/FormularioEditarUsuario";
 
 const EditarUsuario = () => {
-
   type FiltroKey = "academicProgram" | "codeStudent" | "userName" | "fullName" | "role" | "id";
 
   interface Filtros {
-  academicProgram: string;
-  codeStudent: string;
-  userName: string;
-  fullName: string;
-  role: string;
-  id: string;
+    academicProgram: string;
+    codeStudent: string;
+    userName: string;
+    fullName: string;
+    role: string;
+    id: string;
   }
-
 
   const [filtros, setFiltros] = useState<Filtros>({
     academicProgram: "",
@@ -33,6 +31,7 @@ const EditarUsuario = () => {
 
   const [filtroSeleccionado, setFiltroSeleccionado] = useState<FiltroKey>("fullName");
   const [resultados, setResultados] = useState([]);
+  const [usuarioEditando, setUsuarioEditando] = useState<any | null>(null);
 
   const opcionesFiltro = [
     { label: "Programa académico", value: "academicProgram" },
@@ -60,12 +59,24 @@ const EditarUsuario = () => {
     }
   };
 
-  const editarUsuario = (id: string) => {
-    alert(`Editar usuario con ID: ${id}`);
+  const editarUsuario = (usuario: any) => {
+    setUsuarioEditando(usuario);
+    // Opcional: hacer scroll al formulario
+    // setTimeout(() => document.getElementById("form-editar-usuario")?.scrollIntoView({ behavior: "smooth" }), 0);
   };
 
-  const borrarUsuario = (id: string) => {
-    alert(`Borrar usuario con ID: ${id}`);
+  const borrarUsuario = async (id: string) => {
+    const confirmacion = window.confirm(`¿Estás seguro de que deseas eliminar al usuario con ID: ${id}?`);
+    if (!confirmacion) return;
+
+    try {
+      await axios.delete(`http://localhost:8080/user/${id}`);
+      alert("Usuario eliminado con éxito");
+      setResultados(prev => prev.filter((u: any) => u.id !== id));
+    } catch (e) {
+      console.error(e);
+      alert("Error al eliminar el usuario");
+    }
   };
 
   return (
@@ -87,7 +98,6 @@ const EditarUsuario = () => {
               onChange={(labelSeleccionado) => {
                 const filtro = opcionesFiltro.find(op => op.label === labelSeleccionado);
                 if (filtro) setFiltroSeleccionado(filtro.value as FiltroKey);
-
               }}
             />
           </div>
@@ -114,7 +124,6 @@ const EditarUsuario = () => {
                 onChange={(v) => setFiltros({ ...filtros, role: v })}
               />
             )}
-            
             {["codeStudent", "userName", "fullName", "id"].includes(filtroSeleccionado) && (
               <CampoTexto
                 etiqueta={
@@ -128,11 +137,7 @@ const EditarUsuario = () => {
                 onChange={(v) => setFiltros({ ...filtros, [filtroSeleccionado]: v })}
               />
             )}
-
-
-            
           </div>
-          
         </div>
       </RectanguloConTexto>
 
@@ -144,22 +149,8 @@ const EditarUsuario = () => {
 
       {resultados.length > 0 && (
         <RectanguloConTexto texto="Resultados de búsqueda">
-          <div
-            style={{
-              marginTop: "30px",
-              fontFamily: "'Open Sans', sans-serif",
-              fontSize: "clamp(14px, 2vw, 20px)",
-              textAlign: "center"
-            }}
-          >
-            <div
-              style={{
-                border: "1px solid #ccc",
-                borderRadius: "16px",
-                overflow: "hidden",
-                backgroundColor: "#FFFFFF"
-              }}
-            >
+          <div style={{ marginTop: "30px", fontSize: "clamp(14px, 2vw, 20px)", textAlign: "center"}}>
+            <div style={{ border: "1px solid #ccc", borderRadius: "16px", overflow: "hidden", backgroundColor: "#FFFFFF" }}>
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead style={{ backgroundColor: "#FFFFFF" }}>
                   <tr>
@@ -174,10 +165,18 @@ const EditarUsuario = () => {
                       <td style={{ padding: "12px", borderRight: "1px solid #ccc" }}>{u.fullName}</td>
                       <td style={{ padding: "12px", borderRight: "1px solid #ccc" }}>{u.id}</td>
                       <td style={{ padding: "12px" }}>
-                        <button className={styles.boton} onClick={() => editarUsuario(u.id)} style={{ marginRight: "10px", width: "30%" }}>
+                        <button
+                          className={styles.boton}
+                          onClick={() => editarUsuario(u)}
+                          style={{ marginRight: "10px", width: "30%" }}
+                        >
                           Editar
                         </button>
-                        <button className={styles.boton} onClick={() => borrarUsuario(u.id)} style={{ marginRight: "10px", width: "30%" }}>
+                        <button
+                          className={styles.boton}
+                          onClick={() => borrarUsuario(u.id)}
+                          style={{ marginRight: "10px", width: "30%" }}
+                        >
                           Borrar
                         </button>
                       </td>
@@ -189,6 +188,11 @@ const EditarUsuario = () => {
           </div>
         </RectanguloConTexto>
       )}
+
+      {usuarioEditando && (
+        <FormularioEditarUsuario datosIniciales={usuarioEditando}/>
+      )}
+
     </div>
   );
 };

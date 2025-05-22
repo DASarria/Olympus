@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { NavBtn } from "@/components/NavBtn";
 import Horario from "@/assets/images/UserModule/horario.png";
 import Usuario from "@/assets/images/UserModule/usuarios.webp";
+import EditUser from "@/assets/images/CrearUser.jpg";
 
 const Module6 = () => {
   const router = useRouter();
@@ -28,11 +29,11 @@ const Module6 = () => {
           <>
             <NavBtn
               image={{ src: Usuario.src }}
-              texto="Agrgar usuario"
+              texto="Agregar usuario"
               navigate="/UserModule/gestionUsuario/CrearUsuario"
             />
             <NavBtn
-              image={{ src: Horario.src }}
+              image={{ src: EditUser.src }}
               texto="Editar Usuario"
               navigate="/UserModule/gestionUsuario/EditarUsuario"
             />

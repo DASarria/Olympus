@@ -40,6 +40,7 @@ const CrearUsuario = () => {
 
   const handleSubmit = async () => {
   try {
+    const token = sessionStorage.getItem("token"); // <-- Obtener el token
     let res;
 
     if (datos.tipoUsuario === "Usuario") {
@@ -61,11 +62,18 @@ const CrearUsuario = () => {
         relationship: datos.contactoRelacion,
       };
 
-      res = await axios.post("http://localhost:8080/authentication/student", payload);
+      res = await axios.post("http://localhost:8080/authentication/student", payload, {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}` // <-- Aquí se incluye el token
+        }
+      });
+
       alert("Usuario creado: " + res.data.message);
       return;
 
     } else if (datos.tipoUsuario === "Administrador") {
+
       const payload = {
         idAdmin: datos.doc,
         typeId: datos.tipoId,
@@ -78,9 +86,17 @@ const CrearUsuario = () => {
         schedule: [],
       };
 
-      res = await axios.post("http://localhost:8080/authentication/admin", payload);
+      //res = await axios.post("https://usermanagement-bhe9cfg4b5b2hthj.eastus-01.azurewebsites.net/authentication/admin", payload, {
+      res = await axios.post("http://localhost:8080/authentication/admin", payload, {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}` // <-- También aquí
+        }
+      });
+
       alert("Usuario creado: " + res.data.message);
       return;
+
     }
 
   } catch (e) {
@@ -88,6 +104,7 @@ const CrearUsuario = () => {
     alert("Error al crear usuario");
   }
 };
+
 
 
   return (
@@ -195,6 +212,7 @@ const CrearUsuario = () => {
 
       {datos.tipoUsuario=== "Administrador" && (
   <div style={{ marginTop: "30px" }}>
+  
     <RectanguloConTexto texto="Información del Administrador">
       <div
         style={{ display: "flex", flexWrap: "wrap", gap: "5px 40px", width: "100%", boxSizing: "border-box" }}
@@ -207,7 +225,7 @@ const CrearUsuario = () => {
             valor={datos.tipoId} onChange={(v) => setDatos({ ...datos, tipoId: v })} />,
 
           <CampoTexto etiqueta="Nombre completo" marcador="Digite nombre" 
-            valor={datos.nombre} onChange={(v) => setDatos({ ...datos, nombre: v })} />,
+            valor={datos.nombre} onChange={(v) => setDatos({ ...datos, nombre: v })}/>,
 
           <CampoSelect etiqueta="Rol" marcador="Seleccione rol" opciones={opcionesRol}
             valor={datos.rol} onChange={(v) => setDatos({ ...datos, rol: v })} />,
