@@ -1,6 +1,6 @@
 import { Prestamo } from "@/types/prestamo";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8081";
 
 export const getAllPrestamos = async (): Promise<Prestamo[]> => {
     try {

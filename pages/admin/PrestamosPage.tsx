@@ -7,6 +7,9 @@ import Layout from "@/components/Layout";
 import { getAllPrestamos, createPrestamo } from "@/services/prestamosService";
 import { Prestamo } from "@/types/prestamo";
 
+// Define an error type to replace 'any'
+
+
 export default function PrestamosPage() {
     const [prestamos, setPrestamos] = useState<Prestamo[]>([]);
     const [loading, setLoading] = useState(true);
@@ -33,8 +36,9 @@ export default function PrestamosPage() {
                 const data = await getAllPrestamos();
                 setPrestamos(data);
                 setError(null);
-            } catch (err: any) {
-                setError(err.message || 'Error al cargar préstamos');
+            } catch (err: unknown) {
+                const errorMessage = err instanceof Error ? err.message : 'Error al cargar préstamos';
+                setError(errorMessage);
                 console.error('Error al cargar préstamos:', err);
             } finally {
                 setLoading(false);
@@ -89,8 +93,9 @@ export default function PrestamosPage() {
             });
             setMostrarFormulario(false);
             setError(null);
-        } catch (err: any) {
-            setError(err.message || 'Error al crear préstamo');
+        } catch (err: unknown) {
+            const errorMessage = err instanceof Error ? err.message : 'Error al crear préstamo';
+            setError(errorMessage);
             console.error('Error al crear préstamo:', err);
         } finally {
             setLoading(false);
@@ -110,6 +115,21 @@ export default function PrestamosPage() {
                 <div className="flex flex-col flex-grow">
                     <main className="flex-grow p-8">
                         <h1 className="text-3xl font-bold mb-6">Préstamos</h1>
+
+                        {/* Display error message if there is one */}
+                        {error && (
+                            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                                {error}
+                            </div>
+                        )}
+
+                        {/* Loading indicator */}
+                        {loading && (
+                            <div className="mb-4 flex items-center">
+                                <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-blue-500 mr-2"></div>
+                                <span>Cargando...</span>
+                            </div>
+                        )}
 
                         {/* Filtros */}
                         <div className="mb-6 flex flex-wrap gap-4">

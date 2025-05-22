@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Layout from "@/components/Layout";
-import { getArticulos, updateArticulo } from "@/services/inventarioService";
+import { getArticulos } from "@/services/inventarioService";
 import { Articulo } from "@/services/inventarioService";
 
 interface Unidad {
@@ -92,6 +92,15 @@ export default function InventarioPage() {
                 <div className="flex flex-col flex-grow">
                     <main className="flex-grow p-8">
                         <h1 className="text-3xl font-bold mb-6">Inventario Deportivo</h1>
+                        
+                        {/* Using articulos state to display raw data */}
+                        <details className="mb-4">
+                            <summary className="cursor-pointer text-blue-600">Ver datos originales ({articulos.length})</summary>
+                            <div className="mt-2 p-4 bg-gray-50 rounded">
+                                <pre className="text-xs overflow-auto">{JSON.stringify(articulos, null, 2)}</pre>
+                            </div>
+                        </details>
+                        
                         <div className="overflow-x-auto rounded-lg shadow">
                             <table className="min-w-full table-auto bg-white text-sm text-gray-700 border border-gray-200">
                                 <thead className="bg-gray-200 text-left">

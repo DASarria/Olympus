@@ -1,9 +1,23 @@
 // components/Filtro.tsx
 import { useState } from 'react';
 
+// Define a proper interface for your products
+interface Product {
+  id: string;
+  name: string;
+  description: string;
+  imageUrl: string;
+  status: 'disponible' | 'mantenimiento' | 'dañado';
+  horariosDisponibles?: {
+    manana: boolean;
+    tarde: boolean;
+    noche: boolean;
+  };
+}
+
 interface FiltroProps {
-  products: any[];
-  onFilter: (filteredProducts: any[]) => void;
+  products: Product[];
+  onFilter: (filteredProducts: Product[]) => void;
 }
 
 export default function Filtro({ products, onFilter }: FiltroProps) {

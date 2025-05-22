@@ -1,12 +1,11 @@
-// pages/prestamosDeportivos/misReservas.tsx
-"use client"
+"use client";
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import Image from "next/image";
 import LoanService from "../../services/loanService";
-import { useUser } from "../../context/UserContext";
+import { useRouter } from "next/navigation";
 
-interface Reserva {
+interface LoanDTO {
   id: string;
   articleIds: number[];
   nameUser: string;
@@ -23,118 +22,119 @@ interface Reserva {
 }
 
 export default function MisReservas() {
-  const [reservas, setReservas] = useState<Reserva[]>([]);
+  const [reservas, setReservas] = useState<LoanDTO[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const { user } = useUser();
+  const [error, setError] = useState("");
+  const router = useRouter();
 
   useEffect(() => {
+    const token = sessionStorage.getItem("token");
+    const userId = sessionStorage.getItem("id");
+    const nameUser = sessionStorage.getItem("name");
+
+    if (!token || !userId) {
+      router.push("/login");
+      return;
+    }
+
     const fetchReservas = async () => {
-      if (!user?.id) return;
-      
       try {
         setLoading(true);
-        const userId = user.id.startsWith('U-') ? user.id.substring(2) : user.id;
-        const reservasData = await LoanService.getUserLoans(userId);
-        setReservas(reservasData);
+        const formattedUserId = userId.startsWith("U-") ? userId.substring(2) : userId;
+        const reservasData = await LoanService.getUserLoans(formattedUserId);
+        // Provide a default value for nameUser if it's null
+        const enrichedData = reservasData.map((r: LoanDTO) => ({ 
+          ...r, 
+          nameUser: nameUser || "Usuario" 
+        }));
+        setReservas(enrichedData);
       } catch (err) {
-        console.error('Error al obtener reservas:', err);
-        setError('Error al cargar tus reservas');
+        console.error("Error al obtener reservas:", err);
+        const errorMessage = err instanceof Error ? err.message : "Error al cargar tus reservas";
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }
     };
 
     fetchReservas();
-  }, [user?.id]);
+  }, [router]);
 
   const handleCancelReserva = async (reservaId: string) => {
-    if (confirm('¿Estás seguro de que quieres cancelar esta reserva?')) {
+    if (confirm("¿Estás seguro de que quieres cancelar esta reserva?")) {
       try {
         await LoanService.cancelLoan(reservaId);
-        setReservas(reservas.filter(r => r.id !== reservaId));
-        alert('Reserva cancelada con éxito');
+        setReservas((prev) => prev.filter((r) => r.id !== reservaId));
+        alert("Reserva cancelada con éxito");
       } catch (err) {
-        console.error('Error al cancelar reserva:', err);
-        alert('Error al cancelar la reserva');
+        console.error("Error al cancelar reserva:", err);
+        const errorMessage = err instanceof Error ? err.message : "Error al cancelar la reserva";
+        alert(errorMessage);
       }
     }
   };
 
   return (
-    <div className="flex min-h-screen flex-col font-[family-name:var(--font-geist-sans)]">
-      <div className="flex flex-grow">
-        <Layout>
-          <div className="container mx-auto p-4">
-            <h1 className="text-3xl font-bold mb-6">Mis Reservas</h1>
-            
-            {loading ? (
-              <p>Cargando reservas...</p>
-            ) : error ? (
-              <p className="text-red-500">{error}</p>
-            ) : reservas.length > 0 ? (
-              <div className="space-y-4">
-                {reservas.map((reserva) => (
-                  <div key={reserva.id} className="bg-white rounded-lg shadow-md p-6">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h2 className="text-xl font-semibold">Reserva {reserva.id.substring(0, 6)}</h2>
-                        <p className="text-sm text-gray-500">
-                          {new Date(reserva.loanDate).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <span className={`px-2 py-1 text-xs rounded-full ${
-                        reserva.status === 'Prestado' ? 'bg-blue-100 text-blue-800' :
-                        reserva.status === 'Devuelto' ? 'bg-green-100 text-green-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {reserva.status}
-                      </span>
-                    </div>
-                    
-                    <p className="mb-2">
-                      <span className="font-medium">Horario:</span> {reserva.startTime} - {reserva.endTime}
-                    </p>
-                    
-                    <h3 className="font-medium mb-2">Productos:</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                      {reserva.articles.map((producto) => (
-                        <div key={producto.id} className="flex items-center border rounded p-3">
-                          <div className="relative h-16 w-16 mr-3">
-                            <Image
-                              src={producto.imageUrl}
-                              alt={producto.name}
-                              fill
-                              className="object-contain"
+    <Layout>
+      <div className="container mx-auto p-4">
+        <h1 className="text-3xl font-bold mb-6">Mis Reservas</h1>
+
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+          </div>
+        ) : error ? (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+            {error}
+          </div>
+        ) : reservas.length > 0 ? (
+          <div className="space-y-6">
+            {reservas.map((reserva) => (
+              <div key={reserva.id} className="bg-white rounded-lg shadow-md p-6">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+                  <div>
+                    <h2 className="text-xl font-semibold mb-2">{reserva.nameUser}</h2>
+                    <p className="text-gray-600">Fecha: {new Date(reserva.loanDate).toLocaleDateString()}</p>
+                    <p className="text-gray-600">Horario: {reserva.startTime} - {reserva.endTime}</p>
+                    <p className="text-gray-600">Estado: {reserva.status}</p>
+                  </div>
+                  <button 
+                    onClick={() => handleCancelReserva(reserva.id)}
+                    className="mt-4 md:mt-0 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                  >
+                    Cancelar Reserva
+                  </button>
+                </div>
+                <div className="mt-4">
+                  <h3 className="font-medium mb-2">Artículos reservados:</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    {reserva.articles && reserva.articles.map((article) => (
+                      <div key={article.id} className="flex items-center space-x-3">
+                        {article.imageUrl && (
+                          <div className="w-12 h-12 relative">
+                            <Image 
+                              src={article.imageUrl} 
+                              alt={article.name}
+                              width={48}
+                              height={48}
+                              className="rounded object-cover"
                             />
                           </div>
-                          <div>
-                            <p className="font-medium">{producto.name}</p>
-                            <p className="text-sm text-gray-500">ID: {producto.id}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    
-                    {reserva.status === 'Prestado' && (
-                      <div className="flex justify-end">
-                        <button
-                          onClick={() => handleCancelReserva(reserva.id)}
-                          className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm"
-                        >
-                          Cancelar Reserva
-                        </button>
+                        )}
+                        <span>{article.name}</span>
                       </div>
-                    )}
+                    ))}
                   </div>
-                ))}
+                </div>
               </div>
-            ) : (
-              <p className="text-gray-500">No tienes reservas registradas</p>
-            )}
+            ))}
           </div>
-        </Layout>                
+        ) : (
+          <div className="text-center py-10">
+            <p className="text-gray-500 text-lg">No tienes reservas registradas</p>
+          </div>
+        )}
       </div>
-    </div>
+    </Layout>
   );
 }

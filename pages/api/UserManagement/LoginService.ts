@@ -1,7 +1,7 @@
 import axios, { InternalAxiosRequestConfig } from 'axios';
 
 // URL base
-const USER_API_BASE_URL = "https://usermanagement-bhe9cfg4b5b2hthj.eastus-01.azurewebsites.net/";
+const USER_API_BASE_URL = "https://colliseum-gvh2h4bbd8bgcbfm.brazilsouth-01.azurewebsites.net/";
 
 // Crear instancia de axios
 const api = axios.create({ baseURL: USER_API_BASE_URL });
@@ -17,7 +17,7 @@ api.interceptors.request.use(
     return config;
   },
   (error) => {
-    console.error("❌ Error en el interceptor:", error);
+    console.error("Error en el interceptor:", error);
     return Promise.reject(error);
   }
 );

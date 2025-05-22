@@ -1,52 +1,89 @@
+
+
 import { useRouter } from "next/router";
-import { useState } from "react";
+import React, { useState } from "react";
+import login from "@/pages/api/UserManagement/LoginService"
+import ErrorMessage from "@/components/ErrorMessage";
+
 
 const Index = () => {
   const router = useRouter();
-  const [selectedRole, setSelectedRole] = useState("ADMIN");
+  const [userName, setUserName] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleLogin = () => {
-    // Guardar el rol seleccionado en sessionStorage
-    sessionStorage.setItem("role", selectedRole);
-    
-    // Simular un token JWT (solo para pruebas)
-    const tokens = {
-      ADMIN: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEwMDAwMDAwIiwidXNlck5hbWUiOiJhZG1pbiIsImVtYWlsIjoiYWRtaW5AZXNjdWVsYWluZy5lZHUuY28iLCJuYW1lIjoiQURNSU5JU1RSQURPUiIsInJvbGUiOiJBRE1JTiIsImV4cCI6MTc0Nzc5Mzc3Nn0.token-simulado",
-      STUDENT: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjIwMDAwMDAwIiwidXNlck5hbWUiOiJlc3R1ZGlhbnRlIiwiZW1haWwiOiJlc3R1ZGlhbnRlQGVzY3VlbGFpbmcuZWR1LmNvIiwibmFtZSI6IkVTVFVESUFOVEUiLCJyb2xlIjoiU1RVREVOVCIsImV4cCI6MTc0Nzc5Mzc3Nn0.token-simulado",
-      TEACHER: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjMwMDAwMDAwIiwidXNlck5hbWUiOiJwcm9mZXNvciIsImVtYWlsIjoicHJvZmVzb3JAZXNjdWVsYWluZy5lZHUuY28iLCJuYW1lIjoiUFJPRkVTT1IiLCJyb2xlIjoiVEVBQ0hFUiIsImV4cCI6MTc0Nzc5Mzc3Nn0.token-simulado"
-    };
-    
-    sessionStorage.setItem("token", tokens[selectedRole as keyof typeof tokens]);
-    
-    // Redirigir al Dashboard
-    router.push("/Dashboard");
+  interface LogDTO{
+    fullname:string;
+    role:string;
+    token:string;
+  }
+  interface response{
+    status:string;
+    message:string;
+    data:LogDTO;
   }
   
+  
+  const handleLogin = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault(); 
+    
+    const loginResponse:response = await login({ userName, password });
+    if(loginResponse.status== "200"){
+      sessionStorage.setItem("token", loginResponse.data.token);
+      sessionStorage.setItem("role", loginResponse.data.role);
+      router.push("/Dashboard");
+    }
+    if(loginResponse.status == "400"){
+      setErrorMessage(loginResponse.message)
+    }
+  };
+
+  const handleCloseError = () => {
+    setErrorMessage(null);  
+  };
+
+
   return (
     <div className="flex items-center justify-center h-screen bg-white">
-      <div className="bg-red-800 border border-red-900 text-white p-8 rounded-2xl shadow-xl w-80">
-        <h2 className="text-2xl font-bold text-center mb-6">Modo de Prueba</h2>
-        
-        <div className="mb-6">
-          <label className="block mb-2 font-medium">Seleccionar Rol:</label>
-          <select 
-            value={selectedRole}
-            onChange={(e) => setSelectedRole(e.target.value)}
-            className="w-full px-3 py-2 border border-red-900 rounded focus:outline-none bg-white text-black"
-          >
-            <option value="ADMIN">Administrador</option>
-            <option value="STUDENT">Estudiante</option>
-            <option value="TEACHER">Profesor</option>
-          </select>
+      <div
+        className="bg-red-800 border border-red-900 text-white p-8 rounded-2xl shadow-xl w-80"
+      >
+        <h2 className="text-2xl font-bold text-center mb-6">Iniciar Sesión</h2>
+
+        <div className="mb-4">
+          <label className="block mb-1 font-medium text-white">Usuario</label>
+          <input
+            type="text"
+            value={userName}
+            onChange={(e) => setUserName(e.target.value)}
+            className="w-full px-3 py-2 border border-red-900 rounded focus:outline-none focus:ring-2 focus:ring-red-300 bg-white text-black"
+            required
+          />
         </div>
-        
+
+        <div className="mb-6">
+          <label className="block mb-1 font-medium text-white">Contraseña</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full px-3 py-2 border border-red-900 rounded focus:outline-none focus:ring-2 focus:ring-red-300 bg-white text-black"
+            required
+          />
+        </div>
+
         <button
           className="w-full bg-white text-red-800 font-semibold py-2 rounded-lg hover:border-2 hover:border-red-900 transition"
-          onClick={handleLogin}
+          onClick = {handleLogin}
         >
-          Entrar como {selectedRole === "ADMIN" ? "Administrador" : selectedRole === "STUDENT" ? "Estudiante" : "Profesor"}
+          Entrar
         </button>
       </div>
+      
+      {errorMessage && (
+        <ErrorMessage message={errorMessage} onClose={handleCloseError} />
+      )}
+
     </div>
   );
 };

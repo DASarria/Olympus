@@ -37,7 +37,7 @@ export default function FiltroAvanzado({ products, onFilter }: FiltroAvanzadoPro
     if (horaFilter) {
       // Aquí iría la lógica para filtrar por franja horaria
       // Por ahora solo es un placeholder
-      filtered = filtered.filter(product => true);
+      filtered = filtered.filter(() => true);
     }
 
     onFilter(filtered);

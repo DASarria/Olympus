@@ -1,174 +1,210 @@
-"use client";
-
+"use client"
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
-import { getDevoluciones, createDevolucion, verificarDevolucion, Devolucion } from "@/services/devolucionesService";
+import { getDevoluciones, createDevolucion, verificarDevolucion } from "@/services/devolucionesService";
+import type { Devolucion } from "@/services/devolucionesService";
+
+
 
 export default function DevolucionesPage() {
-    const [devoluciones, setDevoluciones] = useState<Devolucion[]>([]);
-    const [nueva, setNueva] = useState<Omit<Devolucion, "id" | "verificado">>({
+  const [devoluciones, setDevoluciones] = useState<Devolucion[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [newDevolucion, setNewDevolucion] = useState<Omit<Devolucion, "id" | "verificado">>({
+    producto: "",
+    usuario: "",
+    fecha: "",
+    estado: "",
+    observaciones: "",
+  });
+
+  useEffect(() => {
+    const fetchDevoluciones = async () => {
+      try {
+        setLoading(true);
+        const response = await getDevoluciones();
+        setDevoluciones(response);
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : 'Error al cargar devoluciones';
+        setError(errorMessage);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDevoluciones();
+  }, []);
+
+  const handleSubmit = async () => {
+    try {
+      const response = await createDevolucion(newDevolucion);
+      setDevoluciones([response, ...devoluciones]);
+      setNewDevolucion({
         producto: "",
         usuario: "",
         fecha: "",
         estado: "",
-        observaciones: "",
-    });
+        observaciones: ""
+      });
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Error al crear devolución';
+      setError(errorMessage);
+    }
+  };
 
-    useEffect(() => {
-        const fetchDevoluciones = async () => {
-            try {
-                const data = await getDevoluciones();
-                setDevoluciones(data);
-            } catch (error) {
-                console.error("Error al cargar devoluciones:", error);
-            }
-        };
+  const handleVerify = async (id: string) => {
+    try {
+      const updated = await verificarDevolucion(id);
+      setDevoluciones(devoluciones.map(d => d.id === id ? updated : d));
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Error al verificar devolución';
+      setError(errorMessage);
+    }
+  };
 
-        fetchDevoluciones();
-    }, []);
-
-    const agregarDevolucion = async () => {
-        if (!nueva.producto || !nueva.usuario || !nueva.fecha) {
-            alert("Por favor completa todos los campos obligatorios.");
-            return;
-        }
-
-        try {
-            const nuevaDev = await createDevolucion(nueva);
-            setDevoluciones([nuevaDev, ...devoluciones]);
-            setNueva({ 
-                producto: "", 
-                usuario: "", 
-                fecha: "", 
-                estado: "", 
-                observaciones: "" 
-            });
-        } catch (error) {
-            console.error("Error al agregar devolución:", error);
-        }
-    };
-
-    const handleVerificarDevolucion = async (id: string) => {
-        try {
-            const devolucionActualizada = await verificarDevolucion(id);
-            setDevoluciones(devoluciones.map(d => 
-                d.id === id ? devolucionActualizada : d
-            ));
-        } catch (error) {
-            console.error("Error al verificar devolución:", error);
-        }
-    };
-
-    const cambiarObservacion = (id: string, nuevaObs: string) => {
-        setDevoluciones(devoluciones.map(d => 
-            d.id === id ? { ...d, observaciones: nuevaObs } : d
-        ));
-    };
-
-    return (
-        <Layout>
-            <div className="flex min-h-screen font-[family-name:var(--font-geist-sans)]">
-                <div className="flex flex-col flex-grow">
-                    <main className="flex-grow p-8">
-                        <h1 className="text-3xl font-bold mb-6">Devoluciones</h1>
-
-                        {/* FORMULARIO DE REGISTRO */}
-                        <div className="bg-white p-6 rounded shadow-md mb-10 max-w-4xl">
-                            <h2 className="text-xl font-semibold mb-4">Registrar nueva devolución</h2>
-                            <div className="grid sm:grid-cols-3 gap-4">
-                                <input
-                                    type="text"
-                                    placeholder="Producto*"
-                                    value={nueva.producto}
-                                    onChange={(e) => setNueva({ ...nueva, producto: e.target.value })}
-                                    className="border p-2 rounded"
-                                />
-                                <input
-                                    type="text"
-                                    placeholder="Usuario*"
-                                    value={nueva.usuario}
-                                    onChange={(e) => setNueva({ ...nueva, usuario: e.target.value })}
-                                    className="border p-2 rounded"
-                                />
-                                <input
-                                    type="date"
-                                    value={nueva.fecha}
-                                    onChange={(e) => setNueva({ ...nueva, fecha: e.target.value })}
-                                    className="border p-2 rounded"
-                                />
-                                <input
-                                    type="text"
-                                    placeholder="Estado del producto"
-                                    value={nueva.estado}
-                                    onChange={(e) => setNueva({ ...nueva, estado: e.target.value })}
-                                    className="border p-2 rounded"
-                                />
-                                <input
-                                    type="text"
-                                    placeholder="Observaciones"
-                                    value={nueva.observaciones}
-                                    onChange={(e) => setNueva({ ...nueva, observaciones: e.target.value })}
-                                    className="border p-2 rounded col-span-2"
-                                />
-                            </div>
-                            <button
-                                onClick={agregarDevolucion}
-                                className="mt-4 bg-green-600 text-white px-6 py-2 rounded"
-                            >
-                                Agregar devolución
-                            </button>
-                        </div>
-
-                        {/* TABLA DE DEVOLUCIONES */}
-                        <div className="overflow-x-auto">
-                            <table className="w-full table-auto border border-gray-300 text-sm">
-                                <thead className="bg-gray-200 text-left">
-                                <tr>
-                                    <th className="p-3">ID</th>
-                                    <th className="p-3">Producto</th>
-                                    <th className="p-3">Usuario</th>
-                                    <th className="p-3">Fecha</th>
-                                    <th className="p-3">Estado</th>
-                                    <th className="p-3">Observaciones</th>
-                                    <th className="p-3">Acciones</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {devoluciones.map((d) => (
-                                    <tr key={d.id} className="border-t">
-                                        <td className="p-3">{d.id}</td>
-                                        <td className="p-3">{d.producto}</td>
-                                        <td className="p-3">{d.usuario}</td>
-                                        <td className="p-3">{d.fecha}</td>
-                                        <td className="p-3">{d.estado}</td>
-                                        <td className="p-3">
-                                            <input
-                                                type="text"
-                                                value={d.observaciones}
-                                                onChange={(e) => cambiarObservacion(d.id, e.target.value)}
-                                                className="border p-1 w-full"
-                                            />
-                                        </td>
-                                        <td className="p-3">
-                                            {d.verificado ? (
-                                                <span className="text-green-600 font-semibold">Verificado</span>
-                                            ) : (
-                                                <button
-                                                    onClick={() => handleVerificarDevolucion(d.id)}
-                                                    className="bg-blue-600 text-white px-3 py-1 rounded"
-                                                >
-                                                    Verificar
-                                                </button>
-                                            )}
-                                        </td>
-                                    </tr>
-                                ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </main>
-                </div>
+  return (
+    <Layout>
+      <div className="container mx-auto p-4">
+        <h1 className="text-3xl font-bold mb-8">Devoluciones</h1>
+        
+        {/* Formulario para crear devoluciones */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+          <h2 className="text-xl font-semibold mb-4">Registrar Nueva Devolución</h2>
+          
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+              {error}
             </div>
-        </Layout>
-    );
+          )}
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Producto</label>
+              <input
+                type="text"
+                value={newDevolucion.producto}
+                onChange={(e) => setNewDevolucion({...newDevolucion, producto: e.target.value})}
+                className="w-full border border-gray-300 rounded px-3 py-2"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Usuario</label>
+              <input
+                type="text"
+                value={newDevolucion.usuario}
+                onChange={(e) => setNewDevolucion({...newDevolucion, usuario: e.target.value})}
+                className="w-full border border-gray-300 rounded px-3 py-2"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Fecha</label>
+              <input
+                type="date"
+                value={newDevolucion.fecha}
+                onChange={(e) => setNewDevolucion({...newDevolucion, fecha: e.target.value})}
+                className="w-full border border-gray-300 rounded px-3 py-2"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Estado</label>
+              <select
+                value={newDevolucion.estado}
+                onChange={(e) => setNewDevolucion({...newDevolucion, estado: e.target.value})}
+                className="w-full border border-gray-300 rounded px-3 py-2"
+              >
+                <option value="">Seleccionar estado</option>
+                <option value="Bueno">Bueno</option>
+                <option value="Regular">Regular</option>
+                <option value="Malo">Malo</option>
+              </select>
+            </div>
+          </div>
+          
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">Observaciones</label>
+            <textarea
+              value={newDevolucion.observaciones}
+              onChange={(e) => setNewDevolucion({...newDevolucion, observaciones: e.target.value})}
+              className="w-full border border-gray-300 rounded px-3 py-2"
+              rows={3}
+            ></textarea>
+          </div>
+          
+          <button
+            onClick={handleSubmit}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            Registrar Devolución
+          </button>
+        </div>
+        
+        {/* Tabla de devoluciones */}
+        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuario</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Verificado</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {loading ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-4 text-center">
+                    <div className="flex justify-center">
+                      <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500"></div>
+                    </div>
+                  </td>
+                </tr>
+              ) : devoluciones.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                    No hay devoluciones registradas
+                  </td>
+                </tr>
+              ) : (
+                devoluciones.map((devolucion) => (
+                  <tr key={devolucion.id}>
+                    <td className="px-6 py-4 whitespace-nowrap">{devolucion.producto}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{devolucion.usuario}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{new Date(devolucion.fecha).toLocaleDateString()}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 py-1 rounded-full text-xs ${
+                        devolucion.estado === 'Bueno' ? 'bg-green-100 text-green-800' :
+                        devolucion.estado === 'Regular' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-red-100 text-red-800'
+                      }`}>
+                        {devolucion.estado}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {devolucion.verificado ? (
+                        <span className="text-green-600">✓ Verificado</span>
+                      ) : (
+                        <span className="text-red-600">✗ Pendiente</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {!devolucion.verificado && (
+                        <button
+                          onClick={() => handleVerify(devolucion.id)}
+                          className="text-blue-600 hover:text-blue-900"
+                        >
+                          Verificar
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </Layout>
+  );
 }

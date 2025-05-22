@@ -1,55 +1,65 @@
-"use client"
-import { useState, useEffect } from "react";
-import prestamo from "../assets/images/prestamo.png";
-import notificacionesImg from "../assets/images/notificaciones.png"; 
-import misReservas from "../assets/images/misReservas.png";
+'use client';
 
-import inventario from "../assets/images/inventario.png";
-import analisis from "../assets/images/analisis.png";
-import devoluciones from "../assets/images/devoluciones.png";
-import prestamos from "../assets/images/prestamo.png";
-import reportes from "../assets/images/reportes.png";
+import { useState, useEffect } from 'react';
+import Layout from '@/components/Layout';
+import Opciones from '@/components/Opciones';
+import { useRouter } from 'next/navigation';
 
-import Layout from "@/components/Layout";
-import Opciones from "@/components/Opciones";
-
-
-const Dashboard = () => {
+export default function Dashboard() {
   const [userRole, setUserRole] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
-    // Obtener el rol del usuario desde sessionStorage
-    const role = sessionStorage.getItem("role");
+    const token = sessionStorage.getItem('token');
+    if (!token) {
+      router.push('/login');
+      return;
+    }
+
+    const role = sessionStorage.getItem('role');
+    if (!role) {
+      setUserRole(null);
+      return;
+    }
+
     setUserRole(role);
-  }, []);
+  }, [router]);
+
+  const studentOptions = [
+    { title: 'Prestamos', imgSrc: '/images/prestamo.png', href: '/prestamosDeportivos/Prestamos' },
+    { title: 'Notificaciones', imgSrc: '/images/notificaciones.png', href: '/prestamosDeportivos/Notificaciones' },
+    { title: 'Mis Reservas', imgSrc: '/images/misReservas.png', href: '/prestamosDeportivos/MisReservas' },
+  ];
+
+  const adminOptions = [
+    { title: 'Analisis', imgSrc: '/images/analisis.png', href: '/admin/AnalisisPage' },
+    { title: 'Devoluciones', imgSrc: '/images/devoluciones.png', href: '/admin/DevolucionesPage' },
+    { title: 'Inventario', imgSrc: '/images/inventario.png', href: '/admin/InventarioPage' },
+    { title: 'Prestamos', imgSrc: '/images/prestamo.png', href: '/admin/PrestamosPage' },
+    { title: 'Reportes', imgSrc: '/images/reportes.png', href: '/admin/ReportesPage' },
+  ];
+
+  const getOptions = () => {
+    if (userRole === 'ADMIN') return adminOptions;
+    if (userRole === 'STUDENT' || userRole === 'TEACHER') return studentOptions;
+    return [];
+  };
 
   return (
-    <div>
-      <Layout>
-      <div className="flex flex-col md:flex-row md:space-x-4">
-          {/* Opciones para estudiantes y profesores */}
-          {(userRole === "STUDENT" || userRole === "TEACHER") && (
-            <>
-              <Opciones title="Prestamos" imgSrc={prestamo.src} href="../prestamosDeportivos/Prestamos" />
-              <Opciones title="Notificaciones" imgSrc={notificacionesImg.src} href="../prestamosDeportivos/Notificaciones" />
-              <Opciones title="Mis Reservas" imgSrc={misReservas.src} href="../prestamosDeportivos/MisReservas" />
-            </>
-          )}
+    <Layout>
+      <div className="container mx-auto p-4">
+        <h1 className="text-3xl font-bold mb-8">Dashboard</h1>
 
-          {/* Opciones para administradores */}
-          {userRole === "ADMIN" && (
-            <>
-              <Opciones title="Analisis" imgSrc={analisis.src} href="../admin/AnalisisPage" />
-              <Opciones title="Devoluciones" imgSrc={devoluciones.src} href="../admin/DevolucionesPage" />
-              <Opciones title="Inventario" imgSrc={inventario.src} href="../admin/InventarioPage" />
-              <Opciones title="Prestamos" imgSrc={prestamos.src} href="../admin/PrestamosPage" />
-              <Opciones title="Reportes" imgSrc={reportes.src} href="../admin/ReportesPage" />
-            </>
-          )}
+        {userRole === null ? (
+          <p className="text-gray-600">Cargando opciones...</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {getOptions().map((option, index) => (
+              <Opciones key={index} title={option.title} imgSrc={option.imgSrc} href={option.href} />
+            ))}
+          </div>
+        )}
       </div>
-      </Layout>
-    </div>
+    </Layout>
   );
-};
-
-export default Dashboard;
+}
