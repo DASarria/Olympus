@@ -4,9 +4,11 @@ import {
   CreatePhysicalMeasurementDTO, 
   PhysicalProgress, 
   ProgressMetrics, 
-  SetGoalDTO 
+  SetGoalDTO,
+  Weight,
+  AdditionalMeasurements
 } from '@/types/gym/physicalTracking';
-// import { generateMockProgressData } from '@/utils/physicalTrackingUtils';
+import { calculateBMI } from '@/utils/physicalTrackingUtils';
 
 /**
  * Registra una nueva medición física para un usuario
@@ -16,9 +18,18 @@ export async function recordPhysicalMeasurement(
   data: CreatePhysicalMeasurementDTO
 ): Promise<PhysicalProgress> {
   try {
+    // Pre-calcular el BMI antes de enviar si hay suficientes datos
+    if (data.weight?.value && data.measurements?.height) {
+      const bmi = calculateBMI(data.weight, data.measurements.height);
+      const enrichedData = { ...data, bmi };
+      const response = await api.post(`/users/${userId}/physical-progress`, enrichedData);
+      return response.data;
+    }
+
     const response = await api.post(`/users/${userId}/physical-progress`, data);
     return response.data;
   } catch (error: any) {
+    console.error("Error al registrar medición física:", error);
     throw new Error(error.response?.data?.message || "Error al registrar medición física");
   }
 }
@@ -32,27 +43,19 @@ export async function getPhysicalMeasurementHistory(
   endDate?: string
 ): Promise<PhysicalProgress[]> {
   try {
-    let url = `/users/${userId}/physical-progress`;
-    
-    // Añadir parámetros de fecha si están definidos
     const params: Record<string, string> = {};
     if (startDate) params.startDate = startDate;
     if (endDate) params.endDate = endDate;
     
-    const response = await api.get(url, { params });
+    const response = await api.get(`/users/${userId}/physical-progress`, { params });
     return response.data;
   } catch (error: any) {
-    // Si es 404, devolver un array vacío
     if (error.response?.status === 404) {
       return [];
     }
     
-    // En caso de otros errores, devolver datos simulados para desarrollo
-    console.warn("Error al obtener historial. Usando datos simulados:", error);
-    // return generateMockProgressData();
-    
-    // Añadir este return para los casos de error no 404
-    return []; // Devuelve un array vacío cuando hay otro tipo de error
+    console.warn("Error al obtener historial de mediciones:", error);
+    return [];
   }
 }
 
@@ -66,12 +69,11 @@ export async function getLatestPhysicalMeasurement(
     const response = await api.get(`/users/${userId}/physical-progress/latest`);
     return response.data;
   } catch (error: any) {
-    // Si es 404, no hay mediciones, devolver null
     if (error.response?.status === 404) {
       return null;
     }
     
-    // Para otros errores, lanzar excepción
+    console.error("Error al obtener la última medición:", error);
     throw new Error(error.response?.data?.message || "Error al obtener la última medida");
   }
 }
@@ -87,7 +89,24 @@ export async function updatePhysicalMeasurements(
     const response = await api.put(`/users/physical-progress/${progressId}/measurements`, measurements);
     return response.data;
   } catch (error: any) {
+    console.error("Error al actualizar medidas:", error);
     throw new Error(error.response?.data?.message || "Error al actualizar las medidas");
+  }
+}
+
+/**
+ * Actualiza el peso en una medición existente
+ */
+export async function updateWeight(
+  progressId: string,
+  weight: Weight
+): Promise<PhysicalProgress> {
+  try {
+    const response = await api.put(`/users/physical-progress/${progressId}/weight`, weight);
+    return response.data;
+  } catch (error: any) {
+    console.error("Error al actualizar peso:", error);
+    throw new Error(error.response?.data?.message || "Error al actualizar el peso");
   }
 }
 
@@ -103,6 +122,7 @@ export async function setPhysicalGoal(
     const response = await api.put(`/users/${userId}/physical-progress/goal`, payload);
     return response.data;
   } catch (error: any) {
+    console.error("Error al establecer meta física:", error);
     throw new Error(error.response?.data?.message || "Error al establecer la meta física");
   }
 }
@@ -120,12 +140,11 @@ export async function getPhysicalProgressMetrics(
     });
     return response.data;
   } catch (error: any) {
-    // Si es 404, devolver objeto vacío
     if (error.response?.status === 404) {
       return {};
     }
     
-    // Generar métricas simuladas para desarrollo
+    // Datos simulados para desarrollo/fallback
     console.warn("Error al obtener métricas. Usando datos simulados:", error);
     return {
       weightChange: -2.5,
@@ -149,21 +168,71 @@ export async function getTraineePhysicalProgress(
   endDate?: string
 ): Promise<PhysicalProgress[]> {
   try {
-    let url = `/users/trainer/${trainerId}/users/${userId}/physical-progress`;
-    
-    // Añadir parámetros de fecha si están definidos
     const params: Record<string, string> = {};
     if (startDate) params.startDate = startDate;
     if (endDate) params.endDate = endDate;
     
-    const response = await api.get(url, { params });
+    const response = await api.get(`/users/trainer/${trainerId}/users/${userId}/physical-progress`, { params });
     return response.data;
   } catch (error: any) {
-    // Si es 404, devolver un array vacío
     if (error.response?.status === 404) {
       return [];
     }
     
+    console.error("Error al obtener progreso del usuario:", error);
     throw new Error(error.response?.data?.message || "Error al obtener progreso del usuario asignado");
+  }
+}
+
+/**
+ * Añade una observación a una medición física existente
+ */
+export async function addObservationToProgress(
+  progressId: string,
+  observation: string
+): Promise<PhysicalProgress> {
+  try {
+    const response = await api.post(`/users/physical-progress/${progressId}/observations`, { observation });
+    return response.data;
+  } catch (error: any) {
+    console.error("Error al añadir observación:", error);
+    throw new Error(error.response?.data?.message || "Error al añadir observación");
+  }
+}
+
+/**
+ * Elimina una medición física
+ */
+export async function deletePhysicalProgress(
+  progressId: string
+): Promise<void> {
+  try {
+    await api.delete(`/users/physical-progress/${progressId}`);
+  } catch (error: any) {
+    console.error("Error al eliminar medición física:", error);
+    throw new Error(error.response?.data?.message || "Error al eliminar la medición física");
+  }
+}
+
+/**
+ * Compara el progreso físico entre dos fechas
+ */
+export async function comparePhysicalProgress(
+  userId: string,
+  startDate: string,
+  endDate: string
+): Promise<ProgressMetrics> {
+  try {
+    const response = await api.get(`/users/${userId}/physical-progress/compare`, {
+      params: { startDate, endDate }
+    });
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      return {};
+    }
+    
+    console.error("Error al comparar progreso físico:", error);
+    throw new Error(error.response?.data?.message || "Error al comparar progreso físico");
   }
 }
