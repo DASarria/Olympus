@@ -16,10 +16,8 @@ import { PageTransitionWrapper } from '@/components/PageTransitionWrapper';
  * return <Reservations />;
  */
 const Reservations = () => {
-    const userId = typeof window !== 'undefined' ? sessionStorage.getItem("id") : null;
-    //const role = typeof window !== 'undefined' ? sessionStorage.getItem("role") : null;
-    const role: string = "TRAINER";
-    const [events, setEvents] = useState<any[]>([]);
+    const userId = typeof window !== 'undefined' ? sessionStorage.getItem("id") : null;    // Role information removed as it wasn't being used
+    const [events, setEvents] = useState<CalendarEvent[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [currentDate, setCurrentDate] = useState(new Date());
     const [currentView, setCurrentView] = useState<View>(Views.MONTH);
@@ -91,7 +89,7 @@ const Reservations = () => {
      * @param {Object} props.event - The event to display.
      * @returns {JSX.Element} The rendered event component.
      */
-    const CustomEvent = ({ event }: { event: any }) => {
+    const CustomEvent = ({ event }: { event: CalendarEvent }) => {
         return (
             <div>
                 <strong>{event.status}</strong>
@@ -144,7 +142,7 @@ const Reservations = () => {
      * 
      * @param {Object} event - The selected event.
      */
-    const handleSelectEvent = (event: any) => {
+    const handleSelectEvent = (event: CalendarEvent) => {
         router.push({
             pathname: '/gym-module/reservations/event-details',
             query: event.id

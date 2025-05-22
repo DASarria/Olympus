@@ -5,16 +5,18 @@ import { withRoleProtection } from "@/hoc/withRoleProtection";
 import { 
     getCurrentRoutine, 
     getUserRoutines, 
-    getRecommendedRoutines,
+    getRecommendedRoutines, 
+    assignRoutineToUser, 
     Routine 
 } from "@/api/gymServicesIndex";
+import { mapZoneIdToMuscleGroup } from "@/api/gym-module/excerciseService";
 import Tabs from '@/components/gym-module/TabsProps';
 import RoutineCarousel from "@/components/gym-module/RoutineCarousel";
 import ExerciseCarousel from "@/components/gym-module/ExerciseCarousel";
-import MuscleGroupSelector from "@/components/gym-module/MuscleGroupSelector";
 import { AnimatePresence, motion } from "framer-motion";
 import { PageTransitionWrapper } from "@/components/PageTransitionWrapper";
 import toast from "react-hot-toast";
+import { RoutineExercise } from "@/api/gym-module/routinesService";
 
 // Dynamically import the 3D component to prevent SSR issues
 const BodyCanvasInteractive = dynamic(
@@ -36,11 +38,16 @@ const zoneToMuscle: Record<number, string> = {
     10: 'pantorrillas',
 };
 
+
 /**
  * Routines Component that renders the main content of the "Routines" page.
+ * 
+ * @returns {JSX.Element} The rendered Routines page component.
  */
 const Routines = () => {
     const userId = typeof window !== 'undefined' ? sessionStorage.getItem("id") : null;
+    //const role = typeof window !== 'undefined' ? sessionStorage.getItem("role") : null;
+    const role: string = "TRAINER";
     
     // State for routines data
     const [currentRoutine, setCurrentRoutine] = useState<Routine | null>(null);
@@ -56,7 +63,12 @@ const Routines = () => {
     const [activeTab, setActiveTab] = useState('rutina-actual');
     const [selectedMuscleGroup, setSelectedMuscleGroup] = useState<number | null>(null);
 
-    // Effect hook to fetch routines with API calls when component mounts
+    /**
+     * Effect hook to fetch routines with API calls.
+     * This is executed when the component mounts and when the userId changes.
+     * 
+     * @returns {void}
+     */
     useEffect(() => {
         if (userId) {
             const fetchAllData = async () => {
@@ -106,7 +118,7 @@ const Routines = () => {
         }
     }, [userId]);
 
-    // Effect to filter routines based on selected muscle group
+    // Filter routines based on selected muscle group
     useEffect(() => {
       if (selectedMuscleGroup !== null) {
         const muscleName = zoneToMuscle[selectedMuscleGroup].toLowerCase();
@@ -138,35 +150,27 @@ const Routines = () => {
 
     return (
         <PageTransitionWrapper>
-            {loading ? (
-                <div className="flex justify-center items-center h-64">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
-                </div>
-            ) : (
-                <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-6">
                 <Return 
-                    className="self-stretch flex-[0_0_auto] w-full"
+                    className="!self-stretch !flex-[0_0_auto] !w-full"
                     text="Rutinas"
                     returnPoint="/gym-module"
-                />                <div className="flex flex-col md:flex-row gap-6">
+                />
+                <div className="flex flex-col md:flex-row gap-6">
                     <div className="w-full md:w-1/2 lg:w-5/12 flex flex-col items-center justify-center gap-5">
-                        {/* Selector de anatomía - modelo 3D sin botones */}
+                        {/* Selector de anatomía */}
                         <BodyCanvasInteractive
                             modelPath="/models/male/scene.gltf"
+                            onSelectZone={setSelectedMuscleGroup}
                         />
-                        <div className="text-center text-sm text-gray-500">
-                            Usa el selector de arriba para filtrar por grupo muscular
-                        </div>
+                        {selectedMuscleGroup && (
+                            <div className="mt-2 text-center">
+                                <span className="font-semibold">Grupo muscular seleccionado:</span> {zoneToMuscle[selectedMuscleGroup]}
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex flex-col w-full">
-                        {/* Selector de grupos musculares mejorado */}
-                        <MuscleGroupSelector 
-                            onSelect={setSelectedMuscleGroup}
-                            selectedMuscleGroup={selectedMuscleGroup}
-                            zoneMap={zoneToMuscle}
-                        />
-                        
                         {/* Pestañas */}
                         <div className="mb-6">
                             <Tabs
@@ -190,12 +194,14 @@ const Routines = () => {
                                             className="flex flex-col gap-4"
                                         >
                                             <h2 className="text-2xl font-bold">{currentRoutine.name}</h2>
-                                            <p className="relative w-fit mt-[-1px] font-bold text-gray-700">{currentRoutine.description}</p>
-                                            <ExerciseCarousel exercises={currentRoutine.exercises || []} />
+                                            <p className="relative w-fit mt-[-1.00px] [font-family: 'Montserrat-Bold',Helvetica]font-family text-gray-700">{currentRoutine.description}</p>
+                                            {currentRoutine.exercises && (
+                                                <ExerciseCarousel exercises={currentRoutine.exercises as any[]} />
+                                            )}
                                         </motion.div>
                                     )}
                                     {activeTab === 'todas-rutinas' && (
-                                        <motion.div
+                                            <motion.div
                                             key="todas-rutinas"
                                             initial={{ opacity: 0, y: 20 }}
                                             animate={{ opacity: 1, y: 0 }}
@@ -215,8 +221,7 @@ const Routines = () => {
                             )}
                         </AnimatePresence>
 
-                        <h2 className="text-2xl font-bold mt-8 mb-4">Rutinas Recomendadas</h2>
-                        <div>
+                        <h2 className="text-2xl font-bold mt-8 mb-4">Rutinas Recomendadas</h2>                        <div>
                             {filteredRecommended.length > 0 ? (
                                 <RoutineCarousel routines={filteredRecommended} />
                             ) : (
@@ -229,9 +234,9 @@ const Routines = () => {
                     </div>
                 </div>
             </div>
-            )}
         </PageTransitionWrapper>
-    );
+    )
 }
+
 
 export default withRoleProtection(["USER", "TRAINER"], "/gym-module")(Routines);

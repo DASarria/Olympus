@@ -48,9 +48,9 @@ export interface BaseExercise {
 export async function getAllExercises() {
   try {
     const response = await api.get<BaseExercise[]>(`${USER_API}/exercises`);
-    return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.message || "Error al obtener los ejercicios");
+    return response.data;  } catch (error) {
+    console.error("Error fetching exercises:", error);
+    throw new Error(error instanceof Error ? error.message : "Error al obtener los ejercicios");
   }
 }
 
@@ -144,4 +144,57 @@ export async function deleteExercise(id: string) {
   } catch (error: any) {
     throw new Error(error.response?.data?.message || "Error al eliminar el ejercicio");
   }
+}
+
+/**
+ * Maps a zone ID from the 3D model to a backend muscle group name.
+ * This is needed to translate between the frontend zone IDs and backend muscle group strings.
+ * 
+ * @param {number} zoneId - The zone ID from the 3D model
+ * @returns {string} The corresponding muscle group name used in the backend
+ */
+export function mapZoneIdToMuscleGroup(zoneId: number): string {
+  const muscleGroups: Record<number, string> = {
+    1: 'pecho',
+    2: 'espalda',
+    3: 'bíceps',
+    4: 'tríceps',
+    5: 'hombros',
+    6: 'abdomen',
+    7: 'glúteos',
+    8: 'cuádriceps',
+    9: 'isquiotibiales',
+    10: 'pantorrillas',
+  };
+
+  return muscleGroups[zoneId] || '';
+}
+
+/**
+ * Maps a backend muscle group name to a zone ID for the 3D model.
+ * 
+ * @param {string} muscleGroup - The muscle group name from the backend
+ * @returns {number|null} The corresponding zone ID for the 3D model, or null if not found
+ */
+export function mapMuscleGroupToZoneId(muscleGroup: string): number | null {
+  const lowerCaseMuscleGroup = muscleGroup.toLowerCase();
+  
+  const zoneIds: Record<string, number> = {
+    'pecho': 1,
+    'espalda': 2,
+    'bíceps': 3,
+    'biceps': 3,
+    'tríceps': 4,
+    'triceps': 4,
+    'hombros': 5,
+    'abdomen': 6,
+    'glúteos': 7,
+    'gluteos': 7,
+    'cuádriceps': 8,
+    'cuadriceps': 8,
+    'isquiotibiales': 9,
+    'pantorrillas': 10,
+  };
+
+  return zoneIds[lowerCaseMuscleGroup] || null;
 }

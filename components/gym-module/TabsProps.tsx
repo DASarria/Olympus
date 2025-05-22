@@ -1,4 +1,3 @@
-
 /**
  * Tab interface represents a single tab with an identifier and a label.
  * 

@@ -18,6 +18,34 @@ import { Return } from '@/components/Return';
 // Register chart elements for Chart.js
 ChartJS.register(LineElement, CategoryScale, LinearScale, Title, Tooltip, Legend, PointElement);
 
+// Register chart elements for Chart.js
+ChartJS.register(LineElement, CategoryScale, LinearScale, Title, Tooltip, Legend, PointElement);
+
+/**
+ * Classifies a given BMI value into different categories and assigns a color.
+ * 
+ * @param {number} bmi - The BMI value to classify.
+ * @returns {{ label: string, color: string }} - The classification label and associated color.
+ * 
+ * @example
+ * const bmi = 24;
+ * const classification = classifyBMI(bmi);
+ * console.log(classification); // { label: "Healthy weight", color: "#008000" }
+ */
+const classifyBMI = (bmi: number) => {
+    if (bmi < 18.5) return { label: "Bajo peso", color: "#FFA500" };
+    if (bmi < 25) return { label: "Peso saludable", color: "#008000" };
+    if (bmi < 30) return { label: "Sobrepeso", color: "#FFD700" };
+    return { label: "Obesidad", color: "#FF0000" };
+};
+
+/**
+ * PhysicalProgress component to display a user's physical progress such as weight, height, BMI, and goals.
+ * Fetches and displays data, including BMI chart history.
+ * 
+ * @component
+ * @returns {JSX.Element} - The rendered PhysicalProgress component.
+ */
 const PhysicalProgress = () => {
     const router = useRouter();
     const { studentId, tab } = router.query;
