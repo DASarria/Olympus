@@ -5,18 +5,7 @@ import { Calendar, Views, View } from 'react-big-calendar';
 import { useRouter } from 'next/router';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import localizer from '@/lib/Localizer';
-import { ReservationStatus } from '@/api/gymServicesIndex';
-
-// Define proper types for events
-interface CalendarEvent {
-    id: string;
-    title: string;
-    start: Date;
-    end: Date;
-    type: 'reservation' | 'session';
-    status: ReservationStatus;
-    sessionId?: string;
-}
+import { ReservationStatus, getUserReservations } from '@/api/gymServicesIndex';
 import { PageTransitionWrapper } from '@/components/PageTransitionWrapper';
 
 /**
