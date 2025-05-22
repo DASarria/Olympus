@@ -10,12 +10,11 @@ import Analisis from "@/assets/images/gym-module/ANALISIS.svg";
 
 const Module5 = () => {
     const router = useRouter();
-    // const role = typeof window !== 'undefined' ? sessionStorage.getItem("role") : null;
-    const role: string = "TRAINER";
+    const role = typeof window !== 'undefined' ? sessionStorage.getItem("role") : null;
 
     useEffect(() => {
         if (role === "ADMIN" && router.pathname !== "/gym-module/Analysis") {
-            router.push("/gym-module/Analysis");
+            router.push("/gym-module/analysis");
         }
     }, [role, router]);
 

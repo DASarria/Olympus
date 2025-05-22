@@ -11,8 +11,7 @@ export function withRoleProtection<T extends object>(
       const [loading, setLoading] = useState(true);
 
       useEffect(() => {
-        //const storedRole = sessionStorage.getItem("role");
-        const storedRole = "STUDENT";
+        const storedRole = sessionStorage.getItem("role");
 
 
         if (!AllowedRoles.includes(storedRole || "")) {
