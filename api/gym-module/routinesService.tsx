@@ -23,20 +23,32 @@ export interface RoutineExerciseDTO {
 
 /**
  * @typedef {Object} RoutineExercise
+ * @property {string} [id] - The unique identifier of the routine exercise (optional).
  * @property {string} [routineId] - The unique identifier of the routine to which this exercise belongs (optional).
  * @property {string} [baseExerciseId] - The unique identifier of the base exercise (optional).
+ * @property {string} [name] - The name of the exercise (optional).
+ * @property {string} [description] - A description of the exercise (optional).
+ * @property {string} [muscleGroup] - The muscle group targeted by the exercise (optional).
  * @property {number} [sets] - The number of sets for the exercise (optional).
  * @property {number} [repetitions] - The number of repetitions per set (optional).
  * @property {number} [restTime] - The rest time between sets in seconds (optional).
  * @property {number} [sequenceOrder] - The order in which the exercise appears in the routine (optional).
+ * @property {string} [imageUrl] - URL to an image demonstrating the exercise (optional).
+ * @property {string} [videoUrl] - URL to a video demonstrating the exercise (optional).
  */
 export interface RoutineExercise {
+  id?: string;
   routineId?: string;
   baseExerciseId?: string;
+  name?: string;
+  description?: string;
+  muscleGroup?: string;
   sets?: number;
   repetitions?: number;
   restTime?: number;
   sequenceOrder?: number;
+  imageUrl?: string;
+  videoUrl?: string;
 }
 
 /**

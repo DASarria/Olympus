@@ -1,0 +1,11 @@
+/* Carousel transform positions */
+.carousel-pos-0 { transform: translateX(0); }
+.carousel-pos-1 { transform: translateX(-280px); }
+.carousel-pos-2 { transform: translateX(-560px); }
+.carousel-pos-3 { transform: translateX(-840px); }
+.carousel-pos-4 { transform: translateX(-1120px); }
+.carousel-pos-5 { transform: translateX(-1400px); }
+.carousel-pos-6 { transform: translateX(-1680px); }
+.carousel-pos-7 { transform: translateX(-1960px); }
+.carousel-pos-8 { transform: translateX(-2240px); }
+.carousel-pos-9 { transform: translateX(-2520px); }
