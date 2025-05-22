@@ -8,6 +8,7 @@ import StudentSelectionModal from '@/components/gym-module/StudentSelectionModal
 import { Student, CreatePhysicalMeasurementDTO } from '@/types/gym/physicalTracking';
 import { recordPhysicalMeasurement } from '@/api/gym-module/physicalProgressService';
 import { getUserById } from '@/api/gym-module/userService';
+import { getAllStudents } from '@/api/gym-module/userService';
 
 /**
  * Página para registrar una nueva medición física
@@ -34,7 +35,7 @@ const RecordMeasurement = () => {
     
     // Si hay un ID de estudiante en la URL y el usuario es entrenador
     if (studentId && userRole === 'TRAINER') {
-      console.log(`Modo entrenador: Registrando medición para estudiante con ID: ${studentId}`);
+    //   console.log(`Modo entrenador: Registrando medición para estudiante con ID: ${studentId}`);
       setUserId(studentId as string);
       setIsTrainerMode(true);
       loadStudentInfo(studentId as string);
@@ -54,40 +55,81 @@ const RecordMeasurement = () => {
   }, [studentId]);
   
   const loadStudentInfo = async (id: string) => {
-    try {
-      console.log(`Cargando información del estudiante con ID: ${id}`);
-      const student = await getUserById(id);
-      if (student) {
-        console.log(`Estudiante encontrado: ${student.name}`);
-        setSelectedStudent({
-          id: student.id || id,
-          name: student.name,
-          institutionalId: student.institutionalId,
-          role: student.role
-        });
-      } else {
-        console.warn(`No se encontró información para el estudiante con ID: ${id}`);
+  try {
+    console.log(`Cargando información del estudiante con ID: ${id}`);
+    const student = await getUserById(id);
+    
+    if (student) {
+      console.log(`Estudiante encontrado: ${student.name}`);
+      setSelectedStudent({
+        id: student.id || id,
+        name: student.name,
+        institutionalId: student.institutionalId,
+        role: student.role
+      });
+    } else {
+      console.warn(`No se encontró información para el estudiante con ID: ${id}`);
+      
+      // Intentar buscar en la lista completa de estudiantes
+      try {
+        const allStudents = await getAllStudents();
+        const foundStudent = allStudents.find(s => s.id === id);
+        
+        if (foundStudent) {
+          setSelectedStudent(foundStudent);
+        } else {
+          // Usar datos simulados como fallback
+          setSelectedStudent({
+            id: id,
+            name: "Estudiante",
+            institutionalId: "No disponible",
+            role: "USER"
+          });
+        }
+      } catch (error) {
+        console.error("Error al buscar en lista de estudiantes:", error);
         // Usar datos simulados como fallback
         setSelectedStudent({
           id: id,
-          name: "Estudiante",
+          name: "Estudiante (Datos simulados)",
           institutionalId: "No disponible",
           role: "USER"
         });
       }
-      setLoading(false);
-    } catch (error) {
-      console.error('Error al cargar información del estudiante:', error);
-      // Usar datos simulados como fallback en caso de error
+    }
+    setLoading(false);
+  } catch (error) {
+    console.error('Error al cargar información del estudiante:', error);
+    
+    // Intentar con método alternativo
+    try {
+      const allStudents = await getAllStudents();
+      const foundStudent = allStudents.find(s => s.id === id);
+      
+      if (foundStudent) {
+        setSelectedStudent(foundStudent);
+      } else {
+        // Usar datos simulados como fallback
+        setSelectedStudent({
+          id: id,
+          name: "Estudiante (Datos no disponibles)",
+          institutionalId: "No disponible",
+          role: "USER"
+        });
+      }
+    } catch (innerError) {
+      console.error("Error secundario:", innerError);
+      // Último recurso: datos simulados
       setSelectedStudent({
         id: id,
         name: "Estudiante (Datos simulados)",
         institutionalId: "No disponible",
         role: "USER"
       });
-      setLoading(false);
     }
-  };
+    setLoading(false);
+  }
+};
   
   const handleStudentSelect = (student: Student) => {
     console.log(`Estudiante seleccionado: ${student.name} (${student.id})`);
