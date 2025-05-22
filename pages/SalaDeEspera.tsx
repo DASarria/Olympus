@@ -10,27 +10,23 @@ interface Turno {
   specialization: string;
 }
 
+interface ApiResponse {
+  code?: string;
+  patient?: string;
+  turns?: Turno[];
+  error?: string;
+  message?: string;
+}
+
 export default function SalaDeEspera() {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [turnos, setTurnos] = useState<{
-    MedicinaGeneral: {
-      actual: Turno | null;
-      siguientes: Turno[];
-    };
-    Odontologia: {
-      actual: Turno | null;
-      siguientes: Turno[];
-    };
-    Psicologia: {
-      actual: Turno | null;
-      siguientes: Turno[];
-    };
-  }>({
-    MedicinaGeneral: { actual: null, siguientes: [] },
-    Odontologia: { actual: null, siguientes: [] },
-    Psicologia: { actual: null, siguientes: [] }
+  const [turnos, setTurnos] = useState({
+    MedicinaGeneral: { actual: null as Turno | null, siguientes: [] as Turno[] },
+    Odontologia: { actual: null as Turno | null, siguientes: [] as Turno[] },
+    Psicologia: { actual: null as Turno | null, siguientes: [] as Turno[] }
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const slides = [
     { id: 1, name: "Horarios de atención", url: imagen1 },
@@ -41,31 +37,54 @@ export default function SalaDeEspera() {
   // Obtener turnos actuales y siguientes
   const fetchTurnos = async () => {
     try {
+      setError(null);
+      setLoading(true);
       const especialidades = ["MedicinaGeneral", "Odontologia", "Psicologia"];
       const nuevosTurnos = { ...turnos };
 
       for (const esp of especialidades) {
-        // Obtener turno actual
-        const actualRes = await fetch(
-          `https://eciturnos-e5egf4dyezdkdgfq.canadaeast-01.azurewebsites.net/api/turns/actualTurn?specialization=${esp}`
-        );
-        const actualData = await actualRes.json();
-        
-        // Obtener lista de turnos siguientes
-        const listRes = await fetch(
-          `https://eciturnos-e5egf4dyezdkdgfq.canadaeast-01.azurewebsites.net/api/turns/list?specialization=${esp}`
-        );
-        const listData = await listRes.json();
+        try {
+          // Obtener turno actual
+          const actualRes = await fetch(
+            `https://eciturnos-e5egf4dyezdkdgfq.canadaeast-01.azurewebsites.net/api/turns/actualTurn?specialization=${esp}`
+          );
+          const actualData: ApiResponse = await actualRes.json();
+          
+          // Obtener lista de turnos siguientes
+          const listRes = await fetch(
+            `https://eciturnos-e5egf4dyezdkdgfq.canadaeast-01.azurewebsites.net/api/turns/list?specialization=${esp}`
+          );
+          const listData: ApiResponse = await listRes.json();
 
-        nuevosTurnos[esp as keyof typeof nuevosTurnos] = {
-          actual: actualData,
-          siguientes: listData.slice(0, 3) // Tomamos los próximos 3 turnos
-        };
+          // Procesar respuesta del turno actual
+          nuevosTurnos[esp as keyof typeof nuevosTurnos].actual = 
+            actualData.code && actualData.patient 
+              ? { 
+                  code: actualData.code, 
+                  patient: actualData.patient, 
+                  specialization: esp 
+                }
+              : null;
+
+          // Procesar respuesta de la lista de turnos
+          let siguientesTurnos: Turno[] = [];
+          
+          if (Array.isArray(listData)) {
+            siguientesTurnos = listData.slice(0, 3);
+          } else if (Array.isArray(listData.turns)) {
+            siguientesTurnos = listData.turns.slice(0, 3);
+          }
+
+          nuevosTurnos[esp as keyof typeof nuevosTurnos].siguientes = siguientesTurnos;
+        } catch (err) {
+          console.error(`Error al obtener turnos para ${esp}:`, err);
+        }
       }
 
       setTurnos(nuevosTurnos);
     } catch (error) {
-      console.error("Error fetching turnos:", error);
+      console.error("Error general al obtener turnos:", error);
+      setError("Error al cargar los turnos. Intente recargar la página.");
     } finally {
       setLoading(false);
     }
@@ -96,6 +115,20 @@ export default function SalaDeEspera() {
     return (
       <div className="flex flex-col min-h-screen bg-gray-50 items-center justify-center">
         <p>Cargando información de turnos...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col min-h-screen bg-gray-50 items-center justify-center">
+        <p className="text-red-500 mb-4">{error}</p>
+        <button 
+          onClick={fetchTurnos}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+        >
+          Reintentar
+        </button>
       </div>
     );
   }
