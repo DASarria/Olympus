@@ -28,7 +28,7 @@ const SchedulePage = () => {
                             <NavBtn
                                 image={{src:Horario.src}}
                                 texto="Servicios"
-                                navigate="/"
+                                navigate="/UserModule/ScheduleManagement/ServicePage"
                             />
                             <NavBtn
                                 image={{ src: Configuracion.src }}
