@@ -7,7 +7,7 @@ const api = axios.create({ baseURL: USER_API_BASE_URL });
 
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEyMTMyMTQxIiwidXNlck5hbWUiOiJhZG1pbiIsImVtYWlsIjoiYWRtaW5AZXNjdWVsYWluZy5lZHUuY28iLCJuYW1lIjoiZWwgYWRtaW4iLCJyb2xlIjoiQURNSU4iLCJzcGVjaWFsdHkiOiJudWxsIiwiZXhwIjoxNzQ3ODg2MzA2fQ.gOKJDJ7fgvpmK_WO9PkAsZYV-mHqqk02JN-qIX0HKpI';
+    const token = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEyMTMyMTQxIiwidXNlck5hbWUiOiJhZG1pbiIsImVtYWlsIjoiYWRtaW5AZXNjdWVsYWluZy5lZHUuY28iLCJuYW1lIjoiZWwgYWRtaW4iLCJyb2xlIjoiQURNSU4iLCJzcGVjaWFsdHkiOiJudWxsIiwiZXhwIjoxNzQ3OTI4MjU4fQ.S-98XwcHg1Y9Eh1vBvy8Ms6ABBbcfGfxn6rA5G7Sj08';
     if (token && config.headers) {
       config.headers.Authorization = token;
       config.headers['Content-Type'] = 'application/json';
