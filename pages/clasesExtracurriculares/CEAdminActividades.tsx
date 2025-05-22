@@ -93,6 +93,23 @@ const CEAdminActividades = () => {
     }
   };
 
+  const ActualizarActividades = async (actividad) => {
+    try {
+      const response = await axios.post(
+        "https://hadesback-app-c5fwbybjd0gnf0fx.canadacentral-01.azurewebsites.net/api/activity/update",
+        actividad,
+        {
+          headers: {
+            Authorization: tokenJWT,
+          },
+        }
+      );
+      console.log("Actividad Actualizada:", response.data);
+    } catch (error) {
+      console.error("Error al actualizar las actividades:", error);
+    }
+  };
+
   useEffect(() => {
     fetchActividades();
   }, []);
