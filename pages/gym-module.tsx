@@ -13,7 +13,7 @@ const Module5 = () => {
     const role = typeof window !== 'undefined' ? sessionStorage.getItem("role") : null;
 
     useEffect(() => {
-        if (role === "ADMIN" && router.pathname !== "/gym-module/Analysis") {
+        if (role === "ADMIN" && router.pathname !== "/gym-module/analysis") {
             router.push("/gym-module/analysis");
         }
     }, [role, router]);
