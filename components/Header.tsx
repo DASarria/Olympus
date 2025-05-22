@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import logotransparente from "../assets/images/logotransparente.png"
-import { useRouter } from "next/router"
+
 
 interface HeaderProps {
   userName?: string
@@ -10,7 +10,7 @@ interface HeaderProps {
 }
 
 const Header = ({ userName = "Nombre de Usuario", notificationsCount = 0 }: HeaderProps) => {
-  const router = useRouter()
+  
 
   const getInitials = (name: string) => {
     return name

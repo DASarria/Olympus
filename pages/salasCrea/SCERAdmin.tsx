@@ -32,6 +32,13 @@ interface Elemento {
   imagen: string | StaticImageData
   reservedCount?: number
 }
+interface ElementoAPI {
+  id: string;
+  name: string;
+  description?: string;
+  quantity?: number;
+}
+
 
 interface Reserva {
   id: string
@@ -66,29 +73,11 @@ const SCERAdmin = () => {
 
   const router = useRouter()
   const irAlInicio = () => {
-    window.location.href = "/salasCrea/InicioSalasCreaADMIN"
+    router.back();
   }
-
-  useEffect(() => {
-    const lastUpdateTime = localStorage.getItem("reservationsUpdated")
-    if (lastUpdateTime) {
-      setLastUpdated(new Date(lastUpdateTime))
-    }
-
-    const checkInterval = setInterval(() => {
-      const lastUpdateTime = localStorage.getItem("reservationsUpdated")
-      if (lastUpdateTime && (!lastUpdated || new Date(lastUpdateTime) > lastUpdated)) {
-        setLastUpdated(new Date(lastUpdateTime))
-        fetchElementos()
-      }
-    }, 3000)
-
-    return () => clearInterval(checkInterval)
-  }, [lastUpdated])
 
   const fetchElementos = async () => {
     try {
-      console.log("SCERAdmin: Obteniendo elementos y reservas...")
       const response = await fetch(`${apiUrl}/elements`, {
         method: "GET",
         headers: {
@@ -100,7 +89,6 @@ const SCERAdmin = () => {
 
       if (!response.ok) throw new Error(`Error: ${response.statusText}`)
       const data = await response.json()
-      console.log("SCERAdmin: Elementos obtenidos:", data)
 
       const reservationsResponse = await fetch(`${apiUrl}/revs`, {
         method: "GET",
@@ -114,11 +102,6 @@ const SCERAdmin = () => {
       let activeReservations: Reserva[] = []
       if (reservationsResponse.ok) {
         activeReservations = await reservationsResponse.json()
-        console.log("SCERAdmin: Reservas obtenidas:", activeReservations)
-
-        activeReservations.forEach((reserva: Reserva) => {
-          console.log(`SCERAdmin: Reserva ${reserva.id} - Préstamos:`, reserva.loans)
-        })
       } else {
         console.error("SCERAdmin: Error obteniendo reservas:", reservationsResponse.statusText)
       }
@@ -139,11 +122,10 @@ const SCERAdmin = () => {
         }
       })
 
-      console.log("SCERAdmin: Conteo de elementos reservados:", reservedCounts)
 
-      const elementos = data
-        .filter((el: any) => el.name)
-        .map((el: any) => ({
+      const elementos = (data as ElementoAPI[])
+        .filter((el: ElementoAPI) => el.name)
+        .map((el: ElementoAPI): Elemento => ({
           id: el.id,
           nombre: el.name,
           descripcion: el.description || "Sin descripción",
@@ -152,13 +134,11 @@ const SCERAdmin = () => {
           reservedCount: reservedCounts[el.id] || 0,
         }))
 
-      console.log("SCERAdmin: Elementos procesados con conteo de reservas:", elementos)
       setElementosList(elementos)
 
       if (elementoSeleccionado) {
         const updatedElement = elementos.find((el: Elemento) => el.id === elementoSeleccionado.id)
         if (updatedElement) {
-          console.log("SCERAdmin: Actualizando elemento seleccionado:", updatedElement)
           setElementoSeleccionado(updatedElement)
           setNuevaDescripcion(updatedElement.descripcion)
           setNuevaCantidad(updatedElement.cantidad)
@@ -197,7 +177,8 @@ const SCERAdmin = () => {
 
   useEffect(() => {
     fetchElementos()
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token, apiUrl])
 
   const handleClick = (elemento: Elemento) => {
     setElementoSeleccionado(elemento)
@@ -334,7 +315,7 @@ const SCERAdmin = () => {
           },
         })
         const allElements = await allResponse.json()
-        const recienCreado = allElements.find((el: any) => el.name === nuevoNombre)
+        const recienCreado = allElements.find((el: ElementoAPI) => el.name === nuevoNombre)
         if (!recienCreado) throw new Error("No se encontró el nuevo elemento")
         nuevoElementoId = recienCreado.id
       }

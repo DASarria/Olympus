@@ -1,5 +1,5 @@
 import modulo1 from "../assets/images/1imagen.jpg";
-import modulo2 from "../assets/images/2imagen.jpg";
+// import modulo2 from "../assets/images/2imagen.jpg";
 import modulo3 from "../assets/images/3imagen.jpg";
 import modulo4 from "../assets/images/4imagen.jpg";
 import modulo5 from "../assets/images/5imagen.jpg";

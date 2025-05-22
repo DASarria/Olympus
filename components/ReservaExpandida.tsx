@@ -25,6 +25,12 @@ interface ElementoInfo {
   cantidad: number
   descripcion: string
 }
+interface ElementoAPI {
+  id: string;
+  name: string;
+  description?: string;
+  quantity?: number;
+}
 
 interface Props {
   reserva: Reserva
@@ -56,6 +62,7 @@ const ReservaExpandida: React.FC<Props> = ({ reserva, onClose, onSave }) => {
     fetchAvailableElements()
     fetchRooms()
     checkTimeWindow(reserva.date)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reserva])
   
 
@@ -107,9 +114,9 @@ const ReservaExpandida: React.FC<Props> = ({ reserva, onClose, onSave }) => {
       }
 
       const data = await response.json()
-      const elements = data
-        .filter((el: any) => el.name)
-        .map((el: any) => ({
+      const elements = (data as ElementoAPI[])
+        .filter((el: ElementoAPI) => el.name)
+        .map((el: ElementoAPI) => ({
           id: el.id,
           nombre: el.name,
           cantidad: el.quantity || 0,

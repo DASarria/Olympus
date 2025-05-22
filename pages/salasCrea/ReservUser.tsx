@@ -48,7 +48,7 @@ const MAX_AFORO = 30
 
         try {
             const res = await fetch(`${apiUrl}/revs`, {
-            headers: { Authorization: `Bearer ${token}` }
+            headers: { Authorization: `${token}` }
             })
 
             const raw = await res.text()
@@ -118,7 +118,7 @@ const MAX_AFORO = 30
             method: "POST",
             headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
+            Authorization: `${token}`
             },
             body: JSON.stringify(reserva)
         })

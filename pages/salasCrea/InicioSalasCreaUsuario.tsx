@@ -1,9 +1,8 @@
 import MenuAdminButtons from "@/components/MenuAdminButtons";
-import prestamosImage from "../../assets/images/juegoslogo.png";
+// import prestamosImage from "../../assets/images/juegoslogo.png";
 import elementosImage from "../../assets/images/juegos de mesa logo.png";
 import reservasImage from "../../assets/images/reservaslogo.png";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
 
 const InicioSalasCreaUsuario = () => {
     const router = useRouter();

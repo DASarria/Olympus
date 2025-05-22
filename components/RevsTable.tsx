@@ -23,10 +23,13 @@ interface Reserva {
   state: string
   people: number
 }
-
-interface RevsTableProps {
-  reservas: Reserva[]
+interface ElementoAPI {
+  id: string;
+  name: string;
+  description?: string;
+  quantity?: number;
 }
+
 
 interface RoomsProps {
   roomId: string
@@ -106,7 +109,7 @@ const RevsTable = () => {
       const data = await response.json()
       const namesMap: Record<string, string> = {}
 
-      data.forEach((element: any) => {
+      data.forEach((element: ElementoAPI) => {
         if (element.id && element.name) {
           namesMap[element.id] = element.name
         }
@@ -141,10 +144,11 @@ const RevsTable = () => {
     fetchRooms()
   const intervalId = setInterval(() => {
     checkReservationsForQuantityUpdates()
-  }, 60000) // revisa cada minuto
+    }, 60000) // revisa cada minuto
 
-  return () => clearInterval(intervalId) // limpieza cuando se desmonta el componente
-}, [])
+  return () => clearInterval(intervalId)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
 
   // Check if any reservations have entered the time window and need quantity updates
@@ -336,17 +340,7 @@ const RevsTable = () => {
       console.error("Error en la respuesta:", errorText)
       throw new Error("Error actualizando reserva: " + errorText)
       }
-
-      const contentType = response.headers.get("content-type")
-      if (contentType && contentType.includes("application/json")) {
-        try {
-          const updatedData = await response.json()
-        } catch (jsonError) {
-          console.warn("No se pudo analizar la respuesta como JSON, pero la actualización fue exitosa")
-        }
-      } else {
-        const responseText = await response.text()
-      }
+      
       await fetchReservas()
       localStorage.setItem("reservationsUpdated", "true")
       Swal.fire({
