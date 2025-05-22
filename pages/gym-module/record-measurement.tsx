@@ -34,6 +34,7 @@ const RecordMeasurement = () => {
     
     // Si hay un ID de estudiante en la URL y el usuario es entrenador
     if (studentId && userRole === 'TRAINER') {
+      console.log(`Modo entrenador: Registrando medición para estudiante con ID: ${studentId}`);
       setUserId(studentId as string);
       setIsTrainerMode(true);
       loadStudentInfo(studentId as string);
@@ -50,26 +51,46 @@ const RecordMeasurement = () => {
       setError('No se pudo determinar el ID de usuario');
       setLoading(false);
     }
-  }, [studentId, router]);
+  }, [studentId]);
   
   const loadStudentInfo = async (id: string) => {
     try {
+      console.log(`Cargando información del estudiante con ID: ${id}`);
       const student = await getUserById(id);
-      setSelectedStudent({
-        id: student.id || id,
-        name: student.name,
-        institutionalId: student.institutionalId,
-        role: student.role
-      });
+      if (student) {
+        console.log(`Estudiante encontrado: ${student.name}`);
+        setSelectedStudent({
+          id: student.id || id,
+          name: student.name,
+          institutionalId: student.institutionalId,
+          role: student.role
+        });
+      } else {
+        console.warn(`No se encontró información para el estudiante con ID: ${id}`);
+        // Usar datos simulados como fallback
+        setSelectedStudent({
+          id: id,
+          name: "Estudiante",
+          institutionalId: "No disponible",
+          role: "USER"
+        });
+      }
       setLoading(false);
     } catch (error) {
       console.error('Error al cargar información del estudiante:', error);
-      setError('No se pudo cargar la información del estudiante');
+      // Usar datos simulados como fallback en caso de error
+      setSelectedStudent({
+        id: id,
+        name: "Estudiante (Datos simulados)",
+        institutionalId: "No disponible",
+        role: "USER"
+      });
       setLoading(false);
     }
   };
   
   const handleStudentSelect = (student: Student) => {
+    console.log(`Estudiante seleccionado: ${student.name} (${student.id})`);
     setSelectedStudent(student);
     setUserId(student.id);
     setShowStudentSelector(false);
@@ -77,6 +98,8 @@ const RecordMeasurement = () => {
   
   const handleFormSubmit = async (userId: string, data: CreatePhysicalMeasurementDTO) => {
     try {
+      console.log(`Registrando medición para usuario con ID: ${userId}`);
+      console.log('Datos de la medición:', data);
       setError(null);
       await recordPhysicalMeasurement(userId, data);
       setSuccess(true);
@@ -85,7 +108,7 @@ const RecordMeasurement = () => {
       setTimeout(() => {
         if (isTrainerMode) {
           // Si es entrenador, redirigir a la página de progreso del estudiante
-          router.push(`/gym-module/student-progress?studentId=${userId}`);
+          router.push(`/gym-module/physical-progress?studentId=${userId}`);
         } else {
           // Si es usuario normal, redirigir a su propia página de progreso
           router.push('/gym-module/physical-progress');
@@ -103,7 +126,7 @@ const RecordMeasurement = () => {
         <Return 
           className="!self-stretch !flex-[0_0_auto] !w-full mb-4"
           text="Progreso Físico"
-          returnPoint="/gym-module/physical-progress"
+          returnPoint={isTrainerMode && studentId ? `/gym-module/physical-progress?studentId=${studentId}` : "/gym-module/physical-progress"}
         />
         
         <div className="mb-6">

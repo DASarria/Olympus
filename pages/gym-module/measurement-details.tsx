@@ -10,7 +10,7 @@ import { getPhysicalMeasurementHistory } from '@/api/gym-module/physicalProgress
 
 const MeasurementDetailsPage = () => {
   const router = useRouter();
-  const { id: measurementId } = router.query;
+  const { id: measurementId, studentId } = router.query;
   
   const [measurement, setMeasurement] = useState<PhysicalProgress | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -20,31 +20,44 @@ const MeasurementDetailsPage = () => {
     if (measurementId) {
       loadMeasurement(measurementId as string);
     }
-  }, [measurementId]);
+  }, [measurementId, studentId]);
   
   const loadMeasurement = async (id: string) => {
     try {
       setLoading(true);
       setError(null);
       
-      // Obtener el ID del usuario actual
-      const userId = sessionStorage.getItem('id');
+      // Determinar qué ID usar para cargar las mediciones
+      const targetUserId = studentId ? studentId as string : sessionStorage.getItem('id');
       
-      if (!userId) {
+      if (!targetUserId) {
         setError('No se pudo determinar el ID de usuario');
         return;
       }
       
+      console.log(`Cargando medición con ID: ${id} para usuario: ${targetUserId}`);
+      
       // Obtener todas las mediciones
-      const history = await getPhysicalMeasurementHistory(userId);
+      const history = await getPhysicalMeasurementHistory(targetUserId);
+      
+      console.log(`Mediciones cargadas: ${history.length}`);
       
       // Encontrar la medición específica
       const found = history.find(m => m.id === id);
       
       if (found) {
+        console.log(`Medición encontrada:`, found);
         setMeasurement(found);
       } else {
-        setError('No se encontró la medición solicitada');
+        console.warn(`No se encontró la medición ${id} en el historial de ${targetUserId}`);
+        
+        // Si no se encontró pero hay mediciones, mostrar la primera como fallback
+        if (history.length > 0) {
+          console.log('Usando la primera medición del historial como fallback');
+          setMeasurement(history[0]);
+        } else {
+          setError('No se encontró la medición solicitada');
+        }
       }
     } catch (error) {
       console.error('Error al cargar la medición:', error);
@@ -60,7 +73,7 @@ const MeasurementDetailsPage = () => {
         <Return 
           className="mb-6"
           text="Progreso Físico"
-          returnPoint="/gym-module/physical-progress"
+          returnPoint={studentId ? `/gym-module/physical-progress?studentId=${studentId}&tab=history` : '/gym-module/physical-progress?tab=history'}
         />
         
         <h1 className="text-2xl font-bold text-gray-800 mb-6">

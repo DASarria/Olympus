@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { classifyBMI } from '@/utils/physicalTrackingUtils';
 
 interface BMIIndicatorProps {

@@ -1,8 +1,4 @@
-import { Return } from "@/components/Return"
-import { withRoleProtection } from "@/hoc/withRoleProtection";
-import { FilterBtn } from "@/components/gym-module/FilterBtn";
-import UserIcon from '@/assets/icons/user-filter.svg';
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 import { getLatestPhysicalMeasurement, getUserGoals, getPhysicalMeasurementHistory, getPhysicalProgressMetrics } from '@/api/gymServicesIndex';
 import { PhysicalProgress as PhysicalProgressType, ProgressMetrics, Student } from '@/types/gym/physicalTracking';
 import { PageTransitionWrapper } from "@/components/PageTransitionWrapper";
@@ -14,13 +10,17 @@ import { getAllStudents } from '@/api/gym-module/userService';
 import ProgressHistory from "@/components/gym-module/ProgressHistory";
 import BMIIndicator from "@/components/gym-module/BMIIndicator";
 import { classifyBMI, formatDate } from '@/utils/physicalTrackingUtils';
+import { withRoleProtection } from '@/hoc/withRoleProtection';
+import { FilterBtn } from '@/components/gym-module/FilterBtn';
+import UserIcon from '@/public/user-filter.svg';
+import { Return } from '@/components/Return';
 
 // Register chart elements for Chart.js
 ChartJS.register(LineElement, CategoryScale, LinearScale, Title, Tooltip, Legend, PointElement);
 
 const PhysicalProgress = () => {
     const router = useRouter();
-    const { studentId } = router.query;
+    const { studentId, tab } = router.query;
     
     // Obtener información del usuario actual
     const currentUserId = typeof window !== 'undefined' ? sessionStorage.getItem("id") : null;
@@ -53,6 +53,11 @@ const PhysicalProgress = () => {
         const userRole = sessionStorage.getItem("role");
         setRole(userRole);
         
+        // Verificar si hay un parámetro de pestaña en la URL
+        if (tab === 'history') {
+            setActiveTab('history');
+        }
+        
         // Determinar modo de vista (dashboard para entrenadores, detalle para estudiantes)
         if (userRole === "TRAINER" && !studentId) {
             setViewMode('dashboard');
@@ -64,7 +69,7 @@ const PhysicalProgress = () => {
                 loadUserData(targetUserId);
             }
         }
-    }, [currentUserId, studentId]);
+    }, [currentUserId, studentId, tab]);
 
     // Cargar dashboard del entrenador con estudiantes y su último progreso
     const loadTrainerDashboard = async () => {
@@ -108,6 +113,7 @@ const PhysicalProgress = () => {
     const loadUserData = async (userId: string) => {
         try {
             setLoading(true);
+            console.log(`Cargando datos para usuario ${userId}`);
             
             // Cargar datos del usuario seleccionado
             if (role === "TRAINER" && userId !== currentUserId) {
@@ -120,34 +126,52 @@ const PhysicalProgress = () => {
             }
             
             // Cargar progreso físico en paralelo
-            const [measurement, goals, progress, metrics] = await Promise.all([
-                getLatestPhysicalMeasurement(userId),
-                getUserGoals(userId),
-                getPhysicalMeasurementHistory(userId),
-                getPhysicalProgressMetrics(userId)
-            ]);
-            
-            setLatestMeasurement(measurement);
-            setUserGoals(goals);
-            setMeasurementHistory(progress);
-            setProgressMetrics(metrics);
-            
-            // Calcular datos históricos de IMC para el gráfico
-            const bmiHistory = progress
-                .map((entry) => {
-                    const weight = entry.weight?.value;
-                    const height = entry.measurements?.height;
-                    if (!weight || !height) return null;
-                    
-                    return {
-                        date: entry.recordDate || '',
-                        bmi: entry.bmi || parseFloat((weight / (height * height)).toFixed(2))
-                    };
-                })
-                .filter((item): item is { date: string, bmi: number } => item !== null)
-                .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-            
-            setBmiData(bmiHistory);
+            try {
+                console.log(`Cargando datos físicos para usuario ${userId}...`);
+                const [measurement, goals, progress, metrics] = await Promise.all([
+                    getLatestPhysicalMeasurement(userId),
+                    getUserGoals(userId),
+                    getPhysicalMeasurementHistory(userId),
+                    getPhysicalProgressMetrics(userId)
+                ]);
+                
+                console.log(`Datos cargados para usuario ${userId}:`, {
+                    measurementExists: !!measurement,
+                    progressCount: progress.length,
+                    goalsCount: goals.length
+                });
+                
+                setLatestMeasurement(measurement);
+                setUserGoals(goals);
+                setMeasurementHistory(progress);
+                setProgressMetrics(metrics);
+                
+                // Calcular datos históricos de IMC para el gráfico
+                const bmiHistory = progress
+                    .map((entry) => {
+                        const weight = entry.weight?.value;
+                        const height = entry.measurements?.height;
+                        if (!weight || !height) return null;
+                        
+                        return {
+                            date: entry.recordDate || '',
+                            bmi: entry.bmi || parseFloat((weight / (height * height)).toFixed(2))
+                        };
+                    })
+                    .filter((item): item is { date: string, bmi: number } => item !== null)
+                    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+                
+                setBmiData(bmiHistory);
+            } catch (error) {
+                console.error(`Error al cargar datos físicos para usuario ${userId}:`, error);
+                
+                // Limpiar estados en caso de error
+                setLatestMeasurement(null);
+                setUserGoals([]);
+                setMeasurementHistory([]);
+                setProgressMetrics(null);
+                setBmiData([]);
+            }
         } catch (error) {
             console.error("Error al cargar datos del usuario:", error);
         } finally {
@@ -158,9 +182,10 @@ const PhysicalProgress = () => {
     // Filtrar estudiantes según término de búsqueda
     useEffect(() => {
         if (students.length > 0) {
+            const searchTermLower = searchTerm.toLowerCase();
             const filtered = students.filter(student => 
-                student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                (student.institutionalId && student.institutionalId.includes(searchTerm))
+                (student.name && student.name.toLowerCase().includes(searchTermLower)) ||
+                (student.institutionalId && student.institutionalId.toLowerCase().includes(searchTermLower))
             );
             setFilteredStudents(filtered);
         }
@@ -229,10 +254,12 @@ const PhysicalProgress = () => {
                                     className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="9" cy="7" r="4"></circle>
+                                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                                     </svg>
-                                    Registrar medición
+                                    Ver estudiante
                                 </button>
                             </div>
                         </div>
@@ -257,31 +284,39 @@ const PhysicalProgress = () => {
                                                         <h3 className="text-lg font-semibold text-gray-800">{student.name}</h3>
                                                         <p className="text-gray-500">ID: {student.institutionalId}</p>
                                                     </div>
-                                                    <div className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                                                        Estudiante
-                                                    </div>
+                                                    
+                                                    {progress?.bmi && (
+                                                        <div className="bg-gray-100 px-3 py-1 rounded-full text-sm font-medium">
+                                                            IMC: {progress.bmi.toFixed(1)}
+                                                        </div>
+                                                    )}
                                                 </div>
                                                 
                                                 {progress ? (
-                                                    <div className="mt-4">
-                                                        <div className="grid grid-cols-2 gap-4 mb-4">
-                                                            <div>
-                                                                <p className="text-xs text-gray-500">Peso</p>
-                                                                <p className="text-xl font-semibold">
-                                                                    {progress.weight?.value ?? 'N/A'} {progress.weight?.unit || 'KG'}
-                                                                </p>
-                                                            </div>
-                                                            <div>
-                                                                <p className="text-xs text-gray-500">IMC</p>
-                                                                <p className="text-xl font-semibold">
-                                                                    {progress.bmi?.toFixed(1) ?? 'N/A'}
-                                                                </p>
-                                                            </div>
+                                                    <div>
+                                                        <div className="grid grid-cols-2 gap-3 mb-4 text-sm">
+                                                            {progress.weight && (
+                                                                <div className="bg-gray-50 p-2 rounded">
+                                                                    <span className="text-gray-500">Peso:</span> 
+                                                                    <span className="font-medium ml-1">
+                                                                        {progress.weight.value} {progress.weight.unit}
+                                                                    </span>
+                                                                </div>
+                                                            )}
+                                                            
+                                                            {progress.measurements?.height && (
+                                                                <div className="bg-gray-50 p-2 rounded">
+                                                                    <span className="text-gray-500">Altura:</span> 
+                                                                    <span className="font-medium ml-1">
+                                                                        {progress.measurements.height} m
+                                                                    </span>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                         
                                                         {progress.recordDate && (
-                                                            <p className="text-sm text-gray-500 mt-2">
-                                                                Última medición: {formatDate(progress.recordDate, 'medium')}
+                                                            <p className="text-gray-500 text-sm">
+                                                                Última medición: {formatDate(progress.recordDate, 'short')}
                                                             </p>
                                                         )}
                                                     </div>
@@ -381,153 +416,158 @@ const PhysicalProgress = () => {
                         </div>
                         
                         {activeTab === 'overview' ? (
-                            // VISTA DE RESUMEN
                             <>
                                 {latestMeasurement ? (
-                                    <div className="space-y-6">
-                                        {/* Métricas principales */}
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                            {/* Peso */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        {/* Datos principales e IMC */}
+                                        <div className="flex flex-col gap-6">
                                             <div className="bg-white rounded-lg shadow-md p-6">
-                                                <h3 className="text-lg font-semibold text-gray-800 mb-2">Peso Actual</h3>
-                                                {latestMeasurement.weight ? (
-                                                    <div className="flex items-end">
-                                                        <span className="text-4xl font-bold text-gray-800">
-                                                            {latestMeasurement.weight.value}
-                                                        </span>
-                                                        <span className="text-2xl text-gray-600 ml-2 mb-1">
-                                                            {latestMeasurement.weight.unit}
-                                                        </span>
-                                                    </div>
-                                                ) : (
-                                                    <div className="text-gray-500">No hay datos de peso disponibles</div>
-                                                )}
-                                                
-                                                {progressMetrics?.weightChange && (
-                                                    <div className={`mt-3 text-sm ${
-                                                        progressMetrics.weightChange < 0 
-                                                            ? 'text-green-600' 
-                                                            : progressMetrics.weightChange > 0 
-                                                                ? 'text-red-600' 
-                                                                : 'text-gray-500'
-                                                    }`}>
-                                                        {progressMetrics.weightChange < 0 ? '↓' : '↑'} {Math.abs(progressMetrics.weightChange).toFixed(1)} kg en el último mes
-                                                    </div>
-                                                )}
-                                            </div>
-                                            
-                                            {/* IMC */}
-                                            <div className="bg-white rounded-lg shadow-md p-6">
-                                                <h3 className="text-lg font-semibold text-gray-800 mb-2">Índice de Masa Corporal</h3>
-                                                <BMIIndicator bmi={latestMeasurement.bmi || null} />
-                                            </div>
-                                            
-                                            {/* Medidas */}
-                                            <div className="bg-white rounded-lg shadow-md p-6">
-                                                <h3 className="text-lg font-semibold text-gray-800 mb-4">Medidas Corporales</h3>
-                                                <div className="grid grid-cols-2 gap-3">
+                                                <h3 className="text-lg font-semibold text-gray-800 mb-4">Peso e IMC</h3>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    {latestMeasurement.weight && (
+                                                        <div>
+                                                            <p className="text-gray-500 mb-1">Peso</p>
+                                                            <p className="text-2xl font-bold">
+                                                                {latestMeasurement.weight.value} {latestMeasurement.weight.unit}
+                                                            </p>
+                                                        </div>
+                                                    )}
+                                                    
                                                     {latestMeasurement.measurements?.height && (
                                                         <div>
-                                                            <p className="text-sm text-gray-500">Altura</p>
-                                                            <p className="text-xl font-semibold">{latestMeasurement.measurements.height} m</p>
-                                                        </div>
-                                                    )}
-                                                    {latestMeasurement.measurements?.waistCircumference && (
-                                                        <div>
-                                                            <p className="text-sm text-gray-500">Cintura</p>
-                                                            <p className="text-xl font-semibold">{latestMeasurement.measurements.waistCircumference} cm</p>
-                                                        </div>
-                                                    )}
-                                                    {latestMeasurement.measurements?.chestCircumference && (
-                                                        <div>
-                                                            <p className="text-sm text-gray-500">Pecho</p>
-                                                            <p className="text-xl font-semibold">{latestMeasurement.measurements.chestCircumference} cm</p>
-                                                        </div>
-                                                    )}
-                                                    {latestMeasurement.measurements?.hipCircumference && (
-                                                        <div>
-                                                            <p className="text-sm text-gray-500">Cadera</p>
-                                                            <p className="text-xl font-semibold">{latestMeasurement.measurements.hipCircumference} cm</p>
+                                                            <p className="text-gray-500 mb-1">Altura</p>
+                                                            <p className="text-2xl font-bold">
+                                                                {latestMeasurement.measurements.height} m
+                                                            </p>
                                                         </div>
                                                     )}
                                                 </div>
+                                                
+                                                {/* Indicador de IMC */}
+                                                {latestMeasurement.bmi && (
+                                                    <div className="mt-4">
+                                                        <BMIIndicator bmi={latestMeasurement.bmi} />
+                                                    </div>
+                                                )}
                                             </div>
-                                        </div>
-                                        
-                                        {/* Gráfico de IMC */}
-                                        <div className="bg-white rounded-lg shadow-md p-6">
-                                            <h3 className="text-lg font-semibold text-gray-800 mb-4">Evolución del IMC</h3>
-                                            <div className="h-80">
-                                                <Line
-                                                    data={chartData}
-                                                    options={{
-                                                        responsive: true,
-                                                        maintainAspectRatio: false,
-                                                        plugins: {
-                                                            legend: {
-                                                                display: true,
-                                                                position: 'top',
-                                                            },
-                                                            title: {
-                                                                display: false,
-                                                            },
-                                                        },
-                                                        scales: {
-                                                            x: {
-                                                                title: {
-                                                                    display: true,
-                                                                    text: 'Fecha',
-                                                                },
-                                                            },
-                                                            y: {
-                                                                title: {
-                                                                    display: true,
-                                                                    text: 'IMC',
-                                                                },
-                                                                min: 15,
-                                                                max: 40,
-                                                            },
-                                                        },
-                                                    }}
-                                                />
-                                            </div>
-                                        </div>
-                                        
-                                        {/* Metas físicas */}
-                                        {userGoals.length > 0 && (
-                                            <div className="bg-white rounded-lg shadow-md p-6">
-                                                <h3 className="text-lg font-semibold text-gray-800 mb-4">Metas Personales</h3>
-                                                <ul className="space-y-2">
-                                                    {userGoals.map((goal, index) => (
-                                                        <li key={index} className="flex items-start">
-                                                            <span className="text-blue-500 mr-2">•</span>
-                                                            <span>{goal}</span>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </div>
-                                        )}
-                                        
-                                        {/* Otras medidas */}
-                                        {latestMeasurement.measurements && (
-                                            <div className="bg-white rounded-lg shadow-md p-6">
-                                                <h3 className="text-lg font-semibold text-gray-800 mb-4">Medidas Corporales Detalladas</h3>
-                                                <div className="grid grid-cols-2 md:grid-cols-3 gap-y-2 gap-x-8">
-                                                    {latestMeasurement.measurements.bicepsCircumference && (
-                                                        <span>Bíceps: {latestMeasurement.measurements.bicepsCircumference} cm</span>
-                                                    )}
-                                                    {latestMeasurement.measurements.thighCircumference && (
-                                                        <span>Muslo: {latestMeasurement.measurements.thighCircumference} cm</span>
-                                                    )}
-                                                    {latestMeasurement.measurements.additionalMeasures?.calves && (
-                                                        <span>Pantorrilla: {latestMeasurement.measurements.additionalMeasures.calves} cm</span>
-                                                    )}
-                                                    {latestMeasurement.measurements.additionalMeasures?.shoulders && (
-                                                        <span>Hombros: {latestMeasurement.measurements.additionalMeasures.shoulders} cm</span>
-                                                    )}
+                                            
+                                            {/* Métricas de progreso */}
+{progressMetrics && (
+    <div className="bg-white rounded-lg shadow-md p-6">
+        <h3 className="text-lg font-semibold text-gray-800 mb-4">Progreso en 6 Meses</h3>
+        <div className="grid grid-cols-2 gap-4">
+            {progressMetrics.weightChange !== undefined && (
+                <div>
+                    <p className="text-gray-500 mb-1">Cambio de Peso</p>
+                    <p className={`text-2xl font-bold ${progressMetrics.weightChange > 0 ? 'text-red-500' : 'text-green-500'}`}>
+                        {progressMetrics.weightChange > 0 ? '+' : ''}
+                        {progressMetrics.weightChange.toFixed(1)} kg
+                    </p>
+                </div>
+            )}
+            
+            {progressMetrics.bmiChange !== undefined && (
+                <div>
+                    <p className="text-gray-500 mb-1">Cambio de IMC</p>
+                    <p className={`text-2xl font-bold ${progressMetrics.bmiChange > 0 ? 'text-red-500' : 'text-green-500'}`}>
+                        {progressMetrics.bmiChange > 0 ? '+' : ''}
+                        {progressMetrics.bmiChange.toFixed(1)}
+                    </p>
+                </div>
+            )}
+            
+            {progressMetrics.waistChange !== undefined && (
+                <div>
+                    <p className="text-gray-500 mb-1">Reducción de Cintura</p>
+                    <p className={`text-2xl font-bold ${progressMetrics.waistChange < 0 ? 'text-green-500' : 'text-red-500'}`}>
+                        {progressMetrics.waistChange > 0 ? '+' : ''}
+                        {progressMetrics.waistChange.toFixed(1)} cm
+                    </p>
+                </div>
+            )}
+            
+            {progressMetrics.bodyFatChange !== undefined && (
+                <div>
+                    <p className="text-gray-500 mb-1">Cambio de Grasa Corporal</p>
+                    <p className={`text-2xl font-bold ${progressMetrics.bodyFatChange < 0 ? 'text-green-500' : 'text-red-500'}`}>
+                        {progressMetrics.bodyFatChange > 0 ? '+' : ''}
+                        {progressMetrics.bodyFatChange.toFixed(1)}%
+                    </p>
+                </div>
+            )}
+        </div>
+    </div>
+)}
+                                            
+                                            {/* Metas personales */}
+                                            {userGoals.length > 0 && (
+                                                <div className="bg-white rounded-lg shadow-md p-6">
+                                                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Metas Personales</h3>
+                                                    <ul className="space-y-2">
+                                                        {userGoals.map((goal, index) => (
+                                                            <li key={index} className="flex items-start">
+                                                                <span className="text-blue-500 mr-2">•</span>
+                                                                <span>{goal}</span>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
                                                 </div>
-                                            </div>
-                                        )}
+                                            )}
+                                        </div>
+                                        
+                                        {/* Gráficos y otras medidas */}
+                                        <div className="flex flex-col gap-6">
+                                            {/* Gráfico de evolución de IMC */}
+                                            {bmiData.length > 1 && (
+                                                <div className="bg-white rounded-lg shadow-md p-6">
+                                                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Evolución de IMC</h3>
+                                                    <div className="w-full h-64">
+                                                        <Line 
+                                                            data={chartData} 
+                                                            options={{
+                                                                responsive: true,
+                                                                maintainAspectRatio: false,
+                                                                scales: {
+                                                                    y: {
+                                                                        beginAtZero: false
+                                                                    }
+                                                                }
+                                                            }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            )}
+                                            
+                                            {/* Otras medidas */}
+                                            {latestMeasurement.measurements && (
+                                                <div className="bg-white rounded-lg shadow-md p-6">
+                                                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Medidas Corporales Detalladas</h3>
+                                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-y-2 gap-x-8">
+                                                        {latestMeasurement.measurements.bicepsCircumference && (
+                                                            <span>Bíceps: {latestMeasurement.measurements.bicepsCircumference} cm</span>
+                                                        )}
+                                                        {latestMeasurement.measurements.chestCircumference && (
+                                                            <span>Pecho: {latestMeasurement.measurements.chestCircumference} cm</span>
+                                                        )}
+                                                        {latestMeasurement.measurements.waistCircumference && (
+                                                            <span>Cintura: {latestMeasurement.measurements.waistCircumference} cm</span>
+                                                        )}
+                                                        {latestMeasurement.measurements.hipCircumference && (
+                                                            <span>Cadera: {latestMeasurement.measurements.hipCircumference} cm</span>
+                                                        )}
+                                                        {latestMeasurement.measurements.thighCircumference && (
+                                                            <span>Muslo: {latestMeasurement.measurements.thighCircumference} cm</span>
+                                                        )}
+                                                        {latestMeasurement.measurements.additionalMeasures?.calves && (
+                                                            <span>Pantorrilla: {latestMeasurement.measurements.additionalMeasures.calves} cm</span>
+                                                        )}
+                                                        {latestMeasurement.measurements.additionalMeasures?.shoulders && (
+                                                            <span>Hombros: {latestMeasurement.measurements.additionalMeasures.shoulders} cm</span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 ) : (
                                     <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 p-6 rounded-md text-center">
@@ -538,12 +578,24 @@ const PhysicalProgress = () => {
                             </>
                         ) : (
                             // VISTA DE HISTORIAL
-                            <ProgressHistory 
-                                measurements={measurementHistory} 
-                                onSelectMeasurement={(measurement) => {
-                                    router.push(`/gym-module/measurement-details?id=${measurement.id}`);
-                                }} 
-                            />
+                            measurementHistory.length > 0 ? (
+                                <ProgressHistory 
+                                    measurements={measurementHistory} 
+                                    onSelectMeasurement={(measurement) => {
+                                        // Si es un entrenador viendo un estudiante, pasar el ID del estudiante
+                                        if (role === "TRAINER" && studentId) {
+                                            router.push(`/gym-module/measurement-details?id=${measurement.id}&studentId=${studentId}`);
+                                        } else {
+                                            router.push(`/gym-module/measurement-details?id=${measurement.id}`);
+                                        }
+                                    }} 
+                                />
+                            ) : (
+                                <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 p-6 rounded-md text-center">
+                                    <p className="text-lg font-medium mb-2">No hay mediciones registradas</p>
+                                    <p>No se encontraron mediciones para este usuario.</p>
+                                </div>
+                            )
                         )}
                     </div>
                 )}
