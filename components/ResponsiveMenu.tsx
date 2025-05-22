@@ -9,37 +9,37 @@ import Module from "./Module";
 const modules = [
     {
         moduleName: "module 1",
-        roleCanUse: ["admin", "usuario"],
+        roleCanUse: ["ADMIN", "usuario"],
         urlToNavigate: "/Module1",
         image: modulo1,
     },
     {
         moduleName: "module 2",
-        roleCanUse: ["admin"],
+        roleCanUse: ["ADMIN"],
         urlToNavigate: "/Module2",
         image: modulo2,
     },
     {
         moduleName: "module 3",
-        roleCanUse: ["admin", "usuario"],
+        roleCanUse: ["ADMIN", "usuario"],
         urlToNavigate: "/clasesExtracurriculares/CEAdminPrincipal",
         image: modulo3,
     },
     {
         moduleName: "module 4",
-        roleCanUse: ["admin"],
+        roleCanUse: ["ADMIN"],
         urlToNavigate: "/Module4",
         image: modulo4,
     },
     {
         moduleName: "module 5",
-        roleCanUse: ["admin"],
+        roleCanUse: ["ADMIN"],
         urlToNavigate: "/Module5",
         image: modulo5,
     },
     {
         moduleName: "module 6",
-        roleCanUse: ["admin"],
+        roleCanUse: ["ADMIN"],
         urlToNavigate: "/Module6",
         image: modulo6,
     }
