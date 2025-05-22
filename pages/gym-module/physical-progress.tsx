@@ -8,6 +8,8 @@ import { ProgressMetrics } from '@/types/gym/physicalTracking';
 import { PageTransitionWrapper } from "@/components/PageTransitionWrapper";
 import { Line } from "react-chartjs-2";
 import { Chart as ChartJS, LineElement, CategoryScale, LinearScale, Title, Tooltip, Legend, PointElement } from 'chart.js';
+import { useRouter } from "next/router";
+import StudentSelectionModal from "@/components/gym-module/StudentSelectionModal";
 
 // Register chart elements for Chart.js
 ChartJS.register(LineElement, CategoryScale, LinearScale, Title, Tooltip, Legend, PointElement);
@@ -38,6 +40,8 @@ const classifyBMI = (bmi: number) => {
  * @returns {JSX.Element} - The rendered PhysicalProgress component.
  */
 const PhysicalProgress = () => {
+    const router = useRouter();
+    const [showStudentSelector, setShowStudentSelector] = useState(false);
     const userId = typeof window !== 'undefined' ? sessionStorage.getItem("id") : null;
     //const role = typeof window !== 'undefined' ? sessionStorage.getItem("role") : null;
     const role: string = "TRAINER";
@@ -208,7 +212,44 @@ const PhysicalProgress = () => {
                                     type="search"
                                     action={(term: string) => setSearchTerm(term)}
                                 />
+
+                                <div className="flex justify-end mb-6 ml-auto">
+  {role === "TRAINER" ? (
+    <button
+      onClick={() => setShowStudentSelector(true)}
+      className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      Registrar medición para estudiante
+    </button>
+  ) : (
+    <button
+      onClick={() => router.push('/gym-module/record-measurement')}
+      className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      Registrar nueva medición
+    </button>
+  )}
+</div>
+                                
                             </div>
+                            {/* Modal de selección de estudiante para entrenadores */}
+{showStudentSelector && (
+  <StudentSelectionModal
+    isOpen={showStudentSelector}
+    onClose={() => setShowStudentSelector(false)}
+    onSelectStudent={(student) => {
+      router.push(`/gym-module/record-measurement?studentId=${student.id}`);
+    }}
+  />
+)}
                             {/* Metrics blocks */}
                             <div className="flex w-full items-start gap-5 relative border-box">
 
