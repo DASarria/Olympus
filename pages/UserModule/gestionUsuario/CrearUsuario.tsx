@@ -4,7 +4,6 @@ import styles from "@/components/gestionUsuario/styles.module.css";
 
 
 import { Return } from "@/components/Return";
-import { withRoleProtection } from "@/hoc/withRoleProtection";
 import CampoSelect from "@/components/gestionUsuario/CampoSelect";
 import CampoTexto from "@/components/gestionUsuario/CampoTexto";
 import RectanguloConTexto from "@/components/gestionUsuario/RectanguloConTexto";
@@ -246,4 +245,4 @@ const CrearUsuario = () => {
   );
 };
 
-export default withRoleProtection(["USER", "TRAINER"], "/Module6")(CrearUsuario);
+export default CrearUsuario;

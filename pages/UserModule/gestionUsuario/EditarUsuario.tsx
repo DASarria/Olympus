@@ -6,7 +6,7 @@ import { Return } from "@/components/Return";
 import CampoTexto from "@/components/gestionUsuario/CampoTexto";
 import CampoSelect from "@/components/gestionUsuario/CampoSelect";
 import RectanguloConTexto from "@/components/gestionUsuario/RectanguloConTexto";
-import { withRoleProtection } from "@/hoc/withRoleProtection";
+
 
 const EditarUsuario = () => {
 
@@ -193,4 +193,4 @@ const EditarUsuario = () => {
   );
 };
 
-export default withRoleProtection(["USER", "TRAINER"], "/Module5")(EditarUsuario);
+export default EditarUsuario;
