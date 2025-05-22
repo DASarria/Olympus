@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Student } from '@/types/gym/physicalTracking';
-import { getAllUsers, getMockStudents, getTrainerStudents } from '@/api/gym-module/userService';
+import { getAllUsers, getMockStudents, getAllStudents } from '@/api/gym-module/userService';
 
 interface StudentSelectionModalProps {
   isOpen: boolean;
@@ -39,7 +39,7 @@ const StudentSelectionModal: React.FC<StudentSelectionModalProps> = ({
       if (trainerId) {
         // Primero intentar obtener estudiantes asignados al entrenador
         try {
-          studentsList = await getTrainerStudents(trainerId);
+          studentsList = await getAllStudents();
         } catch (err) {
           console.warn("No se pudieron obtener estudiantes del entrenador, intentando con todos los usuarios");
           studentsList = await getAllUsers();

@@ -128,17 +128,14 @@ export async function deleteUser(id: string) {
 /**
  * Obtiene estudiantes asignados a un entrenador
  */
-export async function getTrainerStudents(trainerId: string): Promise<Student[]> {
-  try {
-    const response = await api.get(`/users/trainer/${trainerId}/students`);
-    return response.data;
-  } catch (error: any) {
-    if (error.response?.status === 404) {
-      // Devolver un array vacío en caso de 404
-      return [];
+export async function getAllStudents(): Promise<Student[]> {
+    try {
+        // Using the existing getUsersByRole function to get all users with the "USER" role
+        const students = await getUsersByRole("STUDENT");
+        return students;
+    } catch (error: any) {
+        throw new Error(error.response?.data?.message || "Error al obtener estudiantes");
     }
-    throw new Error(error.response?.data?.message || "Error al obtener estudiantes asignados");
-  }
 }
 
 /**

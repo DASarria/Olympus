@@ -41,30 +41,11 @@ export function calculateBMI(
 /**
  * Clasifica un valor de IMC en categorías estándar
  */
-export function classifyBMI(bmi: number): BMIClassification {
-  if (bmi < 18.5) return { 
-    label: "Bajo peso", 
-    color: "#FFA500",
-    range: { min: 0, max: 18.49 }
-  };
-  
-  if (bmi < 25) return { 
-    label: "Peso saludable", 
-    color: "#008000",
-    range: { min: 18.5, max: 24.99 }
-  };
-  
-  if (bmi < 30) return { 
-    label: "Sobrepeso", 
-    color: "#FFD700",
-    range: { min: 25, max: 29.99 }
-  };
-  
-  return { 
-    label: "Obesidad", 
-    color: "#FF0000",
-    range: { min: 30, max: 100 }
-  };
+export function classifyBMI(bmi: number): { label: string, color: string } {
+  if (bmi < 18.5) return { label: "Bajo peso", color: "#FFA500" };
+  if (bmi < 25) return { label: "Peso saludable", color: "#008000" };
+  if (bmi < 30) return { label: "Sobrepeso", color: "#FFD700" };
+  return { label: "Obesidad", color: "#FF0000" };
 }
 
 /**
