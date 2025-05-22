@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useRouter } from "next/router";
+// import useRouter removed as it wasn't being used
 import { saveAs } from "file-saver";
 import { Return } from "@/components/Return";
 import Button from "@/components/gym-module/Button";
@@ -7,7 +7,7 @@ import { ReportFormat, getGymUsageReport, getAttendanceReport, getUserProgressRe
 import { PageTransitionWrapper } from "@/components/PageTransitionWrapper";
 
 const ExportReports = () => {
-    const router = useRouter();
+    // router removed as it wasn't being used
 
     const [reportType, setReportType] = useState<"gymUsage" | "attendance" | "userProgress">("gymUsage");
     const [format, setFormat] = useState<ReportFormat>(ReportFormat.PDF);
@@ -38,9 +38,9 @@ const ExportReports = () => {
         const fileName = `reporte-${reportType}-${new Date().toISOString().slice(0,10)}.${format.toLowerCase()}`;
         saveAs(blob, fileName);
 
-        setMessage("Reporte descargado con éxito");
-        } catch (e: any) {
-        setMessage(`Error: ${e.message || "No se puede obtener la información en estos momentos."}`);
+        setMessage("Reporte descargado con éxito");        } catch (e: Error | unknown) {
+        const errorMessage = e instanceof Error ? e.message : "No se puede obtener la información en estos momentos.";
+        setMessage(`Error: ${errorMessage}`);
         }
         setLoading(false);
     }
@@ -58,7 +58,7 @@ const ExportReports = () => {
                     <label className="block mb-2 font-semibold">Tipo de reporte:</label>
                     <select
                         value={reportType}
-                        onChange={(e) => setReportType(e.target.value as any)}
+                        onChange={(e) => setReportType(e.target.value as "gymUsage" | "attendance" | "userProgress")}
                         className="w-full mb-4 p-2 border rounded"
                     >
                         <option value="gymUsage">Uso del Gimnasio</option>

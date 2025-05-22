@@ -52,7 +52,6 @@ function Model({ modelPath }: Readonly<Omit<BodyCanvasProps, 'onSelectZone'>>) {
 
 function CameraControls() {
   const orbitRef = useRef<any>(null);
-  
   useEffect(() => {
     if (orbitRef.current) {
       // Establecer los límites de zoom para evitar acercarse o alejarse demasiado

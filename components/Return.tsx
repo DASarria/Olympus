@@ -2,7 +2,7 @@ import Link from "next/link";
 import arrowLeft from "@/assets/icons/ArrowLeft.svg";
 
 interface Props {
-    className: any;
+    className: string;
     text: string;
     returnPoint: string;
 }

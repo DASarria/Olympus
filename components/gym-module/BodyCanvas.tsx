@@ -2,9 +2,6 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Canvas, useFrame, extend } from '@react-three/fiber';
 import { OrbitControls, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
-import dynamic from 'next/dynamic';
-// Import the BaseExerciseDTO for type safety
-import { BaseExerciseDTO } from '@/api/gym-module/excerciseService';
 
 // Only extend specific THREE objects that we need to use as JSX elements
 extend({
@@ -108,8 +105,8 @@ function Model({ modelPath }: Omit<BodyCanvasProps, 'onSelectZone'>) {
 }
 
 function CameraControls() {
-  // Use a more specific type instead of any
-  const orbitRef = useRef<THREE.Object3D | null>(null);
+  // Use any to avoid type conflicts with OrbitControls
+  const orbitRef = useRef<any>(null);
   
   useFrame(() => {
     if (orbitRef.current) {
