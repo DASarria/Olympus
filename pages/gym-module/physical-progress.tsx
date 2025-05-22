@@ -3,7 +3,8 @@ import { withRoleProtection } from "@/hoc/withRoleProtection";
 import { FilterBtn } from "@/components/gym-module/FilterBtn";
 import UserIcon from '@/assets/icons/user-filter.svg';
 import { useState, useEffect } from "react";
-import { getLatestPhysicalMeasurement, getUserGoals, getPhysicalMeasurementHistory, getPhysicalProgressMetrics, ProgressMetrics } from '@/api/gymServicesIndex';
+import { getLatestPhysicalMeasurement, getUserGoals, getPhysicalMeasurementHistory, getPhysicalProgressMetrics } from '@/api/gymServicesIndex';
+import { ProgressMetrics } from '@/types/gym/physicalTracking';
 import { PageTransitionWrapper } from "@/components/PageTransitionWrapper";
 import { Line } from "react-chartjs-2";
 import { Chart as ChartJS, LineElement, CategoryScale, LinearScale, Title, Tooltip, Legend, PointElement } from 'chart.js';
@@ -66,96 +67,96 @@ const PhysicalProgress = () => {
          * 4. Fetches physical progress metrics (e.g., changes in weight, waist, and chest measurements).
          */
         const fetchData = async () => {
-            // if (!userId) return console.error("No userId found");
+            if (!userId) return console.error("No userId found");
             
-            // try {
-            //     const measurement = await getLatestPhysicalMeasurement(userId);
-            //     setLatestMeasurement(measurement);
+            try {
+                const measurement = await getLatestPhysicalMeasurement(userId);
+                setLatestMeasurement(measurement);
 
-            //     const goals = await getUserGoals(userId);
-            //     setUserGoals(goals);
+                const goals = await getUserGoals(userId);
+                setUserGoals(goals);
 
-            //     const progress = await getPhysicalMeasurementHistory(userId);
-            //     const bmiHistory = progress
-            //         .map((entry: any) => {
-            //             const weight = entry.weight?.value;
-            //             const height = entry.measurements?.height;
-            //             if (!weight || !height) return null;
-            //             const bmi = weight / (height * height);
-            //             return {
-            //                 date: entry.recordDate,
-            //                 bmi: parseFloat(bmi.toFixed(2)),
-            //             };
-            //         })
-            //         .filter(item => item !== null);
-            //         setBmiData(bmiHistory);
+                const progress = await getPhysicalMeasurementHistory(userId);
+                const bmiHistory = progress
+                    .map((entry: any) => {
+                        const weight = entry.weight?.value;
+                        const height = entry.measurements?.height;
+                        if (!weight || !height) return null;
+                        const bmi = weight / (height * height);
+                        return {
+                            date: entry.recordDate,
+                            bmi: parseFloat(bmi.toFixed(2)),
+                        };
+                    })
+                    .filter(item => item !== null);
+                    setBmiData(bmiHistory);
 
-            //         const metrics = await getPhysicalProgressMetrics(userId);
-            //         setProgressMetrics(metrics);
-            // } catch (error) {
-            //     console.error("Error fetching data:", error);
-            // } finally {
-            //     setLoading(false);
-            // }
+                    const metrics = await getPhysicalProgressMetrics(userId);
+                    setProgressMetrics(metrics);
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            } finally {
+                setLoading(false);
+            }
 
 
             // Simulate latest measurement
-            const measurement = {
-                weight: { value: 72.5, unit: "KG" },
-                measurements: {
-                    height: 1.75,
-                    chestCircumference: 95,
-                    waistCircumference: 80,
-                    hipCircumference: 100,
-                    bicepsCircumference: 32,
-                    thighCircumference: 55,
-                    additionalMeasures: {
-                        calves: 38,
-                        shoulders: 110,
-                    },
-                },
-                physicalGoal: "Aumentar masa muscular y reducir 2kg de grasa",
-                bmi: parseFloat((72.5 / (1.75 * 1.75)).toFixed(2)),
-            };
-            setLatestMeasurement(measurement);
+            // const measurement = {
+            //     weight: { value: 72.5, unit: "KG" },
+            //     measurements: {
+            //         height: 1.75,
+            //         chestCircumference: 95,
+            //         waistCircumference: 80,
+            //         hipCircumference: 100,
+            //         bicepsCircumference: 32,
+            //         thighCircumference: 55,
+            //         additionalMeasures: {
+            //             calves: 38,
+            //             shoulders: 110,
+            //         },
+            //     },
+            //     physicalGoal: "Aumentar masa muscular y reducir 2kg de grasa",
+            //     bmi: parseFloat((72.5 / (1.75 * 1.75)).toFixed(2)),
+            // };
+            // setLatestMeasurement(measurement);
 
             // Simulate personal goals
-            const goals = [
-                "Reducir porcentaje de grasa corporal al 15%",
-                "Aumentar masa muscular en brazos y piernas",
-                "Mantener consistencia con rutina de ejercicios"
-            ];
-            setUserGoals(goals);
+            // const goals = [
+            //     "Reducir porcentaje de grasa corporal al 15%",
+            //     "Aumentar masa muscular en brazos y piernas",
+            //     "Mantener consistencia con rutina de ejercicios"
+            // ];
+            // setUserGoals(goals);
 
             // Simulate progress history (e.g., last 6 months)
-            const progress = [
-                { recordDate: "2024-12-01", weight: { value: 78 }, measurements: { height: 1.75 } },
-                { recordDate: "2025-01-01", weight: { value: 76.5 }, measurements: { height: 1.75 } },
-                { recordDate: "2025-02-01", weight: { value: 75 }, measurements: { height: 1.75 } },
-                { recordDate: "2025-03-01", weight: { value: 73.8 }, measurements: { height: 1.75 } },
-                { recordDate: "2025-04-01", weight: { value: 72.9 }, measurements: { height: 1.75 } },
-                { recordDate: "2025-05-01", weight: { value: 72.5 }, measurements: { height: 1.75 } },
-            ];
+            // const progress = [
+            //     { recordDate: "2024-12-01", weight: { value: 78 }, measurements: { height: 1.75 } },
+            //     { recordDate: "2025-01-01", weight: { value: 76.5 }, measurements: { height: 1.75 } },
+            //     { recordDate: "2025-02-01", weight: { value: 75 }, measurements: { height: 1.75 } },
+            //     { recordDate: "2025-03-01", weight: { value: 73.8 }, measurements: { height: 1.75 } },
+            //     { recordDate: "2025-04-01", weight: { value: 72.9 }, measurements: { height: 1.75 } },
+            //     { recordDate: "2025-05-01", weight: { value: 72.5 }, measurements: { height: 1.75 } },
+            // ];
 
-            const bmiHistory = progress.map((entry: any) => {
-                const weight = entry.weight?.value;
-                const height = entry.measurements?.height;
-                if (!weight || !height) return null;
-                const bmi = weight / (height * height);
-                return {
-                    date: entry.recordDate,
-                    bmi: parseFloat(bmi.toFixed(2)),
-                };
-            }).filter(item => item !== null);
-            setBmiData(bmiHistory);
+            // const bmiHistory = progress.map((entry: any) => {
+            //     const weight = entry.weight?.value;
+            //     const height = entry.measurements?.height;
+            //     if (!weight || !height) return null;
+            //     const bmi = weight / (height * height);
+            //     return {
+            //         date: entry.recordDate,
+            //         bmi: parseFloat(bmi.toFixed(2)),
+            //     };
+            // }).filter(item => item !== null);
+            // setBmiData(bmiHistory);
 
-            const metrics = {
-                weightChange: -5.5,
-                waistCircumferenceChange: -4,
-                chestCircumferenceChange: +2,
-            };
-            setProgressMetrics(metrics);
-            setLoading(false);
+            // const metrics = {
+            //     weightChange: -5.5,
+            //     waistCircumferenceChange: -4,
+            //     chestCircumferenceChange: +2,
+            // };
+            // setProgressMetrics(metrics);
+            // setLoading(false);
         }
 
         fetchData();

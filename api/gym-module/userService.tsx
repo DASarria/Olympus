@@ -1,4 +1,5 @@
 import api from "@/api/axiosInstance";
+import { Student } from '@/types/gym/physicalTracking';
 const USER_API = "/users";
 
 /**
@@ -122,4 +123,32 @@ export async function deleteUser(id: string) {
     } catch (error: any) {
         throw new Error(error.response?.data?.message || "Error al eliminar usuario");
     }
+}
+
+/**
+ * Obtiene estudiantes asignados a un entrenador
+ */
+export async function getTrainerStudents(trainerId: string): Promise<Student[]> {
+  try {
+    const response = await api.get(`/users/trainer/${trainerId}/students`);
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      // Devolver un array vacío en caso de 404
+      return [];
+    }
+    throw new Error(error.response?.data?.message || "Error al obtener estudiantes asignados");
+  }
+}
+
+/**
+ * Genera datos simulados de estudiantes para desarrollo/testing
+ */
+export function getMockStudents(): Student[] {
+  return [
+    { id: '13526826-e72d-44fc-8bf8-6e22ee9213fd', name: 'Juan Pérez', institutionalId: '1001234', role: 'USER' },
+    { id: '79c10808-5092-4c87-8bc1-3ba2fe0e3e6e', name: 'Cristian Santiago', institutionalId: '1002345', role: 'USER' },
+    { id: '4f6f9ce2-f057-4d2f-822f-8aab16506404', name: 'María González', institutionalId: '1003456', role: 'USER' },
+    { id: '051bd1ab-8dd3-4aa1-ad82-096f59455ca1', name: 'Ramiro Torres', institutionalId: '1004567', role: 'TRAINER', isTrainer: true }
+  ];
 }
