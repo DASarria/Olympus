@@ -1,17 +1,15 @@
 import { useRouter } from "next/router";
-import { useEffect } from "react";
 import { NavBtn } from "@/components/NavBtn";
 import { ServiceContainer } from "@/components/ServiceContainer";
 import { PageTransitionWrapper } from "@/components/PageTransitionWrapper";
 import Horario from "@/assets/images/UserModule/horario.png"
 import Configuracion from "@/assets/images/UserModule/configuraciones.webp"
-import {useState} from "react";
-import getConfigurations from "@/pages/api/UserManagement/ConfigurationService";
+
 
 const SchedulePage = () => {
     const router = useRouter();
     // const role = typeof window !== 'undefined' ? sessionStorage.getItem("role") : null;
-    const role: string = "ADMIN";
+    const role: string|null = sessionStorage.getItem("role");
     
     
 
@@ -28,7 +26,7 @@ const SchedulePage = () => {
                             <NavBtn
                                 image={{src:Horario.src}}
                                 texto="Servicios"
-                                navigate="/"
+                                navigate="/UserModule/ScheduleManagement/ServicePage"
                             />
                             <NavBtn
                                 image={{ src: Configuracion.src }}
