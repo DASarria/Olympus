@@ -58,7 +58,7 @@ const ConfigurationPage = () => {
         reason:string;
     }
     interface Configuration{
-        id: number;               
+        id: string|null;               
         name: string;             
         startTime: string;        
         endTime: string;
@@ -93,7 +93,7 @@ const ConfigurationPage = () => {
         const response:responseDelete = await deleteConfiguration(name);
         if(response.status == "200"){
             loadInitialConfigurations
-            setShowWindow(true);
+            setErrorMessage(response.message)
         }
         if(response.status == "400"){
             setErrorMessage(response.message)

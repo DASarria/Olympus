@@ -1,12 +1,13 @@
 import axios,{InternalAxiosRequestConfig} from "axios";
 
 const USER_API_BASE_URL = "https://schedulemanagement-bqg2a7a3cgf8hfhc.eastus-01.azurewebsites.net/configuration";
+//const USER_API_BASE_URL = "http://localhost:8080/configuration";
 
 const api = axios.create({ baseURL: USER_API_BASE_URL });
 
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEyMTMyMTQxIiwidXNlck5hbWUiOiJhZG1pbiIsImVtYWlsIjoiYWRtaW5AZXNjdWVsYWluZy5lZHUuY28iLCJuYW1lIjoiZWwgYWRtaW4iLCJyb2xlIjoiQURNSU4iLCJzcGVjaWFsdHkiOiJudWxsIiwiZXhwIjoxNzQ3ODY3MTM5fQ.uzN559jXgkc--84_bxgzpAxDqZia74vLP3t9BpoUrRQ';
+    const token = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEyMTMyMTQxIiwidXNlck5hbWUiOiJhZG1pbiIsImVtYWlsIjoiYWRtaW5AZXNjdWVsYWluZy5lZHUuY28iLCJuYW1lIjoiZWwgYWRtaW4iLCJyb2xlIjoiQURNSU4iLCJzcGVjaWFsdHkiOiJudWxsIiwiZXhwIjoxNzQ3ODg2MzA2fQ.gOKJDJ7fgvpmK_WO9PkAsZYV-mHqqk02JN-qIX0HKpI';
     if (token && config.headers) {
       config.headers.Authorization = token;
       config.headers['Content-Type'] = 'application/json';
