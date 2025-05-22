@@ -14,7 +14,7 @@ import RectanguloConTexto from "@/components/gestionUsuario/RectanguloConTextoCo
 import CampoTextoConfiguration from "@/components/gestionUsuario/CampoTextoConfiguration";
 import FloatingConfigurationView from "@/components/gestionUsuario/FloatingConfigurationView";
 import ConfigurationContainer from "@/components/gestionUsuario/ConfigurationContainer";
-
+import { Return } from "@/components/Return";
 
 const ConfigurationPage = () => {
 
@@ -92,7 +92,7 @@ const ConfigurationPage = () => {
     const deleteName = async () =>{
         const response:responseDelete = await deleteConfiguration(name);
         if(response.status == "200"){
-            loadInitialConfigurations
+            loadInitialConfigurations()
             setErrorMessage(response.message)
         }
         if(response.status == "400"){
@@ -132,6 +132,7 @@ const ConfigurationPage = () => {
     return (
         <>
             <PageTransitionWrapper>
+                <Return text="" returnPoint=" /UserModule/ScheduleManagement/SchedulePage"/>
                 <div className="max-w-[90vw] max-h-[80vh] overflow-y-auto p-2 bg-gray-40 rounded-md shadow-md ml-0">
                     <div className="flex flex-wrap items-start gap-2">
                         {/* Botones config */}
