@@ -1,0 +1,138 @@
+.carouselContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.carouselItemsContainer {
+  overflow: hidden;
+  margin-left: 1rem;
+  margin-right: 1rem;
+  flex: 1;
+}
+
+.carouselItems {
+  display: inline-flex;
+  align-items: start;
+  gap: 2.5rem;
+  position: relative;
+  transition: transform 300ms ease-in-out;
+}
+
+/* Position classes for carousel */
+.position0 { transform: translateX(0px); }
+.position1 { transform: translateX(-280px); }
+.position2 { transform: translateX(-560px); }
+.position3 { transform: translateX(-840px); }
+.position4 { transform: translateX(-1120px); }
+.position5 { transform: translateX(-1400px); }
+.position6 { transform: translateX(-1680px); }
+.position7 { transform: translateX(-1960px); }
+.position8 { transform: translateX(-2240px); }
+.position9 { transform: translateX(-2520px); }
+
+.exerciseCard {
+  flex-shrink: 0;
+  width: 380px;
+  height: 202px;
+  max-height: 202px;
+  box-sizing: border-box;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: start;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 30px 40px;
+  position: relative;
+  background-color: #eaeaea;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.emptyCard {
+  flex-shrink: 0;
+  width: 380px;
+  height: 202px;
+  max-height: 202px;
+  box-sizing: border-box;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 40px;
+  position: relative;
+  background-color: #eaeaea;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.exerciseTitle {
+  position: relative;
+  width: fit-content;
+  margin-top: -1px;
+  font-weight: bold;
+  color: black;
+  font-size: 1.125rem;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.exerciseDetail {
+  display: inline-flex;
+  align-items: start;
+  gap: 0.75rem;
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.detailLabel {
+  position: relative;
+  width: fit-content;
+  margin-top: -1px;
+  font-weight: bold;
+  color: black;
+  font-size: 1rem;
+  line-height: 1rem;
+  white-space: nowrap;
+}
+
+.detailValue {
+  position: relative;
+  width: fit-content;
+  margin-top: -1px;
+  font-weight: 500;
+  color: black;
+  font-size: 1rem;
+  line-height: 1rem;
+  white-space: nowrap;
+}
+
+.buttonContainer {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+.viewButton {
+  all: unset;
+  box-sizing: border-box;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: start;
+  padding: 0.5rem 1.25rem;
+  position: relative;
+  flex: 0 0 auto;
+  background-color: var(--lavender);
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.buttonText {
+  position: relative;
+  width: fit-content;
+  margin-top: -1px;
+  color: white;
+  line-height: 16px;
+  white-space: nowrap;
+}

@@ -5,11 +5,30 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Button from "@/components/gym-module/Button";
 import ExportIcon from "@/assets/icons/export-svgrepo-com 1.svg";
-import { Bar, Line, Pie } from "react-chartjs-2";
-import { getAttendanceStatistics, getRegisteredStudents } from "@/api/gymServicesIndex";
+import { Bar, Line } from "react-chartjs-2";
+// Unused imports removed: Pie, getAttendanceStatistics, getRegisteredStudents
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, PointElement, LineElement, ArcElement } from "chart.js";
 
 ChartJS.register( CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, PointElement, LineElement, ArcElement);
+
+// Define types for the attendance statistics
+interface AttendanceStats {
+  usageByMonth: Record<string, number>;
+  attendanceBySession: Record<string, number>;
+}
+
+// Define types for chart data
+interface ChartData {
+  labels: string[];
+  datasets: Array<{
+    label: string;
+    data: number[];
+    backgroundColor?: string;
+    borderColor?: string;
+    fill?: boolean;
+    tension?: number;
+  }>;
+}
 
 
 
@@ -33,10 +52,9 @@ ChartJS.register( CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend
 const Analysis = () => {
     const router = useRouter();
     const userId = typeof window !== 'undefined' ? sessionStorage.getItem("id") : null;
-    //const role = typeof window !== 'undefined' ? sessionStorage.getItem("role") : null;
-    const role: string = "TRAINER";
-    const [attendanceStats, setAttendanceStats] = useState<any>(null);
-    const [monthlyUsage, setMonthlyUsage] = useState<any>(null);
+    //const role = typeof window !== 'undefined' ? sessionStorage.getItem("role") : null;    const role: string = "TRAINER";
+    const [attendanceStats, setAttendanceStats] = useState<AttendanceStats | null>(null);
+    const [monthlyUsage, setMonthlyUsage] = useState<ChartData | null>(null);
     const [loading, setLoading] = useState(true);
 
     /**
@@ -183,10 +201,10 @@ const Analysis = () => {
                             <Button 
                                 className="inline-flex w-fit items-center gap-2.5 px-10 py-2.5 relative bg-[var(--lavender)] rounded-[15px] overflow-hidden border-box"
                                 onClick={handleExportClick}
-                            >
-                                <img
+                            >                                <img
                                     className="relative w-[18px] h-[18px]"
                                     src={ExportIcon.src}
+                                    alt="Exportar ícono"
                                 />
                                 <span className="relative w-fit mt-[-1.00px] [font-family: 'Montserrat-Regular',Helvetica] text-white tracking-[0] leading-[16px] whitespace-nowrap">Exportar</span>
                             </Button>

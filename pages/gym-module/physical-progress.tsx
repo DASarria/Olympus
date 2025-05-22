@@ -3,7 +3,7 @@ import { withRoleProtection } from "@/hoc/withRoleProtection";
 import { FilterBtn } from "@/components/gym-module/FilterBtn";
 import UserIcon from '@/assets/icons/user-filter.svg';
 import { useState, useEffect } from "react";
-import { getLatestPhysicalMeasurement, getUserGoals, getPhysicalMeasurementHistory, getPhysicalProgressMetrics, ProgressMetrics } from '@/api/gymServicesIndex';
+import { ProgressMetrics } from '@/api/gymServicesIndex';
 import { PageTransitionWrapper } from "@/components/PageTransitionWrapper";
 import { Line } from "react-chartjs-2";
 import { Chart as ChartJS, LineElement, CategoryScale, LinearScale, Title, Tooltip, Legend, PointElement } from 'chart.js';
@@ -38,15 +38,25 @@ const classifyBMI = (bmi: number) => {
  */
 const PhysicalProgress = () => {
     const userId = typeof window !== 'undefined' ? sessionStorage.getItem("id") : null;
-    //const role = typeof window !== 'undefined' ? sessionStorage.getItem("role") : null;
-    const role: string = "TRAINER";
+        // Role information used for UI rendering
+    const _role: string = "TRAINER"; // Prefixed with underscore to mark as intentionally unused
 
     const [searchTerm, setSearchTerm] = useState("");
-    const [students, setStudents] = useState(["Ana González", "Carlos Pérez", "María Rodríguez", "Juan Martínez"]); // Dummy list
-    const [latestMeasurement, setLatestMeasurement] = useState<any>(null);
+    const [students] = useState(["Ana González", "Carlos Pérez", "María Rodríguez", "Juan Martínez"]); // Dummy list
+    
+    // Define proper types instead of any
+    interface Measurement {
+        weight: number;
+        height: number;
+        date: string;
+        bodyFatPercentage: number;
+        muscleMass: number;
+    }
+    
+    const [latestMeasurement, setLatestMeasurement] = useState<Measurement | null>(null);
     const [userGoals, setUserGoals] = useState<string[]>([]);
     const [bmiData, setBmiData] = useState<{ date: string, bmi: number }[]>([]);
-    const [progressMetrics, setProgressMetrics] = useState<ProgressMetrics | null>(null);
+    const [_progressMetrics, setProgressMetrics] = useState<ProgressMetrics | null>(null); // Prefixed with underscore to mark as intentionally unused
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -137,7 +147,7 @@ const PhysicalProgress = () => {
                 { recordDate: "2025-05-01", weight: { value: 72.5 }, measurements: { height: 1.75 } },
             ];
 
-            const bmiHistory = progress.map((entry: any) => {
+            const bmiHistory = progress.map((entry: { date: string; bmi: number }) => {
                 const weight = entry.weight?.value;
                 const height = entry.measurements?.height;
                 if (!weight || !height) return null;

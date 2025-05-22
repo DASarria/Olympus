@@ -59,7 +59,7 @@ const ReservationDetails = () => {
             }
         };
         fetchData();
-    }, [id]);
+    }, [id, userId]);
 
 
     /**

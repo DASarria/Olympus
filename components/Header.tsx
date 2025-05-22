@@ -1,5 +1,4 @@
-import Image from 'next/image';
-import logotransparente from "../assets/images/logotransparente.png";
+// filepath: c:\Users\Usuario\Pictures\Olympus\components\Header.tsx
 
 interface HeaderProps {
   userName?: string;
