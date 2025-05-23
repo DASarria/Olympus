@@ -161,19 +161,19 @@ const CEAdminActividades = () => {
 
   const fetchProfesores = async () => {
     try {
-    const response = await axios.post(
-      `${linkAPIUSER}/user/query`,
-      {
-  "role": "EXTRACURRICULAR_TEACHER"
-},
-      {
-        headers: {
-          Authorization: tokenJWT,
+      const response = await axios.post(
+        `${linkAPIUSER}/user/query`,
+        {
+          role: "EXTRACURRICULAR_TEACHER",
+        },
+        {
+          headers: {
+            Authorization: tokenJWT,
+          },
         }
-      }
-    );
-    
-    setProfesoresTemp(response.data.data);
+      );
+
+      setProfesoresTemp(response.data.data);
     } catch (error) {
       console.error("Error al obtener los profesores", error);
     }
@@ -183,11 +183,11 @@ const CEAdminActividades = () => {
   useEffect(() => {
     if (actividadesTemp.length > 0) {
       const mapped = actividadesTemp
-      .filter((a) => a.id !== null)
-      .map(({ id, activityType }) => ({
-        id,
-        nombre: activityType,
-      }));
+        .filter((a) => a.id !== null)
+        .map(({ id, activityType }) => ({
+          id,
+          nombre: activityType,
+        }));
       setActividades(mapped);
     }
   }, [actividadesTemp]);
@@ -296,7 +296,6 @@ const CEAdminActividades = () => {
       setDays([{ dayWeek: "none", startHour: "", endHour: "" }]);
     }
   }, [actividadSeleccionada, actividadesTemp, profesoresTemp]);
-
 
   //PARA ENVIAR PETICIONES
   const handleSubmit = (e: React.FormEvent) => {
@@ -416,20 +415,15 @@ const CEAdminActividades = () => {
     //Reset
     fetchActividades();
     setActividadSeleccionada("none");
-    
   };
 
   const CrearActividades = async (actividad: ActividadNueva) => {
     try {
-      await axios.post(
-        `${linkAPI}/api/activity`,
-        actividad,
-        {
-          headers: {
-            Authorization: tokenJWT,
-          },
-        }
-      );
+      await axios.post(`${linkAPI}/api/activity`, actividad, {
+        headers: {
+          Authorization: tokenJWT,
+        },
+      });
     } catch (error) {
       console.error("Error al crear las actividades:", error);
     }
@@ -437,21 +431,15 @@ const CEAdminActividades = () => {
 
   const ActualizarActividades = async (actividad: Actividad) => {
     try {
-      await axios.put(
-        `${linkAPI}/api/activity/update`,
-        actividad,
-        {
-          headers: {
-            Authorization: tokenJWT,
-          },
-        }
-      );
+      await axios.put(`${linkAPI}/api/activity/update`, actividad, {
+        headers: {
+          Authorization: tokenJWT,
+        },
+      });
     } catch (error) {
       console.error("Error al actualizar las actividades:", error);
     }
   };
-
-  
 
   // Después de fetchActividades y estados:
 
