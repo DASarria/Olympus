@@ -197,7 +197,7 @@ const SCPAdmin = () => {
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto ">
+    <div className="p-6 max-w-6xl mx-auto">
       <div className="flex gap-5 font-bold text-[30px] ml-6 mb-6">
   <ArrowLeft onClick={irAlInicio} className="cursor-pointer mt-3" />
   <h1>Préstamos</h1>
