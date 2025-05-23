@@ -1,4 +1,7 @@
-@import "tailwindcss";
+/* filepath: c:\Users\Usuario\OneDrive - ESCUELA COLOMBIANA DE INGENIERIA JULIO GARAVITO\Desktop\6.SEMESTER\CVDS\1. Final Project\Olympus\styles\globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root{
     --color-eci: #990000;
@@ -16,7 +19,6 @@
     --titulo-line-height: 100%;
     --subtitulo-font-size: 32px;
 
-
     --regular-font-family: "Open Sans", Helvetica;
     --regular-font-size: 26px;
     --regular-font-style: normal;
@@ -26,7 +28,6 @@
     --regularbold-font-weight: 700;
     --small-font-size: 22px;
     
-
     --background-blanco: rgba(255,255, 255, 1);
     --size-radius-full: 9999px;
 }
