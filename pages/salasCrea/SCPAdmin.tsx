@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
-import type { StaticImageData } from "next/image";
-import { ArrowLeft, Search, Calendar } from "lucide-react"
+import { useState, useEffect } from "react"
+import type { StaticImageData } from "next/image"
+import { ArrowLeft, Package, CheckCircle, AlertCircle } from "lucide-react"
 import { useRouter } from "next/router"
 import Image from "next/image"
 import defaultImage from "../../assets/images/1imagen.jpg"
@@ -22,7 +22,7 @@ interface Reserva {
     time: string
   }
   roomId: string
-  loans: string[]  
+  loans: string[]
   state: string
   people: number
 }
@@ -55,96 +55,80 @@ const SCPAdmin = () => {
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedElement, setSelectedElement] = useState<ElementoUsage | null>(null)
-  const [viewMode, setViewMode] = useState<"list" | "stats">("list")
   const [dateFilter, setDateFilter] = useState<string>("")
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
 
   const token = sessionStorage.getItem("token")
   const url = process.env.NEXT_PUBLIC_API_URL
 
-
   const imagenesPorNombre: Record<string, StaticImageData> = {
-  Uno: uno,
-  Jenga: jenga,
-  Ajedrez: ajedrez,
-  Cranium: cranium,
-  Monos: monos,
-}
+    Uno: uno,
+    Jenga: jenga,
+    Ajedrez: ajedrez,
+    Cranium: cranium,
+    Monos: monos,
+  }
 
   const handleClickBack = () => {
     router.back()
   }
 
-
-
-  const fetchData = useCallback(async () => {
-  try {
-    console.log("SCPAdmin: Obteniendo datos...")
-    const revsResponse = await fetch(`${url}/revs`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `${token}`,
-      },
-      cache: "no-store",
-    })
-    if (!revsResponse.ok) {
-      throw new Error("Error cargando reservas: " + revsResponse.statusText)
-    }
-    const revsData = await revsResponse.json()
-    console.log("SCPAdmin: Reservas obtenidas:", revsData)
-    revsData.forEach((reserva: Reserva) => {
-      console.log(`SCPAdmin: Reserva ${reserva.id} - Préstamos:`, reserva.loans)
-    })
-    const elementsResponse = await fetch(`${url}/elements`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `${token}`,
-      },
-      cache: "no-store",
-    })
-    if (!elementsResponse.ok) {
-      throw new Error("Error cargando elementos: " + elementsResponse.statusText)
-    }
-    const elementsData: ElementoAPI[] = await elementsResponse.json()
-    const formattedElements: Elemento[] = elementsData
-      .filter((el) => el.name)
-      .map((el) => ({
-        id: el.id,
-        nombre: el.name,
-        descripcion: el.description || "Sin descripción",
-        cantidad: el.quantity || 0,
-        imagen: imagenesPorNombre[el.name]?.src || defaultImage.src,
-      }))
-    processElementUsage(revsData, formattedElements)
-    setLastUpdated(new Date())
-  } catch (error) {
-    console.error("SCPAdmin: Error fetching data:", error)
-    setError("Error cargando datos. Por favor, intente de nuevo.")
-  } finally {
-    setLoading(false)
-  }
-}, [token, url, imagenesPorNombre])
-
-
   interface ElementoAPI {
-  id: string
-  name: string
-  description?: string
-  quantity?: number
-}
+    id: string
+    name: string
+    description?: string
+    quantity?: number
+  }
 
+  const fetchData = async () => {
+    try {
+      const revsResponse = await fetch(`${url}/revs`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `${token}`,
+        },
+        cache: "no-store",
+      })
+      if (!revsResponse.ok) throw new Error("Error cargando reservas")
+
+      const revsData = await revsResponse.json()
+
+      const elementsResponse = await fetch(`${url}/elements`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `${token}`,
+        },
+        cache: "no-store",
+      })
+      if (!elementsResponse.ok) throw new Error("Error cargando elementos")
+
+      const elementsData: ElementoAPI[] = await elementsResponse.json()
+
+      const formattedElements: Elemento[] = elementsData
+        .filter((el) => el.name)
+        .map((el) => ({
+          id: el.id,
+          nombre: el.name,
+          descripcion: el.description || "Sin descripción",
+          cantidad: el.quantity || 0,
+          imagen: imagenesPorNombre[el.name]?.src || defaultImage.src,
+        }))
+
+      processElementUsage(revsData, formattedElements)
+    } catch (error) {
+      console.error("Error fetching data:", error)
+      setError("Error cargando datos. Por favor, intente de nuevo.")
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
     fetchData()
-  }, [fetchData])
+  }, [token, url])
 
   const processElementUsage = (reservas: Reserva[], elementos: Elemento[]) => {
-    console.log("SCPAdmin: Procesando uso de elementos...")
-    console.log("SCPAdmin: Reservas para procesar:", reservas)
-    console.log("SCPAdmin: Elementos disponibles:", elementos)
-
     const usageMap = new Map<string, ElementoUsage>()
 
     elementos.forEach((elemento) => {
@@ -159,45 +143,30 @@ const SCPAdmin = () => {
     })
 
     reservas.forEach((reserva) => {
-      if (reserva.loans && reserva.loans.length > 0) {
-        console.log(`SCPAdmin: Procesando préstamos de reserva ${reserva.id}:`, reserva.loans)
-
-        reserva.loans.forEach((loanId) => {
-          const usage = usageMap.get(loanId)
-          if (usage) {
-            usage.usageCount += 1
-
-            const reservaDate = reserva.date.day
-            if (!usage.lastUsed || new Date(reservaDate) > new Date(usage.lastUsed)) {
-              usage.lastUsed = reservaDate
-            }
-
-            usage.borrowers.push({
-              userId: reserva.userId,
-              userName: reserva.userName,
-              date: `${reserva.date.day} ${reserva.date.time}`,
-            })
-
-            usageMap.set(loanId, usage)
-          } else {
-            console.warn(`SCPAdmin: Elemento con ID ${loanId} no encontrado en el mapa de uso`)
+      reserva.loans.forEach((loanId) => {
+        const usage = usageMap.get(loanId)
+        if (usage) {
+          usage.usageCount += 1
+          const reservaDate = reserva.date.day
+          if (!usage.lastUsed || new Date(reservaDate) > new Date(usage.lastUsed)) {
+            usage.lastUsed = reservaDate
           }
-        })
-      }
+          usage.borrowers.push({
+            userId: reserva.userId,
+            userName: reserva.userName,
+            date: `${reserva.date.day} ${reserva.date.time}`,
+          })
+        }
+      })
     })
 
-    const usageArray = Array.from(usageMap.values()).sort((a, b) => b.usageCount - a.usageCount)
-    console.log("SCPAdmin: Estadísticas de uso procesadas:", usageArray)
-
-    setElementoUsage(usageArray)
+    setElementoUsage(Array.from(usageMap.values()).sort((a, b) => b.usageCount - a.usageCount))
   }
 
   const filteredElements = elementoUsage.filter((elemento) => {
     const matchesSearch = elemento.elementName.toLowerCase().includes(searchTerm.toLowerCase())
-
     if (!dateFilter) return matchesSearch
-
-    return matchesSearch && elemento.borrowers.some((borrower) => borrower.date.includes(dateFilter))
+    return matchesSearch && elemento.borrowers.some((b) => b.date.includes(dateFilter))
   })
 
   const handleElementClick = (elemento: ElementoUsage) => {
@@ -219,221 +188,85 @@ const SCPAdmin = () => {
   if (error) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl">
           <p>{error}</p>
         </div>
       </div>
     )
   }
+  const irAlInicio = () => {
+    router.back();
+  }
 
   return (
-    <div className="p-6">
+    <div className="p-6 max-w-6xl mx-auto">
       <div className="flex gap-5 font-bold text-[30px] ml-6 mb-6">
-        <ArrowLeft onClick={handleClickBack} className="cursor-pointer mt-3" />
-        <h1>Préstamos de Elementos</h1>
-      </div>
+  <ArrowLeft onClick={irAlInicio} className="cursor-pointer mt-3" />
+  <h1>Préstamos</h1>
+</div>
 
-      <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-        <div className="flex items-center gap-2 w-full md:w-auto">
-          <div className="relative w-full md:w-64">
-            <input
-              type="text"
-              placeholder="Buscar elemento..."
-              className="w-full px-4 py-2 rounded-xl bg-white drop-shadow-xl pl-10"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <Search className="absolute left-3 top-2.5 text-gray-400 w-4 h-4" />
-          </div>
 
-          <div className="relative w-full md:w-64">
-            <input
-              type="date"
-              className="w-full px-4 py-2 rounded-xl bg-white drop-shadow-xl pl-10"
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
-            />
-            <Calendar className="absolute left-3 top-2.5 text-gray-400 w-4 h-4" />
-          </div>
-        </div>
+      <input
+        type="text"
+        placeholder="Buscar elemento..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="mb-6 p-3 w-full border rounded-xl shadow-sm"
+      />
 
-        <div className="flex gap-2">
-          <button
-            onClick={() => setViewMode("list")}
-            className={`px-4 py-2 rounded-xl ${viewMode === "list" ? "bg-red-500 text-white" : "bg-white"} drop-shadow-xl`}
-          >
-            Lista
-          </button>
-          <button
-            onClick={() => setViewMode("stats")}
-            className={`px-4 py-2 rounded-xl ${viewMode === "stats" ? "bg-red-500 text-white" : "bg-white"} drop-shadow-xl`}
-          >
-            Estadísticas
-          </button>
-        </div>
-      </div>
-
-      {lastUpdated && (
-        <div className="text-sm text-gray-500 mb-4 text-right">
-          Última actualización: {lastUpdated.toLocaleTimeString()}
-        </div>
-      )}
-
-      {viewMode === "list" ? (
-        <div className="bg-[#EAEAEA] p-4 rounded-2xl shadow-md">
-          <div className="max-h-[600px] overflow-y-auto">
-            <table className="w-full text-center border-separate border-spacing-y-3 border-spacing-x-3 drop-shadow-xl">
-              <thead>
-                <tr className="text-sm font-semibold drop-shadow-xl">
-                  <th className="bg-white rounded-xl px-4 py-2">Elemento</th>
-                  <th className="bg-white rounded-xl px-4 py-2">Veces Prestado</th>
-                  <th className="bg-white rounded-xl px-4 py-2">Último Préstamo</th>
-                  <th className="bg-white rounded-xl px-4 py-2">Acción</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredElements.map((elemento) => (
-                  <tr
-                    key={elemento.elementId}
-                    className="bg-white rounded-xl hover:bg-[#990000] hover:text-white drop-shadow-xl"
-                  >
-                    <td className="px-4 py-2 rounded-xl flex items-center justify-center gap-2">
-                      <div className="w-8 h-8 relative overflow-hidden rounded-full">
-                        <Image
-                          src={elemento.imagen || "/placeholder.svg"}
-                          alt={elemento.elementName}
-                          width={32}
-                          height={32}
-                          className="object-cover"
-                        />
-                      </div>
-                      {elemento.elementName}
-                    </td>
-                    <td className="px-4 py-2 rounded-xl">{elemento.usageCount}</td>
-                    <td className="px-4 py-2 rounded-xl">{elemento.lastUsed || "Nunca"}</td>
-                    <td className="rounded-xl">
-                      <button className="px-4 py-1 rounded-full text-sm" onClick={() => handleElementClick(elemento)}>
-                        Ver Detalles
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      ) : (
-        <div className="bg-[#EAEAEA] p-4 rounded-2xl shadow-md">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {filteredElements.map((elemento) => (
-              <div
-                key={elemento.elementId}
-                className="bg-white p-4 rounded-xl shadow-md cursor-pointer hover:shadow-lg transition-shadow"
-                onClick={() => handleElementClick(elemento)}
+      <div className="overflow-x-auto">
+        <table className="min-w-full bg-white border border-gray-300 rounded-xl overflow-hidden">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="p-4 border-b border-gray-300 text-left">Imagen</th>
+              <th className="p-4 border-b border-gray-300 text-left">Nombre</th>
+              <th className="p-4 border-b border-gray-300 text-left">Cantidad Uso</th>
+              <th className="p-4 border-b border-gray-300 text-left">Último Uso</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredElements.map((el) => (
+              <tr
+                key={el.elementId}
+                onClick={() => handleElementClick(el)}
+                className="hover:bg-gray-50 transition cursor-pointer"
               >
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-16 h-16 relative overflow-hidden rounded-lg">
-                    <Image
-                      src={elemento.imagen || "/placeholder.svg"}
-                      alt={elemento.elementName}
-                      width={64}
-                      height={64}
-                      className="object-cover"
-                    />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-lg">{elemento.elementName}</h3>
-                    <p className="text-gray-600">Prestado {elemento.usageCount} veces</p>
-                  </div>
-                </div>
-
-                <div className="relative h-8 bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    className="absolute top-0 left-0 h-full bg-red-500"
-                    style={{ width: `${Math.min(elemento.usageCount * 10, 100)}%` }}
-                  ></div>
-                </div>
-
-                <div className="mt-2 text-sm text-gray-600">
-                  <p>Último préstamo: {elemento.lastUsed || "Nunca"}</p>
-                  <p>Usuarios diferentes: {new Set(elemento.borrowers.map((b) => b.userId)).size}</p>
-                </div>
-              </div>
+                <td className="p-4 border-b border-gray-200">
+                  <Image src={el.imagen} alt={el.elementName} width={50} height={50} className="rounded-md" />
+                </td>
+                <td className="p-4 border-b border-gray-200">{el.elementName}</td>
+                <td className="p-4 border-b border-gray-200">{el.usageCount}</td>
+                <td className="p-4 border-b border-gray-200">{el.lastUsed}</td>
+              </tr>
             ))}
-          </div>
-        </div>
-      )}
+          </tbody>
+        </table>
+      </div>
 
-      {/* Modal para ver detalles del elemento */}
       {selectedElement && (
-        <div className="fixed inset-0 backdrop-blur-sm flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded-xl w-[90%] md:w-[700px] shadow-2xl relative max-h-[80vh] overflow-y-auto">
+        <div onClick={closeModal} className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white p-6 rounded-xl shadow-xl w-full max-w-lg"
+          >
+            <h2 className="text-2xl font-semibold mb-4">{selectedElement.elementName}</h2>
+            <Image src={selectedElement.imagen} alt={selectedElement.elementName} width={150} height={150} className="rounded-md mb-4" />
+            <p><strong>Uso total:</strong> {selectedElement.usageCount}</p>
+            <p><strong>Último uso:</strong> {selectedElement.lastUsed}</p>
+            <h3 className="mt-4 font-medium">Préstamos:</h3>
+            <ul className="list-disc pl-6 max-h-40 overflow-y-auto mt-2">
+              {selectedElement.borrowers.map((b, i) => (
+                <li key={i}>
+                  {b.userName} - {b.date}
+                </li>
+              ))}
+            </ul>
             <button
               onClick={closeModal}
-              className="absolute top-2 right-4 text-xl font-bold text-gray-600 hover:text-black"
+              className="mt-6 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700"
             >
-              ×
+              Cerrar
             </button>
-
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-20 h-20 relative overflow-hidden rounded-lg">
-                <Image
-                  src={selectedElement.imagen || "/placeholder.svg"}
-                  alt={selectedElement.elementName}
-                  width={80}
-                  height={80}
-                  className="object-cover"
-                />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold">{selectedElement.elementName}</h2>
-                <p className="text-gray-600">Prestado {selectedElement.usageCount} veces en total</p>
-              </div>
-            </div>
-
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-2">Estadísticas de Uso</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-gray-100 p-3 rounded-lg text-center">
-                  <p className="text-2xl font-bold text-red-500">{selectedElement.usageCount}</p>
-                  <p className="text-sm text-gray-600">Total Préstamos</p>
-                </div>
-                <div className="bg-gray-100 p-3 rounded-lg text-center">
-                  <p className="text-2xl font-bold text-red-500">
-                    {new Set(selectedElement.borrowers.map((b) => b.userId)).size}
-                  </p>
-                  <p className="text-sm text-gray-600">Usuarios Diferentes</p>
-                </div>
-                <div className="bg-gray-100 p-3 rounded-lg text-center">
-                  <p className="text-2xl font-bold text-red-500">{selectedElement.lastUsed || "N/A"}</p>
-                  <p className="text-sm text-gray-600">Último Préstamo</p>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="text-lg font-semibold mb-2">Historial de Préstamos</h3>
-              <div className="max-h-[300px] overflow-y-auto">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="p-2 text-left">Usuario</th>
-                      <th className="p-2 text-left">ID Usuario</th>
-                      <th className="p-2 text-left">Fecha y Hora</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {selectedElement.borrowers.map((borrower, index) => (
-                      <tr key={index} className="border-b border-gray-200">
-                        <td className="p-2">{borrower.userName}</td>
-                        <td className="p-2">{borrower.userId}</td>
-                        <td className="p-2">{borrower.date}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
           </div>
         </div>
       )}
