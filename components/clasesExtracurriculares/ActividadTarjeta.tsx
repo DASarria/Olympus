@@ -8,7 +8,7 @@ type ActividadTarjetaProps = {
   asiste: string;
 };
 
-const componenteActividad = "shrink-0 bg-white border border-[#3358A1] w-[25vw] h-[25vh] rounded-2xl flex flex-col shadow-[0_-5px_2px_0px_#3358A1] box-border";
+const componenteActividad = "shrink-0 bg-white border border-[#3358A1] w-[280px] h-[270px] rounded-2xl flex flex-col shadow-[0_-5px_2px_0px_#3358A1] box-border";
 
 
 const divActividadNombre = "bg-[#3358A1]/30 backdrop-blur-md text-left w-full rounded-t-2xl box-border p-1 flex items-center justify-center";
