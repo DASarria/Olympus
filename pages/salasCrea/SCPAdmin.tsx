@@ -84,7 +84,7 @@ const SCPAdmin = () => {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        Authorization: `${token}`,
       },
       cache: "no-store",
     })
@@ -100,7 +100,7 @@ const SCPAdmin = () => {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        Authorization: `${token}`,
       },
       cache: "no-store",
     })
