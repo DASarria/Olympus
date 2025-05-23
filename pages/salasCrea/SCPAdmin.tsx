@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
+import type { StaticImageData } from "next/image";
 import { ArrowLeft, Search, Calendar } from "lucide-react"
 import { useRouter } from "next/router"
 import Image from "next/image"
@@ -11,7 +12,6 @@ import monos from "../../assets/images/Monos.webp"
 import ajedrez from "../../assets/images/Ajedrez.jpg"
 import cranium from "../../assets/images/cranium.webp"
 
-// Define types for our data
 interface Reserva {
   id: string
   userName: string
@@ -22,7 +22,7 @@ interface Reserva {
     time: string
   }
   roomId: string
-  loans: string[] // Element IDs that were borrowed
+  loans: string[]  
   state: string
   people: number
 }
@@ -50,8 +50,6 @@ interface ElementoUsage {
 
 const SCPAdmin = () => {
   const router = useRouter()
-  const [reservas, setReservas] = useState<Reserva[]>([])
-  const [elementos, setElementos] = useState<Elemento[]>([])
   const [elementoUsage, setElementoUsage] = useState<ElementoUsage[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -64,13 +62,14 @@ const SCPAdmin = () => {
   const token = sessionStorage.getItem("token")
   const url = process.env.NEXT_PUBLIC_API_URL
 
-  const imagenesPorNombre: Record<string, any> = {
-    Uno: uno,
-    Jenga: jenga,
-    Ajedrez: ajedrez,
-    Cranium: cranium,
-    Monos: monos,
-  }
+
+  const imagenesPorNombre: Record<string, StaticImageData> = {
+  Uno: uno,
+  Jenga: jenga,
+  Ajedrez: ajedrez,
+  Cranium: cranium,
+  Monos: monos,
+}
 
   const handleClickBack = () => {
     router.back()
@@ -78,80 +77,69 @@ const SCPAdmin = () => {
 
 
 
-  // Fetch both reservations and elements data
-  const fetchData = async () => {
-    try {
-      console.log("SCPAdmin: Obteniendo datos...")
-      // Fetch reservations
-      const revsResponse = await fetch(`${url}/revs`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `${token}`,
-        },
-        cache: "no-store", // Evitar caché
-      })
-
-      if (!revsResponse.ok) {
-        throw new Error("Error cargando reservas: " + revsResponse.statusText)
-      }
-
-      const revsData = await revsResponse.json()
-      console.log("SCPAdmin: Reservas obtenidas:", revsData)
-
-      // Verificar que las reservas tienen sus préstamos
-      revsData.forEach((reserva: Reserva) => {
-        console.log(`SCPAdmin: Reserva ${reserva.id} - Préstamos:`, reserva.loans)
-      })
-
-      setReservas(revsData)
-
-      // Fetch elements
-      const elementsResponse = await fetch(`${url}/elements`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `${token}`,
-        },
-        cache: "no-store", // Evitar caché
-      })
-
-      if (!elementsResponse.ok) {
-        throw new Error("Error cargando elementos: " + elementsResponse.statusText)
-      }
-
-      const elementsData = await elementsResponse.json()
-      const formattedElements = elementsData
-        .filter((el: any) => el.name)
-        .map((el: any) => ({
-          id: el.id,
-          nombre: el.name,
-          descripcion: el.description || "Sin descripción",
-          cantidad: el.quantity || 0,
-          imagen: imagenesPorNombre[el.name] ? imagenesPorNombre[el.name].src : defaultImage.src,
-        }))
-
-      setElementos(formattedElements)
-
-      // Process data to get element usage statistics
-      processElementUsage(revsData, formattedElements)
-
-      // Actualizar la hora de última actualización
-      setLastUpdated(new Date())
-    } catch (error) {
-      console.error("SCPAdmin: Error fetching data:", error)
-      setError("Error cargando datos. Por favor, intente de nuevo.")
-    } finally {
-      setLoading(false)
+  const fetchData = useCallback(async () => {
+  try {
+    console.log("SCPAdmin: Obteniendo datos...")
+    const revsResponse = await fetch(`${url}/revs`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      cache: "no-store",
+    })
+    if (!revsResponse.ok) {
+      throw new Error("Error cargando reservas: " + revsResponse.statusText)
     }
+    const revsData = await revsResponse.json()
+    console.log("SCPAdmin: Reservas obtenidas:", revsData)
+    revsData.forEach((reserva: Reserva) => {
+      console.log(`SCPAdmin: Reserva ${reserva.id} - Préstamos:`, reserva.loans)
+    })
+    const elementsResponse = await fetch(`${url}/elements`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      cache: "no-store",
+    })
+    if (!elementsResponse.ok) {
+      throw new Error("Error cargando elementos: " + elementsResponse.statusText)
+    }
+    const elementsData: ElementoAPI[] = await elementsResponse.json()
+    const formattedElements: Elemento[] = elementsData
+      .filter((el) => el.name)
+      .map((el) => ({
+        id: el.id,
+        nombre: el.name,
+        descripcion: el.description || "Sin descripción",
+        cantidad: el.quantity || 0,
+        imagen: imagenesPorNombre[el.name]?.src || defaultImage.src,
+      }))
+    processElementUsage(revsData, formattedElements)
+    setLastUpdated(new Date())
+  } catch (error) {
+    console.error("SCPAdmin: Error fetching data:", error)
+    setError("Error cargando datos. Por favor, intente de nuevo.")
+  } finally {
+    setLoading(false)
   }
+}, [token, url, imagenesPorNombre])
 
-  // Initial data load
+
+  interface ElementoAPI {
+  id: string
+  name: string
+  description?: string
+  quantity?: number
+}
+
+
   useEffect(() => {
     fetchData()
-  }, [])
+  }, [fetchData])
 
-  // Process the data to get element usage statistics
   const processElementUsage = (reservas: Reserva[], elementos: Elemento[]) => {
     console.log("SCPAdmin: Procesando uso de elementos...")
     console.log("SCPAdmin: Reservas para procesar:", reservas)
@@ -159,7 +147,6 @@ const SCPAdmin = () => {
 
     const usageMap = new Map<string, ElementoUsage>()
 
-    // Initialize usage map with all elements
     elementos.forEach((elemento) => {
       usageMap.set(elemento.id, {
         elementId: elemento.id,
@@ -171,7 +158,6 @@ const SCPAdmin = () => {
       })
     })
 
-    // Process each reservation to count element usage
     reservas.forEach((reserva) => {
       if (reserva.loans && reserva.loans.length > 0) {
         console.log(`SCPAdmin: Procesando préstamos de reserva ${reserva.id}:`, reserva.loans)
@@ -179,16 +165,13 @@ const SCPAdmin = () => {
         reserva.loans.forEach((loanId) => {
           const usage = usageMap.get(loanId)
           if (usage) {
-            // Increment usage count
             usage.usageCount += 1
 
-            // Update last used date if this is more recent
             const reservaDate = reserva.date.day
             if (!usage.lastUsed || new Date(reservaDate) > new Date(usage.lastUsed)) {
               usage.lastUsed = reservaDate
             }
 
-            // Add borrower info
             usage.borrowers.push({
               userId: reserva.userId,
               userName: reserva.userName,
@@ -203,29 +186,24 @@ const SCPAdmin = () => {
       }
     })
 
-    // Convert map to array and sort by usage count (descending)
     const usageArray = Array.from(usageMap.values()).sort((a, b) => b.usageCount - a.usageCount)
     console.log("SCPAdmin: Estadísticas de uso procesadas:", usageArray)
 
     setElementoUsage(usageArray)
   }
 
-  // Filter elements based on search term and date
   const filteredElements = elementoUsage.filter((elemento) => {
     const matchesSearch = elemento.elementName.toLowerCase().includes(searchTerm.toLowerCase())
 
     if (!dateFilter) return matchesSearch
 
-    // Filter by date if dateFilter is set
     return matchesSearch && elemento.borrowers.some((borrower) => borrower.date.includes(dateFilter))
   })
 
-  // Handle element selection for detailed view
   const handleElementClick = (elemento: ElementoUsage) => {
     setSelectedElement(elemento)
   }
 
-  // Close the detail modal
   const closeModal = () => {
     setSelectedElement(null)
   }

@@ -48,7 +48,7 @@ const MAX_AFORO = 30
 
         try {
             const res = await fetch(`${apiUrl}/revs`, {
-            headers: { Authorization: `${token}` }
+            headers: { Authorization: `Bearer ${token}` }
             })
 
             const raw = await res.text()
@@ -59,7 +59,7 @@ const MAX_AFORO = 30
             return
             }
 
-            let data: any[] = []
+            let data: Reserva[] = []
             try {
             const parsed = JSON.parse(raw)
             if (Array.isArray(parsed)) {
@@ -118,7 +118,7 @@ const MAX_AFORO = 30
             method: "POST",
             headers: {
             "Content-Type": "application/json",
-            Authorization: `${token}`
+            Authorization: `Bearer ${token}`
             },
             body: JSON.stringify(reserva)
         })
