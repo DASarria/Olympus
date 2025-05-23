@@ -79,6 +79,9 @@ interface Actividad {
   resources: Recurso[];
 }
 
+//Esto es igual que actividad (Lo uso para actividades nuevas, donde no debo enviar el id)
+type ActividadNueva = Omit<Actividad, "id"> & { id?: string };
+
 interface Day {
   dayWeek: string;
   startHour: string;
@@ -97,17 +100,17 @@ const CEAdminActividades = () => {
 
   //Constantes para peticiones
   const tokenJWT =
-    "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEyMTMyMTQxIiwidXNlck5hbWUiOiJhZG1pbiIsImVtYWlsIjoiYWRtaW5AZXNjdWVsYWluZy5lZHUuY28iLCJuYW1lIjoiZWwgYWRtaW4iLCJyb2xlIjoiQURNSU4iLCJzcGVjaWFsdHkiOiJudWxsIiwiZXhwIjoxNzQ3ODkzODM2fQ.S8ffw1n78AH-citWiQwZuMZCJjcmL_uphFKKLfaIUjk";
+    "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEyMTMyMTQxIiwidXNlck5hbWUiOiJhZG1pbiIsImVtYWlsIjoiYWRtaW5AZXNjdWVsYWluZy5lZHUuY28iLCJuYW1lIjoiZWwgYWRtaW4iLCJyb2xlIjoiQURNSU4iLCJzcGVjaWFsdHkiOiJudWxsIiwiZXhwIjoxNzQ3OTY2MTQyfQ.vjOpZTA2Q_XxqbWe5uEFoX6EUZ61R8L_72BmF1TgdhE";
 
   const linkAPI =
     "https://hadesback-app-c5fwbybjd0gnf0fx.canadacentral-01.azurewebsites.net";
   const linkAPIUSER =
-    "https://hadesback-app-c5fwbybjd0gnf0fx.canadacentral-01.azurewebsites.net";
+    "https://usermanagement-bhe9cfg4b5b2hthj.eastus-01.azurewebsites.net";
 
   //VARIABLES GENERALES (Guardar informacion o usarla)
   const router = useRouter();
   const { id } = router.query; //Variable que traer las cosas del link
-  const [actividadesTemp, setActividadesTemp] = useState<any[]>([]);
+  const [actividadesTemp, setActividadesTemp] = useState<Actividad[]>([]);
   const [profesoresTemp, setProfesoresTemp] = useState<any[]>([]);
 
   const [actividades, setActividades] = useState<
@@ -158,37 +161,19 @@ const CEAdminActividades = () => {
 
   const fetchProfesores = async () => {
     try {
-      /*
     const response = await axios.post(
       `${linkAPIUSER}/user/query`,
       {
-        role: "EXTRACURRICULAR_TEACHER" // Este es el body
-      },
+  "role": "EXTRACURRICULAR_TEACHER"
+},
       {
         headers: {
-          Authorization: `Bearer ${tokenJWT}`,
-          'Content-Type': 'application/json'
+          Authorization: tokenJWT,
         }
       }
     );
     
-    
-    console.log("Profesores", response.data);*/
-      const response = {
-        status: 200,
-        message: "Consulta realizada",
-        data: [
-          {
-            fullName: "extracurricular_teacher",
-            academicProgram: null,
-            codeStudent: null,
-            role: "EXTRACURRICULAR_TEACHER",
-            id: "956",
-            userName: null,
-          },
-        ],
-      };
-      setProfesoresTemp(response.data);
+    setProfesoresTemp(response.data.data);
     } catch (error) {
       console.error("Error al obtener los profesores", error);
     }
@@ -197,7 +182,9 @@ const CEAdminActividades = () => {
   //ACTUALIZAR LAS VARIABLES DE LOS SELECT QUE SU INFORMACION VIENE DE AFUERA
   useEffect(() => {
     if (actividadesTemp.length > 0) {
-      const mapped = actividadesTemp.map(({ id, activityType }) => ({
+      const mapped = actividadesTemp
+      .filter((a) => a.id !== null)
+      .map(({ id, activityType }) => ({
         id,
         nombre: activityType,
       }));
@@ -313,65 +300,129 @@ const CEAdminActividades = () => {
 
   //PARA ENVIAR PETICIONES
   const handleSubmit = (e: React.FormEvent) => {
-    /*
-    e.preventDefault(); 
-    // Validar horarios
+    e.preventDefault();
 
-    const daysFiltrados = days.filter(
-      (d) =>
-        d.dayWeek !== "none" && d.startHour && d.endHour
-    );
-
-    if (daysFiltrados.length === 0) {
-      alert("Debe agregar al menos un horario válido.");
+    if (nombreActividadSeleccionada === "none") {
+      alert("Tiene que seleccionar una actividad");
       return;
     }
 
-    // Validar que no haya recursos con cantidad negativa
-    const recursosFiltrados = recursos.filter(
-      (r) => r.name.trim() !== "" && parseInt(r.amount) > 0
+    if (ubicacion.trim() == "") {
+      alert("Tiene que establecer una ubicacion para continuar");
+      return;
+    }
+
+    if (capacidad <= 0) {
+      alert("Tiene que tener una capacidad mayor a 0");
+      return;
+    } else if (capacidad >= 50) {
+      alert("Tiene que seleccionar una capacidad menor a 50 estudiantes");
+      return;
+    }
+
+    if (profesorSeleccionado === "none") {
+      alert("Debe seleccionar un profesor valido para continuar");
+      return;
+    }
+
+    //Esto es uan manera de revisar que no esten mal los recursos
+    const recursoInvalido = recursos.some(
+      (r: Recurso) => r.name.trim() === "" || r.amount <= 0
     );
 
-    const actividad = {
-      id: actividadSeleccionada,
-      activityType: nombreClase,
-      location: ubicacion,
-      capacityMaximum: capacidad,
-      teacher: profesor,
-      teacherId: identificacion,
-      resources: recursosFiltrados,
-      days: daysFiltrados.map((d) => ({
-        ...d,
-        year: Number(d.year),
-        semester: Number(d.semester),
-      })),
-    };
+    //Igualmente valido para evitar problemas por si se envia
+    const recursosFiltrados = recursos.filter(
+      (r: Recurso) => r.name.trim() !== "" && r.amount > 0
+    );
+    setRecursos(recursosFiltrados);
 
-    if (actividad.id === "none") {
-      actividad.id = "null";
-      CrearActividades(actividad);
-    }else{
+    if (recursoInvalido) {
+      alert("Hay recursos con nombre vacío o cantidad menor o igual a cero.");
+      return;
+    }
+
+    if (yearSeleccionado === "none") {
+      alert("Tiene que seleccionar un año valido para continuar");
+      return;
+    }
+
+    if (semestreSeleccionado === "none") {
+      alert("Tiene que seleccionar un semestre valido para continuar");
+      return;
+    }
+
+    //Revisar que no esten mal los datos
+    const diaInvalido = days.some((d: Day) => {
+      return (
+        d.dayWeek === "none" ||
+        d.startHour === "" ||
+        d.endHour === "" ||
+        d.startHour < "07:00" ||
+        d.startHour >= d.endHour ||
+        d.endHour > "19:00"
+      );
+    });
+
+    //Validacion de datos
+    const daysFiltrados = days.filter(
+      (d) => d.dayWeek !== "none" && d.startHour && d.endHour
+    );
+    setDays(daysFiltrados);
+
+    if (diaInvalido) {
+      alert(
+        " el día debe estar seleccionado, la hora de inicio debe ser después de las 07:00AM y antes de la hora de fin, y la hora de fin no debe superar las 7:00pm."
+      );
+      return;
+    }
+
+    const profesorLabel =
+      profesores.find((p) => p.id === profesorSeleccionado)?.fullName ||
+      "No encontrado";
+
+    //Este para crear
+    if (actividadSeleccionada === "none") {
+      const actividadNueva: ActividadNueva = {
+        year: Number(yearSeleccionado),
+        semester: Number(semestreSeleccionado),
+        activityType: nombreActividadSeleccionada,
+        teacher: profesorLabel,
+        teacherId: Number(profesorSeleccionado),
+        location: ubicacion,
+        capacityMaximum: capacidad,
+        schedules: [],
+        days: days,
+        resources: recursos,
+      };
+      CrearActividades(actividadNueva);
+    } else {
+      //Este para actualizar
+      const actividad: Actividad = {
+        id: actividadSeleccionada,
+        year: Number(yearSeleccionado),
+        semester: Number(semestreSeleccionado),
+        activityType: nombreActividadSeleccionada,
+        teacher: profesorLabel,
+        teacherId: Number(profesorSeleccionado),
+        location: ubicacion,
+        capacityMaximum: capacidad,
+        schedules: [],
+        days: days,
+        resources: recursos,
+      };
       ActualizarActividades(actividad);
     }
 
-    // Reset
-    setNombreClase("");
-    setUbicacion("");
-    setCapacidad(0);
-    setProfesor("");
-    setIdentificacion(0);
-    setRecursos([{ name: "", amount: "" }]);
-    setDays([
-      { year: "", semester: "", dayWeek: "none", startHour: "", endHour: "" },
-    ]);
+    //Reset
+    fetchActividades();
     setActividadSeleccionada("none");
-    fetchActividades();*/
+    
   };
 
-  const CrearActividades = async (actividad: Actividad) => {
-    /*try {
-      const response = await axios.post(
-        "https://hadesback-app-c5fwbybjd0gnf0fx.canadacentral-01.azurewebsites.net/api/activity",
+  const CrearActividades = async (actividad: ActividadNueva) => {
+    try {
+      await axios.post(
+        `${linkAPI}/api/activity`,
         actividad,
         {
           headers: {
@@ -379,17 +430,15 @@ const CEAdminActividades = () => {
           },
         }
       );
-      console.log("Actividad Creada:", response.data);
-      console.log("Actividad Creada:", actividad);
     } catch (error) {
       console.error("Error al crear las actividades:", error);
-    }*/
+    }
   };
 
   const ActualizarActividades = async (actividad: Actividad) => {
     try {
       await axios.put(
-        "https://hadesback-app-c5fwbybjd0gnf0fx.canadacentral-01.azurewebsites.net/api/activity/update",
+        `${linkAPI}/api/activity/update`,
         actividad,
         {
           headers: {
@@ -607,6 +656,8 @@ const CEAdminActividades = () => {
                     onChange={(e) =>
                       handleHorarioChange(index, "startHour", e.target.value)
                     }
+                    min="07:00"
+                    max="19:00"
                     className={inputStyle}
                   />
                 </div>
