@@ -242,7 +242,7 @@ const SCPAdmin = () => {
       </div>
 
       {selectedElement && (
-        <div onClick={closeModal} className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
+        <div onClick={closeModal} className="fixed inset-0 backdrop-blur-sm bg-white/30 flex justify-center items-center z-50"> 
           <div
             onClick={(e) => e.stopPropagation()}
             className="bg-white p-6 rounded-xl shadow-xl w-full max-w-lg"
