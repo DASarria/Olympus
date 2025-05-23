@@ -5,21 +5,6 @@ import login from "@/pages/api/UserManagement/LoginService"
 import ErrorMessage from "@/components/ErrorMessage";
 
 
-// Tipos para los componentes de la aplicación
-
-export interface Routine {
-  id: number;
-  title: string;
-  series: number;
-  repetitions: number;
-}
-
-export interface User {
-  name: string;
-  initials: string;
-}
-
-
 const Index = () => {
   const router = useRouter();
   const [userName, setUserName] = useState("");
@@ -100,7 +85,6 @@ const Index = () => {
 
     </div>
   );
-
 };
 
 export default Index;

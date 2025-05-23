@@ -2,33 +2,6 @@
 
 :root{
     --color-eci: #990000;
-    --bluegray: rgba(78, 87, 116, 1);
-    --darkblue: rgba(40, 42, 75, 1);
-    --lavender: rgba(133, 149, 201, 1);
-    --neutrallightgray: rgba(247, 247, 249, 1);
-    --neutralwhite: rgba(255, 255, 255, 1);
-    --primary-red: rgba(153, 0, 0, 1);
-
-    --titulo-font-family: "Montserrat", Helvetica;
-    --titulo-font-size: 40px;
-    --titulo-font-weight: 700;
-    --titulo-letter-spacing: 0px;
-    --titulo-line-height: 100%;
-    --subtitulo-font-size: 32px;
-
-
-    --regular-font-family: "Open Sans", Helvetica;
-    --regular-font-size: 26px;
-    --regular-font-style: normal;
-    --regular-font-weight:400;
-    --regular-letter-spacing: 0px;
-    --regular-line-height: normal;
-    --regularbold-font-weight: 700;
-    --small-font-size: 22px;
-    
-
-    --background-blanco: rgba(255,255, 255, 1);
-    --size-radius-full: 9999px;
 }
 
 .bg-eci{

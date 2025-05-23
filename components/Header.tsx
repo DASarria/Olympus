@@ -1,3 +1,8 @@
+"use client"
+
+import Image from "next/image"
+import logotransparente from "../assets/images/logotransparente.png"
+
 
 interface HeaderProps {
   userName?: string
@@ -16,12 +21,27 @@ const Header = ({ userName = "Nombre de Usuario", notificationsCount = 0 }: Head
       .substring(0, 2)
   }
 
-  
+  const handleLogoClick = () => {
+    window.location.href = "/salasCrea/InicioSalasCreaADMIN"
+  }
 
   return (
+    <div className="flex w-full justify-between items-center h-14">
+      {/* Aquí se pone el logo, que pasó de estar en el menú lateral a acá para que no hubiera conflictos cuando se mostrara el contenido */}
+      <div
+        className="w-[14vw] md:w-[6vw] h-14 bg-eci flex items-center justify-center cursor-pointer"
+        onClick={handleLogoClick}
+      >
+        <Image
+  src={logotransparente || "/placeholder.svg"}
+  alt="ECI logo"
+  width={50}
+  height={50}
+  className="object-contain"
+/>
 
-    <div className="flex w-full justify-end items-center h-14">
 
+      </div>
 
       {/* Controles de usuario a la derecha, nombre y notificaciones */}
       <div className="flex items-center space-x-4 px-4">
