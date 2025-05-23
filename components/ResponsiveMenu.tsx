@@ -23,9 +23,14 @@ const modules = [
     },
     {
         moduleName: "module 3",
+<<<<<<< HEAD
         roleCanUse: ["ADMIN", "EXTRACURRICULAR_TEACHER"],
         urlToNavigate: "/clasesExtracurriculares/CEAdminPrincipal",
 
+=======
+        roleCanUse: ["ADMIN", "usuario"],
+        urlToNavigate: "/clasesExtracurriculares/CEAdminPrincipal",
+>>>>>>> f5db2043d2e41e044d027bb87a958e8cc77f3677
         image: modulo3,
     },
     {
