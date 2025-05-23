@@ -27,14 +27,30 @@ const Index = () => {
   const handleLogin = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault(); 
     
-    const loginResponse:response = await login({ userName, password });
-    if(loginResponse.status== "200"){
-      sessionStorage.setItem("token", loginResponse.data.token);
-      sessionStorage.setItem("role", loginResponse.data.role);
-      router.push("/Dashboard");
-    }
-    if(loginResponse.status == "400"){
-      setErrorMessage(loginResponse.message)
+    console.log("Intentando iniciar sesión con:", { userName, password });
+    
+    try {
+      const loginResponse:response = await login({ userName, password });
+      console.log("Respuesta del servidor:", loginResponse);
+      
+      // Check if loginResponse exists before accessing its properties
+      if(loginResponse && loginResponse.status === "200"){
+        sessionStorage.setItem("token", loginResponse.data.token);
+        // Normaliza el rol a mayúsculas antes de guardarlo
+        sessionStorage.setItem("role", loginResponse.data.role.toUpperCase());
+        router.push("/Dashboard");
+      }
+      else if(loginResponse && loginResponse.status === "400"){
+        setErrorMessage(loginResponse.message)
+      }
+      else {
+        // Handle case where loginResponse exists but has unexpected status
+        setErrorMessage("Error de autenticación. Respuesta inesperada del servidor.");
+        console.error("Respuesta inesperada:", loginResponse);
+      }
+    } catch (error) {
+      console.error("Error durante el login:", error);
+      setErrorMessage("Error de conexión con el servidor");
     }
   };
 

@@ -1,10 +1,11 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Layout from "@/components/Layout";
-import { getArticulos } from "@/services/inventarioService";
-import { Articulo } from "@/services/inventarioService";
+import api from '@/services/prestamosService'; // Or create a dedicated inventarioService if needed
+import axios from "axios";
 
 interface Unidad {
     id: number;
@@ -13,21 +14,30 @@ interface Unidad {
 
 interface Producto {
     id: string;
-    nombre: string;
-    categoria: string;
-    estado: string;
+    name: string;
+    description: string;
+    articleStatus: string;
     unidades: Unidad[];
+}
+
+// Añade esta interfaz para definir la estructura de los artículos recibidos del backend
+interface ArticuloResponse {
+  id: number;
+  name: string;
+  description?: string;
+  articleStatus?: string;
+  quantity?: number;
 }
 
 export default function InventarioPage() {
     const router = useRouter();
     const role = typeof window !== 'undefined' ? sessionStorage.getItem("role") : null;
     const [productos, setProductos] = useState<Producto[]>([]);
-    const [articulos, setArticulos] = useState<Articulo[]>([]);
     const [obsVisible, setObsVisible] = useState<string | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        // Verificar si el usuario tiene permisos de administrador
         if (role !== "ADMIN") {
             alert("No tienes permisos para acceder a esta página");
             router.push("/Dashboard");
@@ -36,21 +46,23 @@ export default function InventarioPage() {
 
         const fetchArticulos = async () => {
             try {
-                const data = await getArticulos();
-                setArticulos(data);
-                
-                // Transformar los artículos a productos para la vista
-                const productosTransformados = data.map(art => ({
+                const response = await api.get('/Article');
+                setProductos(response.data.map((art: ArticuloResponse) => ({
                     id: art.id.toString(),
-                    nombre: art.name,
-                    categoria: "Deportes", // Esto debería venir del backend
-                    estado: art.articleStatus,
-                    unidades: Array.from({ length: 5 }, (_, i) => ({ id: i + 1 }))
-                }));
-                
-                setProductos(productosTransformados);
-            } catch (error) {
+                    name: art.name,
+                    description: art.description || "Sin descripción",
+                    articleStatus: art.articleStatus || "disponible",
+                    unidades: Array.from({ length: art.quantity || 1 }, (_, i) => ({ id: i + 1 }))
+                })));
+            } catch (error: unknown) {
+                if (axios.isAxiosError(error)) {
+                    setError(error.response?.data?.message || 'Error al cargar artículos');
+                } else {
+                    setError('Error desconocido al cargar artículos');
+                }
                 console.error("Error al cargar artículos:", error);
+            } finally {
+                setLoading(false);
             }
         };
 
@@ -58,33 +70,70 @@ export default function InventarioPage() {
     }, [role, router]);
 
     const modificarCantidad = async (productoId: string, delta: number) => {
-        // En una implementación real, aquí llamarías al backend para actualizar
-        setProductos(prev =>
-            prev.map(producto => {
-                if (producto.id === productoId) {
-                    const nuevaCantidad = producto.unidades.length + delta;
-                    if (nuevaCantidad < 0) return producto;
+        try {
+            setLoading(true);
+            const producto = productos.find(p => p.id === productoId);
+            if (!producto) return;
 
-                    const nuevasUnidades =
-                        delta > 0
-                            ? [
-                                ...producto.unidades,
-                                ...Array.from({ length: delta }, (_, i) => ({
-                                    id: producto.unidades.length + i + 1,
-                                })),
-                            ]
-                            : producto.unidades.slice(0, nuevaCantidad);
+            const nuevaCantidad = producto.unidades.length + delta;
+            if (nuevaCantidad < 0) return;
 
-                    return { ...producto, unidades: nuevasUnidades };
-                }
-                return producto;
-            })
-        );
+            // Actualizar en el backend
+            await api.put(`/articles/${productoId}`, {
+                quantity: nuevaCantidad
+            });
+
+            // Actualizar en el frontend
+            setProductos(prev =>
+                prev.map(p =>
+                    p.id === productoId
+                        ? {
+                            ...p,
+                            unidades: Array.from({ length: nuevaCantidad }, (_, i) => ({
+                                id: i + 1,
+                                observacion: p.unidades[i]?.observacion
+                            }))
+                        }
+                        : p
+                )
+            );
+        } catch (error: unknown) {
+            if (axios.isAxiosError(error)) {
+                alert(error.response?.data?.message || 'Error al modificar cantidad');
+            } else {
+                alert('Error desconocido al modificar cantidad');
+            }
+            console.error("Error al modificar cantidad:", error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const obtenerObservaciones = (producto: Producto) => {
         return producto.unidades.filter((u) => u.observacion);
     };
+
+    if (loading) {
+        return (
+            <Layout>
+                <div className="flex justify-center items-center h-screen">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-500"></div>
+                </div>
+            </Layout>
+        );
+    }
+
+    if (error) {
+        return (
+            <Layout>
+                <div className="flex justify-center items-center h-screen">
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                        <p>{error}</p>
+                    </div>
+                </div>
+            </Layout>
+        );
+    }
 
     return (
         <Layout>
@@ -93,21 +142,13 @@ export default function InventarioPage() {
                     <main className="flex-grow p-8">
                         <h1 className="text-3xl font-bold mb-6">Inventario Deportivo</h1>
                         
-                        {/* Using articulos state to display raw data */}
-                        <details className="mb-4">
-                            <summary className="cursor-pointer text-blue-600">Ver datos originales ({articulos.length})</summary>
-                            <div className="mt-2 p-4 bg-gray-50 rounded">
-                                <pre className="text-xs overflow-auto">{JSON.stringify(articulos, null, 2)}</pre>
-                            </div>
-                        </details>
-                        
                         <div className="overflow-x-auto rounded-lg shadow">
                             <table className="min-w-full table-auto bg-white text-sm text-gray-700 border border-gray-200">
                                 <thead className="bg-gray-200 text-left">
                                 <tr>
                                     <th className="px-4 py-3 border">ID</th>
                                     <th className="px-4 py-3 border">Producto</th>
-                                    <th className="px-4 py-3 border">Categoría</th>
+                                    <th className="px-4 py-3 border">Descripción</th>
                                     <th className="px-4 py-3 border">Estado</th>
                                     <th className="px-4 py-3 border text-center">Cantidad</th>
                                     <th className="px-4 py-3 border">Observaciones</th>
@@ -119,9 +160,9 @@ export default function InventarioPage() {
                                     return (
                                         <tr key={producto.id} className="hover:bg-gray-100 align-top">
                                             <td className="px-4 py-2 border">{producto.id}</td>
-                                            <td className="px-4 py-2 border">{producto.nombre}</td>
-                                            <td className="px-4 py-2 border">{producto.categoria}</td>
-                                            <td className="px-4 py-2 border">{producto.estado}</td>
+                                            <td className="px-4 py-2 border">{producto.name}</td>
+                                            <td className="px-4 py-2 border">{producto.description}</td>
+                                            <td className="px-4 py-2 border">{producto.articleStatus}</td>
                                             <td className="px-4 py-2 border text-center">
                                                 <div className="flex items-center justify-center space-x-2">
                                                     <button

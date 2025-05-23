@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8081";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://colliseum-gvh2h4bbd8bgcbfm.brazilsouth-01.azurewebsites.net/";
 
 export interface Reporte {
     id: string;

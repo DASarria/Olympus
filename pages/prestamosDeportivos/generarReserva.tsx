@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Layout from '@/components/Layout';
+import api from '@/services/prestamosService';
+import axios from "axios";
 
 interface Product {
   id: string;
@@ -11,6 +13,14 @@ interface Product {
   imageUrl: string;
   status: 'disponible' | 'mantenimiento' | 'dañado';
   estadoEquipo?: 'buen estado' | 'requiere mantenimiento' | 'dañado';
+}
+
+// Eliminamos la interfaz ReservaRequest que no se usa
+
+interface ReservaResponse {
+  id: string;
+  message: string;
+  status: string;
 }
 
 export default function GenerarReserva() {
@@ -74,42 +84,38 @@ export default function GenerarReserva() {
     }
 
     try {
-      const response = await fetch('https://colliseum-gvh2h4bbd8bgcbfm.brazilsouth-01.azurewebsites.net/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          articleIds: productosSeleccionados.map((p) => parseInt(p.id)),
-          nameUser: nameUser || 'Usuario autenticado',
-          userId: userId ? `U-${userId}` : 'U-autenticado',
-          userRole: 'Estudiante',
-          loanDescriptionType: `Reserva de ${productosSeleccionados.map((p) => p.name).join(', ')}`,
-          loanDate: new Date().toISOString().split('T')[0],
-          loanStatus: 'Prestado',
-          equipmentStatus: 'En buen estado',
-          startTime: horaInicio,
-          endTime: horaFin,
-        }),
+      const response = await api.post<ReservaResponse>('/loans', {
+        articleIds: productosSeleccionados.map((p) => parseInt(p.id)),
+        nameUser: nameUser || 'Usuario autenticado',
+        userId: userId ? `U-${userId}` : 'U-autenticado',
+        userRole: 'Estudiante',
+        loanDescriptionType: `Reserva de ${productosSeleccionados.map((p) => p.name).join(', ')}`,
+        loanDate: new Date().toISOString().split('T')[0],
+        loanStatus: 'Prestado',
+        equipmentStatus: 'En buen estado',
+        startTime: horaInicio,
+        endTime: horaFin,
       });
-
-      if (!response.ok) {
-        throw new Error('No se pudo generar la reserva.');
-      }
-
+      
+      console.log('Reserva creada con ID:', response.data.id);
+      // O guardar algún dato de la respuesta
+      sessionStorage.setItem('ultimaReservaId', response.data.id);
+      
       alert('¡Reserva generada con éxito!');
       localStorage.removeItem('productosSeleccionados');
       router.push('/Dashboard');
-    } catch (err) {
-      console.error('Error al crear reserva:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Error al crear la reserva. Por favor intenta nuevamente.';
-      setError(errorMessage);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        const errorMessage = error.response?.data?.message || 'Error al crear la reserva';
+        setError(errorMessage);
+      } else {
+        setError('Error desconocido al crear la reserva');
+      }
+      console.error('Error al crear reserva:', error);
     } finally {
       setLoading(false);
     }
   };
-
   return (
     <Layout>
       <div className="container mx-auto p-4">

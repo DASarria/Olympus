@@ -1,14 +1,29 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
 import { Dialog } from '@headlessui/react';
 import { XMarkIcon as X } from '@heroicons/react/24/outline';
 import Layout from "@/components/Layout";
-import { getAllPrestamos, createPrestamo } from "@/services/prestamosService";
-import { Prestamo } from "@/types/prestamo";
+import api from '@/services/prestamosService'; // Debes crear este archivo si no existe
+import axios from "axios"; // Importa axios para el manejo de errores
 
-// Define an error type to replace 'any'
-
+interface Prestamo {
+    id: string;
+    nameUser: string;
+    userId: string;
+    userRole: string;
+    loanDescriptionType: string;
+    loanDate: string;
+    devolutionDate: string;
+    startTime: string;
+    endTime: string;
+    loanStatus: string;
+    equipmentStatus: string;
+    devolutionRegister: string;
+    creationDate: string;
+    articleIds: number[];
+}
 
 export default function PrestamosPage() {
     const [prestamos, setPrestamos] = useState<Prestamo[]>([]);
@@ -29,6 +44,65 @@ export default function PrestamosPage() {
     });
     const [searchTerm, setSearchTerm] = useState("");
 
+    const getAllPrestamos = async (): Promise<Prestamo[]> => {
+        try {
+            const response = await api.get('/loans');
+            return response.data;
+        } catch (error) {
+            console.error('Error al obtener préstamos:', error);
+            throw error;
+        }
+    };
+
+    const createPrestamo = async (prestamoData: Omit<Prestamo, 'id'>): Promise<Prestamo> => {
+        try {
+            const response = await api.post('/loans', prestamoData);
+            return response.data;
+        } catch (error) {
+            console.error('Error al crear préstamo:', error);
+            throw error;
+        }
+    };
+    const [prestamoEditando, setPrestamoEditando] = useState<Prestamo | null>(null);
+
+    // Función para eliminar préstamo
+    const eliminarPrestamo = async (id: string) => {
+        if (!window.confirm("¿Estás seguro de que deseas eliminar este préstamo?")) return;
+        try {
+            setLoading(true);
+            await api.delete(`/loans/${id}`);
+            setPrestamos(prestamos.filter((p) => p.id !== id));
+        } catch (err: unknown) {
+            if (axios.isAxiosError(err)) {
+                setError(err.response?.data?.message || 'Error al eliminar préstamo');
+            } else {
+                setError('Error desconocido al eliminar préstamo');
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Función para actualizar préstamo
+    const actualizarPrestamo = async (prestamoActualizado: Prestamo) => {
+        try {
+            setLoading(true);
+            const response = await api.put(`/loans/${prestamoActualizado.id}`, prestamoActualizado);
+            setPrestamos(prestamos.map((p) => p.id === prestamoActualizado.id ? response.data : p));
+            setPrestamoEditando(null);
+        } catch (err: unknown) {
+            if (axios.isAxiosError(err)) {
+                setError(err.response?.data?.message || 'Error al actualizar préstamo');
+            } else {
+                setError('Error desconocido al actualizar préstamo');
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+
     useEffect(() => {
         const fetchPrestamos = async () => {
             try {
@@ -37,8 +111,11 @@ export default function PrestamosPage() {
                 setPrestamos(data);
                 setError(null);
             } catch (err: unknown) {
-                const errorMessage = err instanceof Error ? err.message : 'Error al cargar préstamos';
-                setError(errorMessage);
+                if (axios.isAxiosError(err)) {
+                    setError(err.response?.data?.message || 'Error al cargar préstamos');
+                } else {
+                    setError('Error desconocido al cargar préstamos');
+                }
                 console.error('Error al cargar préstamos:', err);
             } finally {
                 setLoading(false);
@@ -73,11 +150,11 @@ export default function PrestamosPage() {
             setLoading(true);
             const prestamoCreado = await createPrestamo({
                 ...nuevoPrestamo,
-                articleIds: [], // Se puede modificar para seleccionar artículos
+                articleIds: [],
                 loanStatus: "Prestado",
                 equipmentStatus: "En buen estado",
                 devolutionRegister: "No registrado",
-                creationDate: new Date().toISOString() // Add this line
+                creationDate: new Date().toISOString()
             });
             
             setPrestamos([prestamoCreado, ...prestamos]);
@@ -94,8 +171,11 @@ export default function PrestamosPage() {
             setMostrarFormulario(false);
             setError(null);
         } catch (err: unknown) {
-            const errorMessage = err instanceof Error ? err.message : 'Error al crear préstamo';
-            setError(errorMessage);
+            if (axios.isAxiosError(err)) {
+                setError(err.response?.data?.message || 'Error al crear préstamo');
+            } else {
+                setError('Error desconocido al crear préstamo');
+            }
             console.error('Error al crear préstamo:', err);
         } finally {
             setLoading(false);
@@ -182,9 +262,21 @@ export default function PrestamosPage() {
                                         <td className="px-4 py-2 border">
                                             <button 
                                                 onClick={() => setDetalle(p)} 
-                                                className="bg-blue-600 text-white px-3 py-1 rounded"
+                                                className="bg-blue-600 text-white px-3 py-1 rounded mr-2"
                                             >
                                                 Ver Detalles
+                                            </button>
+                                            <button
+                                                onClick={() => setPrestamoEditando(p)}
+                                                className="bg-yellow-500 text-white px-3 py-1 rounded mr-2"
+                                            >
+                                                Editar
+                                            </button>
+                                            <button
+                                                onClick={() => eliminarPrestamo(p.id)}
+                                                className="bg-red-600 text-white px-3 py-1 rounded"
+                                            >
+                                                Eliminar
                                             </button>
                                         </td>
                                     </tr>
@@ -291,6 +383,15 @@ export default function PrestamosPage() {
                                     className="border p-2 rounded w-full"
                                 />
                             </div>
+                            <button
+                                onClick={() => prestamoEditando && actualizarPrestamo(prestamoEditando)}
+                                className="bg-green-600 text-white px-4 py-2 rounded w-full"
+                            >
+                                Guardar Cambios
+                            </button>
+                            </div>
+                    
+                             <div>
                             <button 
                                 onClick={agregarPrestamo} 
                                 className="bg-green-600 text-white px-4 py-2 rounded w-full"

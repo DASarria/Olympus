@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8081";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://colliseum-gvh2h4bbd8bgcbfm.brazilsouth-01.azurewebsites.net/";
 
 export interface Devolucion {
     id: string;
@@ -12,7 +12,12 @@ export interface Devolucion {
 
 export const getDevoluciones = async (): Promise<Devolucion[]> => {
     try {
-        const response = await fetch(`${API_URL}/LoanArticle?q=Devuelto`);
+        const token = sessionStorage.getItem('token');
+        const response = await fetch(`${API_URL}LoanArticle?q=Devuelto`, {
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        });
         
         if (!response.ok) {
             throw new Error(`Error ${response.status}: ${response.statusText}`);
@@ -21,7 +26,7 @@ export const getDevoluciones = async (): Promise<Devolucion[]> => {
         const data = await response.json();
         
         // Transformar los préstamos devueltos a devoluciones
-        return data.prestamos.map((p: any) => ({
+        return data.prestamos ? data.prestamos.map((p: any) => ({
             id: p.id,
             producto: p.loanDescriptionType,
             usuario: p.nameUser,
@@ -29,7 +34,7 @@ export const getDevoluciones = async (): Promise<Devolucion[]> => {
             estado: p.equipmentStatus,
             observaciones: p.devolutionRegister || "Sin observaciones",
             verificado: p.loanStatus === "Devuelto"
-        }));
+        })) : [];
     } catch (error) {
         console.error("Error fetching returns:", error);
         throw new Error("No se pudieron cargar las devoluciones");

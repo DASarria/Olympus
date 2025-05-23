@@ -65,7 +65,12 @@ export default function CatalogoPage() {
   useEffect(() => {
     const fetchArticles = async () => {
       try {
-        const response = await api.get('/articles/available');
+        const token = sessionStorage.getItem('token');
+        const response = await api.get('/articles/available', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
         const articles = response.data;
         
         const mappedProducts: Product[] = articles.map((article: Article) => {

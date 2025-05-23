@@ -1,9 +1,8 @@
 // api/api.ts
 import axios, { InternalAxiosRequestConfig } from 'axios';
+import { USER_API_URL } from "../config/config";
 
-const API_BASE_URL = "https://colliseum-gvh2h4bbd8bgcbfm.brazilsouth-01.azurewebsites.net/";
-
-const api = axios.create({ baseURL: API_BASE_URL });
+const api = axios.create({ baseURL: USER_API_URL });
 
 // Interceptor para agregar token
 api.interceptors.request.use(

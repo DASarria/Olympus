@@ -2,8 +2,7 @@
 import Layout from "@/components/Layout";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, CartesianGrid } from "recharts";
 import { useState, useEffect } from "react";
-// Eliminamos la importación no utilizada
-// import LoginServices from "../api/UserManagement/LoginService";
+
 
 interface ChartData {
   name: string;
