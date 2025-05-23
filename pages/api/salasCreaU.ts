@@ -1,0 +1,1 @@
+export const aUr = "https://cvds-mod-2-cmbsgrgva2edc7b8.brazilsouth-01.azurewebsites.net"

@@ -15,12 +15,13 @@ const Module = (props:ModuleProps) => {
   const handleClick = () => {
     router.push(props.urlToNavigate);
   }
+
   return (
     <div className="group relative flex items-center justify-center p-2 cursor-pointer"
-         onClick={handleClick}>
+        onClick={handleClick}>
       <div 
       className="absolute w-[12vw] h-[12vw] 
-                   md:w-[6vw] md:h-[6vw] rounded-full group-hover:bg-[#990000]  
+                  md:w-[6vw] md:h-[6vw] rounded-full group-hover:bg-[#990000]  
                   transition-colors duration-300 z-0">
 
       </div>

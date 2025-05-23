@@ -1,3 +1,4 @@
+
 import { useRouter } from "next/router";
 import React, { useState } from "react";
 import login from "@/pages/api/UserManagement/LoginService"
@@ -96,10 +97,10 @@ const Index = () => {
       {errorMessage && (
         <ErrorMessage message={errorMessage} onClose={handleCloseError} />
       )}
+
     </div>
   );
 
 };
 
 export default Index;
-
