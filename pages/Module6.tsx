@@ -38,10 +38,10 @@ const Module6 = () => {
               navigate="/UserModule/gestionUsuario/EditarUsuario"
             />
             <NavBtn
-                                image={{ src: Horario.src }}
-                                texto="Gestion de horarios"
-                                navigate="/UserModule/ScheduleManagement/SchedulePage"
-                            />
+              image={{ src: Horario.src }}
+              texto="Gestion de horarios"
+              navigate="/UserModule/ScheduleManagement/SchedulePage"
+            />
           </>
         )}
       </div>
