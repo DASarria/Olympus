@@ -60,7 +60,15 @@ const FormularioEditarUsuario: React.FC<Props> = ({ datosIniciales }) => {
     }
 
     try {
-      await axios.put('http://localhost:8080/user', payload);
+      const token = sessionStorage.getItem("token");
+
+      await axios.put("https://usermanagement-bhe9cfg4b5b2hthj.eastus-01.azurewebsites.net/user", payload, {
+      //await axios.put('http://localhost:8080/user', payload, {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `${token}` // <-- Aquí se incluye el token
+        }
+      });
       alert('Datos actualizados correctamente');
     } catch (error) {
       console.error(error);

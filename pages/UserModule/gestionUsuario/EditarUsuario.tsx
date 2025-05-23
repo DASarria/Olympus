@@ -47,17 +47,26 @@ const EditarUsuario = () => {
   );
 
   const consultar = async () => {
-    try {
-      const res = await axios.post("http://localhost:8080/user/query", filtrosConSoloUno, {
-        headers: { "Content-Type": "application/json" }
-      });
-      setResultados(res.data.data);
-      alert("Consulta realizada con éxito");
-    } catch (e) {
-      console.error(e);
-      alert("Error al consultar usuarios");
-    }
-  };
+  try {
+    const token = sessionStorage.getItem("token");
+    console.log("Token enviado:", token);
+
+    const res = await axios.post("https://usermanagement-bhe9cfg4b5b2hthj.eastus-01.azurewebsites.net/user/query", filtrosConSoloUno, {
+    //const res = await axios.post("http://localhost:8080/user/query",filtrosConSoloUno, {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `${token}`
+        }
+      }
+    );
+    setResultados(res.data.data);
+    alert("Consulta realizada con éxito");
+  } catch (e) {
+    console.error(e);
+    alert("Error al consultar usuarios");
+  }
+};
+
 
   const editarUsuario = (usuario: any) => {
     setUsuarioEditando(usuario);
@@ -66,18 +75,29 @@ const EditarUsuario = () => {
   };
 
   const borrarUsuario = async (id: string) => {
-    const confirmacion = window.confirm(`¿Estás seguro de que deseas eliminar al usuario con ID: ${id}?`);
-    if (!confirmacion) return;
+  const confirmacion = window.confirm(`¿Estás seguro de que deseas eliminar al usuario con ID: ${id}?`);
+  if (!confirmacion) return;
 
-    try {
-      await axios.delete(`http://localhost:8080/user/${id}`);
-      alert("Usuario eliminado con éxito");
-      setResultados(prev => prev.filter((u: any) => u.id !== id));
-    } catch (e) {
-      console.error(e);
-      alert("Error al eliminar el usuario");
-    }
-  };
+  try {
+    const token = sessionStorage.getItem("token");
+    console.log("Token enviado:", token); // Para verificar
+
+    await axios.delete(`https://usermanagement-bhe9cfg4b5b2hthj.eastus-01.azurewebsites.net/user/${id}`, {
+    //await axios.delete(`http://localhost:8080/user/${id}`, {
+      headers: {
+        "Authorization": `${token}`,
+        "Content-Type": "application/json"
+      }
+    });
+
+    alert("Usuario eliminado con éxito");
+    setResultados(prev => prev.filter((u: any) => u.id !== id));
+  } catch (e) {
+    console.error(e);
+    alert("Error al eliminar el usuario");
+  }
+};
+
 
   return (
     <div style={{ padding: "20px", fontFamily: "'Open Sans', sans-serif" }}>
@@ -119,7 +139,7 @@ const EditarUsuario = () => {
               <CampoSelect
                 etiqueta="Rol"
                 marcador="Seleccione rol"
-                opciones={["STUDENT", "ADMIN", "TEACHER"]}
+                opciones={["Student", "ADMIN", "TEACHER"]}
                 valor={filtros.role}
                 onChange={(v) => setFiltros({ ...filtros, role: v })}
               />

@@ -62,10 +62,11 @@ const CrearUsuario = () => {
         relationship: datos.contactoRelacion,
       };
 
-      res = await axios.post("http://localhost:8080/authentication/student", payload, {
+      res = await axios.post("https://usermanagement-bhe9cfg4b5b2hthj.eastus-01.azurewebsites.net/authentication/student", payload, {
+      //res = await axios.post("http://localhost:8080/authentication/student", payload, {
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}` // <-- Aquí se incluye el token
+          "Authorization": `${token}` // <-- Aquí se incluye el token
         }
       });
 
@@ -86,11 +87,11 @@ const CrearUsuario = () => {
         schedule: [],
       };
 
-      //res = await axios.post("https://usermanagement-bhe9cfg4b5b2hthj.eastus-01.azurewebsites.net/authentication/admin", payload, {
-      res = await axios.post("http://localhost:8080/authentication/admin", payload, {
+      res = await axios.post("https://usermanagement-bhe9cfg4b5b2hthj.eastus-01.azurewebsites.net/authentication/admin", payload, {
+      //res = await axios.post("http://localhost:8080/authentication/admin", payload, {
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}` // <-- También aquí
+          "Authorization": `${token}` // <-- También aquí
         }
       });
 
