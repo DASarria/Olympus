@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import type { StaticImageData } from "next/image"
-import { ArrowLeft, Package, CheckCircle, AlertCircle } from "lucide-react"
+import { ArrowLeft} from "lucide-react"
 import { useRouter } from "next/router"
 import Image from "next/image"
 import defaultImage from "../../assets/images/1imagen.jpg"
@@ -55,7 +55,7 @@ const SCPAdmin = () => {
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedElement, setSelectedElement] = useState<ElementoUsage | null>(null)
-  const [dateFilter, setDateFilter] = useState<string>("")
+  const [dateFilter] = useState<string>("")
 
   const token = sessionStorage.getItem("token")
   const url = process.env.NEXT_PUBLIC_API_URL
@@ -68,9 +68,6 @@ const SCPAdmin = () => {
     Monos: monos,
   }
 
-  const handleClickBack = () => {
-    router.back()
-  }
 
   interface ElementoAPI {
     id: string
