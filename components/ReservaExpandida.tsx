@@ -368,7 +368,7 @@ await onSave(updatedReserva)
   }
 
   return (
-    <tr className="bg-white rounded-xl drop-shadow-xl">
+    <tr className="bg-white rounded-xl drop-shadow-xl max-h-[50vh]">
       <td colSpan={7}>
         <div className="bg-white p-4 rounded-xl mt-2 shadow-md">
           <div className="grid grid-cols-3 gap-6">

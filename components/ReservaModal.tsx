@@ -43,12 +43,6 @@ const ReservaModal: React.FC<ReservaModalProps> = ({ onClose, onSubmit }) => {
       return
     }
 
-    // Validación básica
-    if (!userName.trim() || !userId.trim() || !day || !time) {
-      alert("Por favor, complete todos los campos requeridos")
-      return
-    }
-
     setIsSubmitting(true)
 
     // Asegurarse de que el formato de la hora sea correcto (HH:MM:00)
@@ -90,29 +84,7 @@ const ReservaModal: React.FC<ReservaModalProps> = ({ onClose, onSubmit }) => {
 
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Nombre</label>
-              <input
-                type="text"
-                value={userName}
-                onChange={(e) => setUserName(e.target.value)}
-                className="w-full px-3 py-2 border rounded-md"
-                required
-                disabled={isSubmitting}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1">Identificación</label>
-              <input
-                type="text"
-                value={userId}
-                onChange={(e) => setUserId(e.target.value)}
-                className="w-full px-3 py-2 border rounded-md"
-                required
-                disabled={isSubmitting}
-              />
-            </div>
+            
 
             <div>
               <label className="block text-sm font-medium mb-1">Personas</label>
