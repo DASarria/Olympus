@@ -1,8 +1,9 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
-import { CheckCircle, AlertCircle, Package } from "lucide-react"
+import { CheckCircle, AlertCircle, Package, ArrowLeft } from "lucide-react"
 import Swal from "sweetalert2"
+import { useRouter } from "next/navigation"
 
 const MAX_AFORO = 30
 
@@ -39,6 +40,8 @@ const MAX_AFORO = 30
     const userId = typeof window !== "undefined" ? sessionStorage.getItem("userId") || "000000" : "000000"
     const apiUrl = process.env.NEXT_PUBLIC_API_URL
 
+    const router = useRouter()
+
     useEffect(() => {
         const fetchData = async () => {
         if (!token || !apiUrl) {
@@ -48,7 +51,7 @@ const MAX_AFORO = 30
 
         try {
             const res = await fetch(`${apiUrl}/revs`, {
-            headers: { Authorization: `Bearer ${token}` }
+            headers: { Authorization: `${token}` }
             })
 
             const raw = await res.text()
@@ -63,9 +66,9 @@ const MAX_AFORO = 30
             try {
             const parsed = JSON.parse(raw)
             if (Array.isArray(parsed)) {
-                data = parsed
+                data = parsed as Reserva[]
             } else if (Array.isArray(parsed.reservas)) {
-                data = parsed.reservas
+                data = parsed.reservas as Reserva[]
             } else {
                 console.warn("⚠️ No se encontró estructura esperada en la respuesta")
             }
@@ -118,7 +121,7 @@ const MAX_AFORO = 30
             method: "POST",
             headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
+            Authorization: `${token}`
             },
             body: JSON.stringify(reserva)
         })
@@ -142,7 +145,15 @@ const MAX_AFORO = 30
     }
 
     return (
-        <div className="p-4 max-w-screen-md mx-auto">
+        <div className="p-4 max-w-screen-md mx-auto relative">
+        <button
+            onClick={() => router.back()}
+            className="absolute top-4 left-4 text-black hover:text-gray-700 transition"
+            aria-label="Volver"
+        >
+            <ArrowLeft className="w-6 h-6" />
+        </button>
+
         <h2 className="text-xl md:text-2xl font-bold mb-4 text-center">Reservar Sala</h2>
 
         <div className="grid md:grid-cols-2 gap-4">
@@ -231,6 +242,6 @@ const MAX_AFORO = 30
         )}
         </div>
     )
-}
+    }
 
 export default ReservUser

@@ -4,15 +4,14 @@ import React, { useEffect, useState, useCallback } from "react"
 
 const url = process.env.NEXT_PUBLIC_API_URL || ""
 
-// Interfaz para reservas
 interface Reserva {
   id: string
   nombre: string
   telefono: string
   correo: string
   sala: string
-  fecha: string
-  hora_inicio: string
+  fecha: string // formato esperado: "YYYY-MM-DD"
+  hora_inicio: string // formato esperado: "HH:mm"
   hora_fin: string
   estado: string
   userId: string
@@ -50,10 +49,16 @@ export default function ReservOwnUser() {
         throw new Error("El formato de datos recibido no es un arreglo")
       }
 
-      const reservasFiltradas = data.filter((reserva) => reserva.userId === userId)
+      const now = new Date()
+
+      const reservasFiltradas = data.filter((reserva) => {
+        if (reserva.userId !== userId) return false
+
+        const fechaHora = new Date(`${reserva.fecha}T${reserva.hora_inicio}`)
+        return fechaHora <= now
+      })
 
       setReservas(reservasFiltradas)
-      localStorage.setItem("reservationsUpdated", "true")
     } catch (error: unknown) {
       const err = error as Error
       setError(err.message || "Error desconocido")
@@ -77,17 +82,9 @@ export default function ReservOwnUser() {
     fetchReservas()
   }, [token, userId, fetchReservas])
 
-  if (loading) {
-    return <div>Cargando reservas...</div>
-  }
-
-  if (error) {
-    return <div style={{ color: "red" }}>Error: {error}</div>
-  }
-
-  if (!reservas.length) {
-    return <div>No hay reservas para mostrar.</div>
-  }
+  if (loading) return <div>Cargando reservas...</div>
+  if (error) return <div style={{ color: "red" }}>Error: {error}</div>
+  if (!reservas.length) return <div>No hay reservas pasadas o actuales para mostrar.</div>
 
   return (
     <table className="w-full text-sm border border-gray-300 mt-4">
