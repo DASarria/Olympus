@@ -15,6 +15,7 @@ import Swal from "sweetalert2"
 
 import { useRouter } from "next/router"
 import { ArrowLeft, Package, CheckCircle, AlertCircle } from "lucide-react"
+import { aUr } from "@/pages/api/salasCreaU"
 
 const imagenesPorNombre: Record<string, StaticImageData> = {
   Uno: uno,
@@ -69,7 +70,7 @@ const SCERAdmin = () => {
   const [previewImagen, setPreviewImagen] = useState<string | null>(null)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const token = sessionStorage.getItem("token")
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL
+  const apiUrl = aUr
 
   const router = useRouter()
   const irAlInicio = () => {

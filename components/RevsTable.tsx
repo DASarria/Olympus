@@ -7,6 +7,7 @@ import ReservaExpandida from "./ReservaExpandida"
 import React from "react"
 import Swal from "sweetalert2"
 import "sweetalert2/dist/sweetalert2.min.css"
+import { aUr } from "@/pages/api/salasCreaU"
 
 
 interface Reserva {
@@ -46,7 +47,7 @@ const stateColors: Record<string, string> = {
 
 const RevsTable = () => {
   const token = sessionStorage.getItem("token")
-  const url = process.env.NEXT_PUBLIC_API_URL
+  const url = aUr
   const [reservas, setReservas] = useState<Reserva[]>([])
   const [showModal, setShowModal] = useState(false)
   const [editingReserva, setEditingReserva] = useState<Reserva | null>(null)

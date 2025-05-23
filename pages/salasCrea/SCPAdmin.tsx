@@ -11,6 +11,7 @@ import jenga from "../../assets/images/jenga.webp"
 import monos from "../../assets/images/Monos.webp"
 import ajedrez from "../../assets/images/Ajedrez.jpg"
 import cranium from "../../assets/images/cranium.webp"
+import { aUr } from "@/pages/api/salasCreaU"
 
 interface Reserva {
   id: string
@@ -58,7 +59,7 @@ const SCPAdmin = () => {
   const [dateFilter] = useState<string>("")
 
   const token = sessionStorage.getItem("token")
-  const url = process.env.NEXT_PUBLIC_API_URL
+  const url = aUr
 
   const imagenesPorNombre: Record<string, StaticImageData> = {
     Uno: uno,

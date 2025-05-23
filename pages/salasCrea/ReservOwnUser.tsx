@@ -1,8 +1,9 @@
 "use client"
 
 import React, { useEffect, useState, useCallback } from "react"
+import { aUr } from "@/pages/api/salasCreaU"
 
-const url = process.env.NEXT_PUBLIC_API_URL || ""
+const url = aUr || ""
 
 interface Reserva {
   id: string

@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react"
 import { CheckCircle, AlertCircle, Package, ArrowLeft } from "lucide-react"
 import Swal from "sweetalert2"
 import { useRouter } from "next/navigation"
+import { aUr } from "@/pages/api/salasCreaU"
 
 const MAX_AFORO = 30
 
@@ -38,7 +39,7 @@ const MAX_AFORO = 30
     const token = typeof window !== "undefined" ? sessionStorage.getItem("token") : null
     const userName = typeof window !== "undefined" ? sessionStorage.getItem("userName") || "Desconocido" : "Desconocido"
     const userId = typeof window !== "undefined" ? sessionStorage.getItem("userId") || "000000" : "000000"
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL
+    const apiUrl = aUr
 
     const router = useRouter()
 

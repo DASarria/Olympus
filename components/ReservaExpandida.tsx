@@ -3,6 +3,7 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import Swal from "sweetalert2"
+import { aUr } from "@/pages/api/salasCreaU"
 
 interface Reserva {
   id?: string
@@ -52,7 +53,7 @@ const ReservaExpandida: React.FC<Props> = ({ reserva, onClose, onSave }) => {
   const [elementDetails, setElementDetails] = useState<Record<string, ElementoInfo>>({})
   const [isWithinTimeWindow, setIsWithinTimeWindow] = useState<boolean>(false)
   const token = sessionStorage.getItem("token")
-  const url = process.env.NEXT_PUBLIC_API_URL
+  const url = aUr
   const [elementoSeleccionado, setElementoSeleccionado] = useState<string>("")
   const [rooms, setRooms] = useState<RoomsProps[]>([])
 
