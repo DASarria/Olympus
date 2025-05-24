@@ -54,6 +54,7 @@ const RevsTable = () => {
   const [searchId, setSearchId] = useState("")
   const [searchName, setSearchName] = useState("")
   const [searchRoom, setSearchRoom] = useState("")
+  const [elementNames, setElementNames] = useState<Record<string, string>>({})
   const [rooms, setRooms] = useState<RoomsProps[]>([])
   const [dateFilter, setDateFilter] = useState<string>("")
 
@@ -114,6 +115,7 @@ const RevsTable = () => {
         }
       })
 
+      setElementNames(namesMap)
     } catch (error) {
       console.error("Error cargando nombres de elementos:", error)
     }
@@ -141,6 +143,7 @@ const RevsTable = () => {
     fetchElementNames()
     fetchRooms()
   const intervalId = setInterval(() => {
+    checkReservationsForQuantityUpdates()
     }, 60000) // revisa cada minuto
 
   return () => clearInterval(intervalId)
@@ -148,6 +151,21 @@ const RevsTable = () => {
   }, [])
 
 
+  // Check if any reservations have entered the time window and need quantity updates
+  const checkReservationsForQuantityUpdates = async () => {
+    const now = new Date()
+
+    for (const reserva of reservas) {
+      const reservationTime = new Date(`${reserva.date.day}T${reserva.date.time}`)
+      const timeDiff = reservationTime.getTime() - now.getTime()
+
+      // If reservation is now within 1.5 hours 
+      if (Math.abs(timeDiff) <= 5400000) {
+        // Check if we've already processed this reservation
+        const processedKey = `processed_${reserva.id}`
+      }
+    }
+  }
 
 
   // Modificar la función handleAddReserva para usar el formato exacto requerido
@@ -455,6 +473,7 @@ const RevsTable = () => {
                         </div>
                       </td>
                       <td className="px-4 py-2 rounded-xl">{reserva.userId}</td>
+                      <td className="px-4 py-2 rounded-xl">{reserva.date.day}</td>
                       <td className="px-4 py-2 rounded-xl">
                         <div className="flex items-center justify-center gap-1">
                           {reserva.date.time}
@@ -464,8 +483,7 @@ const RevsTable = () => {
                       <td className="px-4 py-2 rounded-xl">
                         <span>{reserva.roomId.split("-").join(" ")}</span>
                       </td>
-                      <td className="px-4 py-2 rounded-xl">
-                      </td>
+
                       <td className="rounded-xl">
                         <div className="flex gap-2 justify-center gap-4">
                           <Pencil
