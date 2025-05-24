@@ -40,52 +40,66 @@ const MAX_AFORO = 30
     const userName = typeof window !== "undefined" ? sessionStorage.getItem("userName") || "Desconocido" : "Desconocido"
     const userId = typeof window !== "undefined" ? sessionStorage.getItem("userId") || "000000" : "000000"
     const apiUrl = aUr
+    const [ocupados, setOcupados] = useState<{ [roomId: string]: number }>({})
+
+    const fetchData = async () => {
+  if (!token || !apiUrl) {
+    console.error("❌ Falta token o API URL")
+    return
+  }
+
+  try {
+    const res = await fetch(`${apiUrl}/revs`, {
+      headers: { Authorization: `${token}` }
+    })
+
+    const raw = await res.text()
+    console.log("🔍 Respuesta RAW desde API /revs:", raw)
+
+    if (!res.ok) {
+      console.error("❌ Error de respuesta:", res.status)
+      return
+    }
+
+    let data: Reserva[] = []
+    try {
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed)) {
+        data = parsed as Reserva[]
+      } else if (Array.isArray(parsed.reservas)) {
+        data = parsed.reservas as Reserva[]
+      } else {
+        console.warn("⚠️ No se encontró estructura esperada en la respuesta")
+      }
+    } catch (e) {
+      console.error("❌ Error al parsear JSON:", e)
+    }
+
+    console.log("📦 Reservas obtenidas:", data)
+    setReservas(data)
+
+    // Calcula ocupados
+    const nuevosOcupados: { [roomId: string]: number } = {}
+    data.forEach(r => {
+      if (r.roomId in nuevosOcupados) {
+        nuevosOcupados[r.roomId] += r.people
+      } else {
+        nuevosOcupados[r.roomId] = r.people
+      }
+    })
+    setOcupados(nuevosOcupados)
+
+  } catch (error) {
+    console.error("❌ Error al obtener reservas:", error)
+  }
+}
 
     const router = useRouter()
 
-    useEffect(() => {
-        const fetchData = async () => {
-        if (!token || !apiUrl) {
-            console.error("❌ Falta token o API URL")
-            return
-        }
-
-        try {
-            const res = await fetch(`${apiUrl}/revs`, {
-            headers: { Authorization: `${token}` }
-            })
-
-            const raw = await res.text()
-            console.log("🔍 Respuesta RAW desde API /revs:", raw)
-
-            if (!res.ok) {
-            console.error("❌ Error de respuesta:", res.status)
-            return
-            }
-
-            let data: Reserva[] = []
-            try {
-            const parsed = JSON.parse(raw)
-            if (Array.isArray(parsed)) {
-                data = parsed as Reserva[]
-            } else if (Array.isArray(parsed.reservas)) {
-                data = parsed.reservas as Reserva[]
-            } else {
-                console.warn("⚠️ No se encontró estructura esperada en la respuesta")
-            }
-            } catch (e) {
-            console.error("❌ Error al parsear JSON:", e)
-            }
-
-            console.log("📦 Reservas obtenidas:", data)
-            setReservas(data)
-        } catch (error) {
-            console.error("❌ Error al obtener reservas:", error)
-        }
-        }
-
-        fetchData()
+            useEffect(() => {
+    fetchData()
     }, [apiUrl, token])
+
 
     const getPeopleCount = (roomId: string) => {
         const relevantes = reservas.filter((r) => r.roomId === roomId && r.state === "RESERVA_CONFIRMADA")
@@ -93,57 +107,56 @@ const MAX_AFORO = 30
     }
 
     const handleSubmit = async () => {
-        const { people, time, day } = formData
-        if (!people || !time || !day || !selectedRoom) {
-        return Swal.fire("Error", "Completa todos los campos", "error")
-        }
-
-        if (!token) {
-        return Swal.fire("Error", "Token no encontrado, inicia sesión", "error")
-        }
-
-        const reserva: Reserva = {
-        userName,
-        userId,
-        roomId: selectedRoom,
-        date: {
-            day,
-            time: time.includes(":00") ? time : `${time}:00`
-        },
-        people,
-        state: "RESERVA_CONFIRMADA"
-        }
-
-        console.log("📤 Enviando reserva:", JSON.stringify(reserva, null, 2))
-        console.log("🔐 Usando token:", token)
-
-        try {
-        const res = await fetch(`${apiUrl}/revs`, {
-            method: "POST",
-            headers: {
-            "Content-Type": "application/json",
-            Authorization: `${token}`
-            },
-            body: JSON.stringify(reserva)
-        })
-
-        const text = await res.text()
-
-        if (!res.ok) {
-            console.error("⛔ Error al crear reserva. Status:", res.status)
-            console.error("⛔ Texto de respuesta:", text)
-            Swal.fire("Error", `Error ${res.status}: ${text}`, "error")
-            return
-        }
-
-        Swal.fire("Éxito", "Reserva creada correctamente", "success")
-        setSelectedRoom(null)
-        setFormData({ people: 1, time: "", day: "" })
-        } catch (e) {
-        console.error("❌ Error de red o de aplicación:", e)
-        Swal.fire("Error", "No se pudo crear la reserva", "error")
-        }
+  const { people, time, day } = formData;
+  if (!people || !time || !day || !selectedRoom) {
+    return Swal.fire("Error", "Completa todos los campos", "error");
+  }
+  if (!token) {
+    return Swal.fire("Error", "Token no encontrado, inicia sesión", "error");
+  }
+  const reserva: Reserva = {
+    userName,
+    userId,
+    roomId: selectedRoom,
+    date: {
+      day,
+      time: time.includes(":00") ? time : `${time}:00`,
+    },
+    people,
+    state: "RESERVA_CONFIRMADA",
+  };
+  console.log("📤 Enviando reserva:", JSON.stringify(reserva, null, 2));
+  console.log("🔐 Usando token:", token);
+  try {
+    const res = await fetch(`${apiUrl}/revs`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `${token}`,
+      },
+      body: JSON.stringify(reserva),
+    });
+    const text = await res.text();
+    if (!res.ok) {
+      console.error("⛔ Error al crear reserva. Status:", res.status);
+      console.error("⛔ Texto de respuesta:", text);
+      Swal.fire("Error", `Error ${res.status}: ${text}`, "error");
+      return;
     }
+    Swal.fire("Éxito", "Reserva creada correctamente", "success");
+
+    // Llama a fetchData para actualizar las reservas sin recargar la página
+    await fetchData();
+
+    setSelectedRoom(null);
+    setFormData({ people: 1, time: "", day: "" });
+  } catch (e) {
+    console.error("❌ Error de red o de aplicación:", e);
+    Swal.fire("Error", "No se pudo crear la reserva", "error");
+  }
+};
+
+
 
     return (
         <div className="p-6 max-w-6xl mx-auto relative">

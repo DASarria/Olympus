@@ -1,65 +1,51 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { aUr } from "@/pages/api/salasCreaU"
+
 
 interface Reservation {
-  id: number;
-  roomName: string;
-  date: string;
-  hour: string;
-  responsible: string;
-  amountPeople: number;
+  id?: string
+  userName: string
+  userId: string
+  role: null
+  date: {
+    day: string
+    time: string
+  }
+  roomId: string
+  state: string
+  people: number
 }
 
 export default function ReservOwnUser() {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const token = sessionStorage.getItem("token")
+  const url = aUr
 
   useEffect(() => {
-    const fetchReservations = async () => {
-      try {
-        const url =
-          "https://cvds-mod-2-cmbsgrgva2edc7b8.brazilsouth-01.azurewebsites.net/reservations";
-
-        console.log("Haciendo fetch a:", url);
-
-        const response = await fetch(url, {
-          method: "GET",
-          mode: "cors",
-          // Si necesitas enviar token de autorización, descomenta y agrega tu token aquí:
-          /*
-          headers: {
-            "Authorization": "Bearer TU_TOKEN_AQUI",
-            "Content-Type": "application/json",
-          },
-          */
-        });
-
-        console.log("Código de estado:", response.status);
-
-        if (!response.ok) {
-          const text = await response.text();
-          console.error("Respuesta del servidor:", text);
-          throw new Error(`Error al obtener reservas: ${response.status}`);
-        }
-
-        const data: Reservation[] = await response.json();
-        console.log("Reservas completas recibidas:", data);
-
-        setReservations(data);
-        setErrorMsg(null);
-      } catch (error: unknown) {
-        if (error instanceof Error) {
-          console.error("Error capturado:", error.message);
-          setErrorMsg(error.message);
-        } else {
-          console.error("Error desconocido:", error);
-          setErrorMsg("Error desconocido");
-        }
+    const fetchReservas = async () => {
+    try {
+      const response = await fetch(`${url}/revs/user`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `${token}`,
+        },
+        cache: "no-store", 
+      })
+      if (!response.ok) {
+        throw new Error("Error cargando datos: " + response.statusText)
       }
-    };
-
-    fetchReservations();
+      const data = await response.json()
+      setReservations(data)
+      localStorage.setItem("reservationsUpdated", "true")
+    } catch (error) {
+      console.error("Error cargando reservas:", error)
+    }
+  }
+  fetchReservas();
   }, []);
 
   return (
@@ -76,11 +62,10 @@ export default function ReservOwnUser() {
               key={res.id}
               className="border p-4 rounded-lg shadow-md bg-white"
             >
-              <p><strong>Sala:</strong> {res.roomName}</p>
-              <p><strong>Fecha:</strong> {res.date}</p>
-              <p><strong>Hora:</strong> {res.hour}</p>
-              <p><strong>Responsable:</strong> {res.responsible}</p>
-              <p><strong>Personas:</strong> {res.amountPeople}</p>
+              <p><strong>Sala:</strong> {res.roomId}</p>
+              <p><strong>Fecha:</strong> {res.date.day}</p>
+              <p><strong>Hora:</strong> {res.date.time}</p>
+              <p><strong>Personas:</strong> {res.people}</p>
             </li>
           ))}
         </ul>
