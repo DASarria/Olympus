@@ -20,7 +20,6 @@ interface Reserva {
     time: string
   }
   roomId: string
-  loans: string[]
   state: string
   people: number
 }
@@ -55,7 +54,6 @@ const RevsTable = () => {
   const [searchId, setSearchId] = useState("")
   const [searchName, setSearchName] = useState("")
   const [searchRoom, setSearchRoom] = useState("")
-  const [elementNames, setElementNames] = useState<Record<string, string>>({})
   const [rooms, setRooms] = useState<RoomsProps[]>([])
   const [dateFilter, setDateFilter] = useState<string>("")
 
@@ -116,7 +114,6 @@ const RevsTable = () => {
         }
       })
 
-      setElementNames(namesMap)
     } catch (error) {
       console.error("Error cargando nombres de elementos:", error)
     }
@@ -144,7 +141,6 @@ const RevsTable = () => {
     fetchElementNames()
     fetchRooms()
   const intervalId = setInterval(() => {
-    checkReservationsForQuantityUpdates()
     }, 60000) // revisa cada minuto
 
   return () => clearInterval(intervalId)
@@ -152,63 +148,7 @@ const RevsTable = () => {
   }, [])
 
 
-  // Check if any reservations have entered the time window and need quantity updates
-  const checkReservationsForQuantityUpdates = async () => {
-    const now = new Date()
 
-    for (const reserva of reservas) {
-      const reservationTime = new Date(`${reserva.date.day}T${reserva.date.time}`)
-      const timeDiff = reservationTime.getTime() - now.getTime()
-
-      // If reservation is now within 1.5 hours and has loans
-      if (Math.abs(timeDiff) <= 5400000 && reserva.loans.length > 0) {
-        // Check if we've already processed this reservation
-        const processedKey = `processed_${reserva.id}`
-        if (!localStorage.getItem(processedKey)) {
-          // Update element quantities
-          await updateElementQuantities(reserva.loans)
-          // Mark as processed
-          localStorage.setItem(processedKey, "true")
-        }
-      }
-    }
-  }
-
-  // Update element quantities for reservations that just entered the time window
-  const updateElementQuantities = async (loans: string[]) => {
-    for (const elementId of loans) {
-      try {
-        // Get current element
-        const elementResponse = await fetch(`${url}/elements/${elementId}`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `${token}`,
-          },
-        })
-
-        if (!elementResponse.ok) continue
-
-        const element = await elementResponse.json()
-        const newQuantity = Math.max(0, element.quantity - 1)
-
-        // Update the element quantity
-        await fetch(`${url}/elements/${elementId}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `${token}`,
-          },
-          body: JSON.stringify({
-            ...element,
-            quantity: newQuantity,
-          }),
-        })
-      } catch (error) {
-        console.error(`Error updating quantity for element ${elementId}:`, error)
-      }
-    }
-  }
 
   // Modificar la función handleAddReserva para usar el formato exacto requerido
   const handleAddReserva = async (nueva: Reserva) => {
@@ -241,7 +181,6 @@ const RevsTable = () => {
           time: formattedTime,
         },
         roomId: nueva.roomId.charAt(0).toUpperCase() + nueva.roomId.slice(1), // Asegurar que comienza con mayúscula
-        loans: nueva.loans,
         state: "RESERVA_CONFIRMADA",
         people: nueva.people,
       }
@@ -315,7 +254,6 @@ const RevsTable = () => {
           time: formattedTime,
         },
         roomId: updatedReserva.roomId, 
-        loans: updatedReserva.loans,
         state: updatedReserva.state,
         people: updatedReserva.people,
       }
@@ -499,7 +437,6 @@ const RevsTable = () => {
                 <th className="bg-white rounded-xl px-4 py-2">Fecha</th>
                 <th className="bg-white rounded-xl px-4 py-2">Hora</th>
                 <th className="bg-white rounded-xl px-4 py-2">Sala</th>
-                <th className="bg-white rounded-xl px-4 py-2">Préstamos</th>
                 <th className="bg-white rounded-xl px-4 py-2">Acción</th>
               </tr>
             </thead>
@@ -518,7 +455,6 @@ const RevsTable = () => {
                         </div>
                       </td>
                       <td className="px-4 py-2 rounded-xl">{reserva.userId}</td>
-                      <td className="px-4 py-2 rounded-xl">{reserva.date.day}</td>
                       <td className="px-4 py-2 rounded-xl">
                         <div className="flex items-center justify-center gap-1">
                           {reserva.date.time}
@@ -529,20 +465,6 @@ const RevsTable = () => {
                         <span>{reserva.roomId.split("-").join(" ")}</span>
                       </td>
                       <td className="px-4 py-2 rounded-xl">
-                        {reserva.loans.length > 0 ? (
-                          <div className="group relative">
-                            <span>{reserva.loans.length}</span>
-                            <div className="absolute z-10 hidden group-hover:block bg-white text-black p-2 rounded shadow-lg text-xs left-1/2 transform -translate-x-1/2 w-48">
-                              <ul className="text-left">
-                                {reserva.loans.map((loanId) => (
-                                  <li key={loanId}>• {elementNames[loanId] || loanId}</li>
-                                ))}
-                              </ul>
-                            </div>
-                          </div>
-                        ) : (
-                          <span>0</span>
-                        )}
                       </td>
                       <td className="rounded-xl">
                         <div className="flex gap-2 justify-center gap-4">

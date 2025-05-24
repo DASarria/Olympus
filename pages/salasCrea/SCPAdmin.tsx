@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import type { StaticImageData } from "next/image"
-import { ArrowLeft} from "lucide-react"
+import { ArrowLeft } from "lucide-react"
 import { useRouter } from "next/router"
 import Image from "next/image"
 import defaultImage from "../../assets/images/1imagen.jpg"
@@ -68,7 +68,6 @@ const SCPAdmin = () => {
     Cranium: cranium,
     Monos: monos,
   }
-
 
   interface ElementoAPI {
     id: string
@@ -141,21 +140,25 @@ const SCPAdmin = () => {
     })
 
     reservas.forEach((reserva) => {
-      reserva.loans.forEach((loanId) => {
-        const usage = usageMap.get(loanId)
-        if (usage) {
-          usage.usageCount += 1
-          const reservaDate = reserva.date.day
-          if (!usage.lastUsed || new Date(reservaDate) > new Date(usage.lastUsed)) {
-            usage.lastUsed = reservaDate
+      if (Array.isArray(reserva.loans)) {
+        reserva.loans.forEach((loanId) => {
+          const usage = usageMap.get(loanId)
+          if (usage) {
+            usage.usageCount += 1
+            const reservaDate = reserva.date.day
+            if (!usage.lastUsed || new Date(reservaDate) > new Date(usage.lastUsed)) {
+              usage.lastUsed = reservaDate
+            }
+            usage.borrowers.push({
+              userId: reserva.userId,
+              userName: reserva.userName,
+              date: `${reserva.date.day} ${reserva.date.time}`,
+            })
           }
-          usage.borrowers.push({
-            userId: reserva.userId,
-            userName: reserva.userName,
-            date: `${reserva.date.day} ${reserva.date.time}`,
-          })
-        }
-      })
+        })
+      } else {
+        console.warn(`Reserva con id ${reserva.id} no tiene loans o está vacío`)
+      }
     })
 
     setElementoUsage(Array.from(usageMap.values()).sort((a, b) => b.usageCount - a.usageCount))
@@ -192,17 +195,17 @@ const SCPAdmin = () => {
       </div>
     )
   }
+
   const irAlInicio = () => {
-    router.back();
+    router.back()
   }
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
       <div className="flex gap-5 font-bold text-[30px] ml-6 mb-6">
-  <ArrowLeft onClick={irAlInicio} className="cursor-pointer mt-3" />
-  <h1>Préstamos</h1>
-</div>
-
+        <ArrowLeft onClick={irAlInicio} className="cursor-pointer mt-3" />
+        <h1>Préstamos</h1>
+      </div>
 
       <input
         type="text"
@@ -230,7 +233,13 @@ const SCPAdmin = () => {
                 className="hover:bg-gray-50 transition cursor-pointer"
               >
                 <td className="p-4 border-b border-gray-200">
-                  <Image src={el.imagen} alt={el.elementName} width={50} height={50} className="rounded-md" />
+                  <Image
+                    src={el.imagen}
+                    alt={el.elementName}
+                    width={50}
+                    height={50}
+                    className="rounded-md"
+                  />
                 </td>
                 <td className="p-4 border-b border-gray-200">{el.elementName}</td>
                 <td className="p-4 border-b border-gray-200">{el.usageCount}</td>
@@ -242,15 +251,28 @@ const SCPAdmin = () => {
       </div>
 
       {selectedElement && (
-        <div onClick={closeModal} className="fixed inset-0 backdrop-blur-sm bg-white/30 flex justify-center items-center z-50"> 
+        <div
+          onClick={closeModal}
+          className="fixed inset-0 backdrop-blur-sm bg-white/30 flex justify-center items-center z-50"
+        >
           <div
             onClick={(e) => e.stopPropagation()}
             className="bg-white p-6 rounded-xl shadow-xl w-full max-w-lg"
           >
             <h2 className="text-2xl font-semibold mb-4">{selectedElement.elementName}</h2>
-            <Image src={selectedElement.imagen} alt={selectedElement.elementName} width={150} height={150} className="rounded-md mb-4" />
-            <p><strong>Uso total:</strong> {selectedElement.usageCount}</p>
-            <p><strong>Último uso:</strong> {selectedElement.lastUsed}</p>
+            <Image
+              src={selectedElement.imagen}
+              alt={selectedElement.elementName}
+              width={150}
+              height={150}
+              className="rounded-md mb-4"
+            />
+            <p>
+              <strong>Uso total:</strong> {selectedElement.usageCount}
+            </p>
+            <p>
+              <strong>Último uso:</strong> {selectedElement.lastUsed}
+            </p>
             <h3 className="mt-4 font-medium">Préstamos:</h3>
             <ul className="list-disc pl-6 max-h-40 overflow-y-auto mt-2">
               {selectedElement.borrowers.map((b, i) => (

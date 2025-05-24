@@ -1,122 +1,90 @@
-"use client"
+"use client";
 
-import React, { useEffect, useState, useCallback } from "react"
-import { aUr } from "@/pages/api/salasCreaU"
+import { useEffect, useState } from "react";
 
-const url = aUr || ""
-
-interface Reserva {
-  id: string
-  nombre: string
-  telefono: string
-  correo: string
-  sala: string
-  fecha: string // formato esperado: "YYYY-MM-DD"
-  hora_inicio: string // formato esperado: "HH:mm"
-  hora_fin: string
-  estado: string
-  userId: string
+interface Reservation {
+  id: number;
+  roomName: string;
+  date: string;
+  hour: string;
+  responsible: string;
+  amountPeople: number;
 }
 
 export default function ReservOwnUser() {
-  const [reservas, setReservas] = useState<Reserva[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  const token = typeof window !== "undefined" ? sessionStorage.getItem("token") : null
-  const userId = typeof window !== "undefined" ? sessionStorage.getItem("userId") : null
-
-  const fetchReservas = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-
-    try {
-      const response = await fetch(`${url}/revs`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        cache: "no-store",
-      })
-
-      if (!response.ok) {
-        throw new Error(`Error en la petición: ${response.status} ${response.statusText}`)
-      }
-
-      const data: Reserva[] = await response.json()
-
-      if (!Array.isArray(data)) {
-        throw new Error("El formato de datos recibido no es un arreglo")
-      }
-
-      const now = new Date()
-
-      const reservasFiltradas = data.filter((reserva) => {
-        if (reserva.userId !== userId) return false
-
-        const fechaHora = new Date(`${reserva.fecha}T${reserva.hora_inicio}`)
-        return fechaHora <= now
-      })
-
-      setReservas(reservasFiltradas)
-    } catch (error: unknown) {
-      const err = error as Error
-      setError(err.message || "Error desconocido")
-    } finally {
-      setLoading(false)
-    }
-  }, [token, userId])
+  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!token) {
-      setError("Token no disponible. Por favor inicia sesión.")
-      setLoading(false)
-      return
-    }
-    if (!userId) {
-      setError("ID de usuario no disponible.")
-      setLoading(false)
-      return
-    }
+    const fetchReservations = async () => {
+      try {
+        const url =
+          "https://cvds-mod-2-cmbsgrgva2edc7b8.brazilsouth-01.azurewebsites.net/reservations";
 
-    fetchReservas()
-  }, [token, userId, fetchReservas])
+        console.log("Haciendo fetch a:", url);
 
-  if (loading) return <div>Cargando reservas...</div>
-  if (error) return <div style={{ color: "red" }}>Error: {error}</div>
-  if (!reservas.length) return <div>No hay reservas pasadas o actuales para mostrar.</div>
+        const response = await fetch(url, {
+          method: "GET",
+          mode: "cors",
+          // Si necesitas enviar token de autorización, descomenta y agrega tu token aquí:
+          /*
+          headers: {
+            "Authorization": "Bearer TU_TOKEN_AQUI",
+            "Content-Type": "application/json",
+          },
+          */
+        });
+
+        console.log("Código de estado:", response.status);
+
+        if (!response.ok) {
+          const text = await response.text();
+          console.error("Respuesta del servidor:", text);
+          throw new Error(`Error al obtener reservas: ${response.status}`);
+        }
+
+        const data: Reservation[] = await response.json();
+        console.log("Reservas completas recibidas:", data);
+
+        setReservations(data);
+        setErrorMsg(null);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          console.error("Error capturado:", error.message);
+          setErrorMsg(error.message);
+        } else {
+          console.error("Error desconocido:", error);
+          setErrorMsg("Error desconocido");
+        }
+      }
+    };
+
+    fetchReservations();
+  }, []);
 
   return (
-    <table className="w-full text-sm border border-gray-300 mt-4">
-      <thead className="bg-gray-100">
-        <tr>
-          <th className="p-2 border">Id</th>
-          <th className="p-2 border">Nombre</th>
-          <th className="p-2 border">Teléfono</th>
-          <th className="p-2 border">Correo</th>
-          <th className="p-2 border">Sala</th>
-          <th className="p-2 border">Fecha</th>
-          <th className="p-2 border">Hora inicio</th>
-          <th className="p-2 border">Hora fin</th>
-          <th className="p-2 border">Estado</th>
-        </tr>
-      </thead>
-      <tbody>
-        {reservas.map((reserva) => (
-          <tr key={reserva.id} className="text-center">
-            <td className="p-2 border">{reserva.id}</td>
-            <td className="p-2 border">{reserva.nombre}</td>
-            <td className="p-2 border">{reserva.telefono}</td>
-            <td className="p-2 border">{reserva.correo}</td>
-            <td className="p-2 border">{reserva.sala}</td>
-            <td className="p-2 border">{reserva.fecha}</td>
-            <td className="p-2 border">{reserva.hora_inicio}</td>
-            <td className="p-2 border">{reserva.hora_fin}</td>
-            <td className="p-2 border">{reserva.estado}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  )
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">Todas las Reservas</h1>
+      {errorMsg ? (
+        <p className="text-red-600">Error: {errorMsg}</p>
+      ) : reservations.length === 0 ? (
+        <p>No hay reservas registradas.</p>
+      ) : (
+        <ul className="space-y-4">
+          {reservations.map((res) => (
+            <li
+              key={res.id}
+              className="border p-4 rounded-lg shadow-md bg-white"
+            >
+              <p><strong>Sala:</strong> {res.roomName}</p>
+              <p><strong>Fecha:</strong> {res.date}</p>
+              <p><strong>Hora:</strong> {res.hour}</p>
+              <p><strong>Responsable:</strong> {res.responsible}</p>
+              <p><strong>Personas:</strong> {res.amountPeople}</p>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
 }

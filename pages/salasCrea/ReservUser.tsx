@@ -146,7 +146,7 @@ const MAX_AFORO = 30
     }
 
     return (
-        <div className="p-4 max-w-screen-md mx-auto relative">
+        <div className="p-6 max-w-6xl mx-auto relative">
         <button
             onClick={() => router.back()}
             className="absolute top-4 left-4 text-black hover:text-gray-700 transition"
@@ -155,36 +155,40 @@ const MAX_AFORO = 30
             <ArrowLeft className="w-6 h-6" />
         </button>
 
-        <h2 className="text-xl md:text-2xl font-bold mb-4 text-center">Reservar Sala</h2>
+        <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center">Reservar Sala</h2>
 
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
             {rooms.map((room) => {
             const ocupados = getPeopleCount(room.id)
             return (
                 <div
                 key={room.id}
-                className="border rounded-[12px] p-3 shadow hover:shadow-md transition bg-white"
+                className="border rounded-[24px] p-6 shadow-lg hover:shadow-2xl transition bg-white w-full h-[320px] md:h-[340px] flex flex-col justify-between"
                 >
-                <h3 className="text-lg font-semibold mb-1">{room.nombre}</h3>
-                <p className="text-xs text-gray-600 mb-2">{room.descripcion}</p>
-                <ul className="text-xs space-y-1 mb-3">
-                    <li className="flex gap-2 items-center">
-                    <Package className="w-4 h-4" /> Aforo total: {MAX_AFORO}
-                    </li>
-                    <li className="flex gap-2 items-center text-amber-600">
-                    <AlertCircle className="w-4 h-4" /> Ocupados: {ocupados}
-                    </li>
-                    <li className="flex gap-2 items-center text-green-600">
-                    <CheckCircle className="w-4 h-4" /> Disponibles:{" "}
-                    {Math.max(0, MAX_AFORO - ocupados)}
-                    </li>
-                </ul>
-                <button
+                <div className="flex flex-col justify-between h-full">
+                    <div>
+                    <h3 className="text-lg font-bold mb-2">{room.nombre}</h3>
+                    <p className="text-sm text-gray-700 mb-3">{room.descripcion}</p>
+                    <ul className="text-sm space-y-2">
+                        <li className="flex gap-2 items-center">
+                        <Package className="w-5 h-5" /> Aforo total: {MAX_AFORO}
+                        </li>
+                        <li className="flex gap-2 items-center text-amber-600">
+                        <AlertCircle className="w-5 h-5" /> Ocupados: {ocupados}
+                        </li>
+                        <li className="flex gap-2 items-center text-green-600">
+                        <CheckCircle className="w-5 h-5" /> Disponibles:{" "}
+                        {Math.max(0, MAX_AFORO - ocupados)}
+                        </li>
+                    </ul>
+                    </div>
+                    <button
                     onClick={() => setSelectedRoom(room.id)}
-                    className="w-full bg-blue-600 text-white py-1.5 rounded-md hover:bg-blue-700 text-sm transition"
-                >
+                    className="mt-5 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 text-base transition"
+                    >
                     Crear Reserva
-                </button>
+                    </button>
+                </div>
                 </div>
             )
             })}
@@ -192,32 +196,32 @@ const MAX_AFORO = 30
 
         {selectedRoom && (
             <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-white p-5 rounded-xl w-[90%] md:w-[380px] shadow-md relative">
+            <div className="bg-white p-6 rounded-2xl w-[90%] md:w-[400px] shadow-xl relative">
                 <button
                 onClick={() => setSelectedRoom(null)}
-                className="absolute top-2 right-3 text-lg"
+                className="absolute top-3 right-4 text-2xl font-bold text-gray-600 hover:text-red-500"
                 >
                 ×
                 </button>
-                <h3 className="text-lg font-semibold mb-3 text-center">Crear Reserva</h3>
+                <h3 className="text-xl font-semibold mb-5 text-center">Crear Reserva</h3>
 
-                <label className="block text-xs mb-1">Fecha (AAAA-MM-DD)</label>
+                <label className="block text-sm mb-1">Fecha (AAAA-MM-DD)</label>
                 <input
                 type="date"
                 value={formData.day}
                 onChange={(e) => setFormData({ ...formData, day: e.target.value })}
-                className="border w-full rounded p-2 mb-3 text-sm"
+                className="border w-full rounded-md p-2 mb-4 text-sm"
                 />
 
-                <label className="block text-xs mb-1">Hora (HH:MM)</label>
+                <label className="block text-sm mb-1">Hora (HH:MM)</label>
                 <input
                 type="time"
                 value={formData.time}
                 onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                className="border w-full rounded p-2 mb-3 text-sm"
+                className="border w-full rounded-md p-2 mb-4 text-sm"
                 />
 
-                <label className="block text-xs mb-1">Cantidad de personas</label>
+                <label className="block text-sm mb-1">Cantidad de personas</label>
                 <input
                 type="number"
                 min={1}
@@ -229,12 +233,12 @@ const MAX_AFORO = 30
                     people: parseInt(e.target.value) || 1
                     })
                 }
-                className="border w-full rounded p-2 mb-4 text-sm"
+                className="border w-full rounded-md p-2 mb-6 text-sm"
                 />
 
                 <button
                 onClick={handleSubmit}
-                className="bg-green-600 text-white px-4 py-2 rounded w-full hover:bg-green-700 transition text-sm"
+                className="bg-green-600 text-white px-4 py-2 rounded-lg w-full hover:bg-green-700 transition text-base"
                 >
                 Confirmar Reserva
                 </button>

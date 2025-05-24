@@ -15,7 +15,6 @@ interface Reserva {
     time: string
   }
   roomId: string
-  loans: string[]
   state: string
   people: number
 }
@@ -26,8 +25,8 @@ interface ReservaModalProps {
 }
 
 const ReservaModal: React.FC<ReservaModalProps> = ({ onClose, onSubmit }) => {
-  const [userName, setUserName] = useState("")
-  const [userId, setUserId] = useState("")
+  const [userName] = useState("")
+  const [userId] = useState("")
   const [day, setDay] = useState("")
   const [time, setTime] = useState("")
   const [people, setPeople] = useState(1)
@@ -58,7 +57,6 @@ const ReservaModal: React.FC<ReservaModalProps> = ({ onClose, onSubmit }) => {
         time: formattedTime,
       },
       roomId: selectedRoom,
-      loans: [],
       state: "RESERVA_CONFIRMADA",
       people,
     }

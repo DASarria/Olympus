@@ -15,7 +15,6 @@ interface Reserva {
     time: string
   }
   roomId: string
-  loans: string[]
   state: string
   people: number
 }
@@ -48,18 +47,14 @@ interface RoomsProps {
 
 const ReservaExpandida: React.FC<Props> = ({ reserva, onClose, onSave }) => {
   const [editedReserva, setEditedReserva] = useState<Reserva>(reserva)
-  const [originalLoans, setOriginalLoans] = useState<string[]>([])
-  const [availableElements, setAvailableElements] = useState<ElementoInfo[]>([])
-  const [elementDetails, setElementDetails] = useState<Record<string, ElementoInfo>>({})
+  const [, setAvailableElements] = useState<ElementoInfo[]>([])
   const [isWithinTimeWindow, setIsWithinTimeWindow] = useState<boolean>(false)
   const token = sessionStorage.getItem("token")
   const url = aUr
-  const [elementoSeleccionado, setElementoSeleccionado] = useState<string>("")
   const [rooms, setRooms] = useState<RoomsProps[]>([])
 
   // Store the original loans when component mounts
   useEffect(() => {
-    setOriginalLoans([...reserva.loans])
     fetchAvailableElements()
     fetchRooms()
     checkTimeWindow(reserva.date)
@@ -130,7 +125,6 @@ const ReservaExpandida: React.FC<Props> = ({ reserva, onClose, onSave }) => {
         detailsMap[el.id] = el
       })
 
-      setElementDetails(detailsMap)
       setAvailableElements(elements)
     } catch (error) {
       console.error("Error cargando elementos:", error)
@@ -176,9 +170,6 @@ const ReservaExpandida: React.FC<Props> = ({ reserva, onClose, onSave }) => {
       })
     }
 
-    if (name === "loans") {
-      setElementoSeleccionado(value)
-    }
   }
 
   // Modificar la función handleSave para asegurar que los cambios se guarden correctamente
@@ -221,151 +212,11 @@ await onSave(updatedReserva)
       return
     }
 
-    // Get added elements (in new loans but not in original)
-    const addedElements = editedReserva.loans.filter((id) => !originalLoans.includes(id))
-
-    // Get removed elements (in original but not in new loans)
-    const removedElements = originalLoans.filter((id) => !editedReserva.loans.includes(id))
-
-    // Update quantities for added elements (decrease)
-    for (const elementId of addedElements) {
-      try {
-        // First get the current element to know its quantity
-        const elementResponse = await fetch(`${url}/elements/${elementId}`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `${token}`,
-          },
-        })
-
-        if (!elementResponse.ok) continue
-
-        const element = await elementResponse.json()
-        const newQuantity = Math.max(0, element.quantity - 1)
-
-        // Update the element quantity
-        await fetch(`${url}/elements/${elementId}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `${token}`,
-          },
-          body: JSON.stringify({
-            ...element,
-            quantity: newQuantity,
-          }),
-        })
-      } catch (error) {
-        console.error(`Error updating quantity for element ${elementId}:`, error)
-      }
-    }
-
-    // Update quantities for removed elements (increase)
-    for (const elementId of removedElements) {
-      try {
-        // First get the current element to know its quantity
-        const elementResponse = await fetch(`${url}/elements/${elementId}`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `${token}`,
-          },
-        })
-
-        if (!elementResponse.ok) continue
-
-        const element = await elementResponse.json()
-        const newQuantity = element.quantity + 1
-
-        // Update the element quantity
-        await fetch(`${url}/elements/${elementId}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `${token}`,
-          },
-          body: JSON.stringify({
-            ...element,
-            quantity: newQuantity,
-          }),
-        })
-      } catch (error) {
-        console.error(`Error updating quantity for element ${elementId}:`, error)
-      }
-    }
   }
 
   const stateOptions = ["RESERVA_CONFIRMADA", "RESERVA_CANCELADA", "RESERVA_TERMINADA"]
 
-  // Handle adding an element to loans
-  const handleAddElement = (elementId: string) => {
-    if (!elementId) return
 
-    // Check if element is already in loans
-    if (editedReserva.loans.includes(elementId)) {
-      Swal.fire({
-        title: "Elemento ya añadido",
-        text: "Este elemento ya está en la lista de préstamos",
-        icon: "warning",
-      })
-      return
-    }
-
-    // Check if element is available (quantity > 0)
-    const element = availableElements.find((el) => el.id === elementId)
-    if (!element || element.cantidad <= 0) {
-      Swal.fire({
-        title: "Elemento no disponible",
-        text: "No hay unidades disponibles de este elemento",
-        icon: "error",
-      })
-      return
-    }
-
-    // If not within time window, just add to loans without checking quantity
-    if (!isWithinTimeWindow) {
-      setEditedReserva({
-        ...editedReserva,
-        loans: [...editedReserva.loans, elementId],
-      })
-      return
-    }
-
-    // Within time window, check if there are enough elements available
-    if (element.cantidad > 0) {
-      setEditedReserva({
-        ...editedReserva,
-        loans: [...editedReserva.loans, elementId],
-      })
-
-      // Update local available elements count
-      setAvailableElements((prev) =>
-        prev.map((el) => (el.id === elementId ? { ...el, cantidad: el.cantidad - 1 } : el)),
-      )
-    } else {
-      Swal.fire({
-        title: "Elemento no disponible",
-        text: "No hay unidades disponibles de este elemento",
-        icon: "error",
-      })
-    }
-  }
-
-  // Handle removing an element from loans
-  const handleRemoveElement = (elementId: string) => {
-    setEditedReserva({
-      ...editedReserva,
-      loans: editedReserva.loans.filter((id) => id !== elementId),
-    })
-
-    // If within time window, update local available elements count
-    if (isWithinTimeWindow) {
-      setAvailableElements((prev) =>
-        prev.map((el) => (el.id === elementId ? { ...el, cantidad: el.cantidad + 1 } : el)),
-      )
-    }
-  }
 
   return (
     <tr className="bg-white rounded-xl drop-shadow-xl max-h-[50vh]">
@@ -425,54 +276,6 @@ await onSave(updatedReserva)
                 onChange={handleChange}
                 className="px-3 py-1 rounded-xl bg-white drop-shadow-md"
               />
-            </div>
-
-            <div className="flex flex-col">
-              <label>
-                <strong>Préstamos:</strong>
-                {!isWithinTimeWindow && (
-                  <span className="text-xs text-amber-600 ml-1">(Fuera de ventana de tiempo)</span>
-                )}
-              </label>
-              <div className="flex flex-col gap-2">
-                <select
-                  className="px-3 py-1 rounded-xl bg-white drop-shadow-md"
-                  onChange={(e) => handleAddElement(e.target.value)}
-                  value={elementoSeleccionado}
-                >
-                  <option value="" disabled>
-                    Seleccionar elemento
-                  </option>
-                  {availableElements.map((element) => (
-                    <option key={element.id} value={element.id} disabled={isWithinTimeWindow && element.cantidad <= 0}>
-                      {element.nombre} {isWithinTimeWindow ? `(Disponibles: ${element.cantidad})` : ""}
-                    </option>
-                  ))}
-                </select>
-
-                <div className="mt-2 max-h-20 overflow-y-auto">
-                  {editedReserva.loans.length > 0 ? (
-                    <ul className="text-left text-sm">
-                      {editedReserva.loans.map((loanId) => {
-                        const element = elementDetails[loanId]
-                        return (
-                          <li key={loanId} className="flex justify-between items-center mb-1 bg-gray-50 p-1 rounded">
-                            <span>{element ? element.nombre : loanId}</span>
-                            <button
-                              onClick={() => handleRemoveElement(loanId)}
-                              className="text-red-500 text-xs bg-white px-2 py-1 rounded-full"
-                            >
-                              Quitar
-                            </button>
-                          </li>
-                        )
-                      })}
-                    </ul>
-                  ) : (
-                    <p className="text-sm text-gray-500">No hay elementos prestados</p>
-                  )}
-                </div>
-              </div>
             </div>
 
             <div className="flex flex-col">
