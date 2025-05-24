@@ -12,11 +12,11 @@ const Index = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   interface LogDTO{
-    fullname:string;
+    fullName:string;
     role:string;
     token:string;
   }
-  interface response{
+  interface LoginResponse{
     status:string;
     message:string;
     data:LogDTO;
@@ -26,10 +26,11 @@ const Index = () => {
   const handleLogin = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault(); 
     
-    const loginResponse:response = await login({ userName, password });
+    const loginResponse = await login({ userName, password }) as unknown as LoginResponse;
     if(loginResponse.status== "200"){
       sessionStorage.setItem("token", loginResponse.data.token);
       sessionStorage.setItem("role", loginResponse.data.role);
+      sessionStorage.setItem("name",loginResponse.data.fullName);
       router.push("/Dashboard");
     }
     if(loginResponse.status == "400"){
