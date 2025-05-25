@@ -1,22 +1,8 @@
+
 import { useRouter } from "next/router";
 import React, { useState } from "react";
 import login from "@/pages/api/UserManagement/LoginService"
 import ErrorMessage from "@/components/ErrorMessage";
-
-
-// Tipos para los componentes de la aplicación
-
-export interface Routine {
-  id: number;
-  title: string;
-  series: number;
-  repetitions: number;
-}
-
-export interface User {
-  name: string;
-  initials: string;
-}
 
 
 const Index = () => {
@@ -26,11 +12,11 @@ const Index = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   interface LogDTO{
-    fullname:string;
+    fullName:string;
     role:string;
     token:string;
   }
-  interface response{
+  interface LoginResponse{
     status:string;
     message:string;
     data:LogDTO;
@@ -40,10 +26,11 @@ const Index = () => {
   const handleLogin = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault(); 
     
-    const loginResponse:response = await login({ userName, password });
+    const loginResponse = await login({ userName, password }) as unknown as LoginResponse;
     if(loginResponse.status== "200"){
       sessionStorage.setItem("token", loginResponse.data.token);
       sessionStorage.setItem("role", loginResponse.data.role);
+      sessionStorage.setItem("name",loginResponse.data.fullName);
       router.push("/Dashboard");
     }
     if(loginResponse.status == "400"){
@@ -96,10 +83,9 @@ const Index = () => {
       {errorMessage && (
         <ErrorMessage message={errorMessage} onClose={handleCloseError} />
       )}
+
     </div>
   );
-
 };
 
 export default Index;
-

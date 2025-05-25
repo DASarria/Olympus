@@ -1,28 +1,52 @@
+"use client"
+
+import Image from "next/image"
+import logotransparente from "../assets/images/logotransparente.png"
+
+
 interface HeaderProps {
-  userName?: string;
-  notificationsCount?: number;
+  userName?: string
+  notificationsCount?: number
 }
 
-const Header = ({ userName = 'Nombre de Usuario', notificationsCount = 0 }: HeaderProps) => {
-  // Esta parte extrae iniciales para el avatar
+const Header = ({ userName = "Nombre de Usuario", notificationsCount = 0 }: HeaderProps) => {
+  
+
   const getInitials = (name: string) => {
     return name
-      .split(' ')
-      .map(word => word[0])
-      .join('')
+      .split(" ")
+      .map((word) => word[0])
+      .join("")
       .toUpperCase()
-      .substring(0, 2);
-  };
+      .substring(0, 2)
+  }
+
+  const handleLogoClick = () => {
+    window.location.href = "/salasCrea/InicioSalasCreaADMIN"
+  }
 
   return (
-    <div className="flex w-full justify-end items-center h-14">
+    <div className="flex w-full justify-between items-center h-14">
+      {/* Aquí se pone el logo, que pasó de estar en el menú lateral a acá para que no hubiera conflictos cuando se mostrara el contenido */}
+      <div
+        className="w-[14vw] md:w-[6vw] h-14 bg-eci flex items-center justify-center cursor-pointer"
+        onClick={handleLogoClick}
+      >
+        <Image
+  src={logotransparente || "/placeholder.svg"}
+  alt="ECI logo"
+  width={50}
+  height={50}
+  className="object-contain"
+/>
+
+
+      </div>
 
       {/* Controles de usuario a la derecha, nombre y notificaciones */}
       <div className="flex items-center space-x-4 px-4">
         {/* Nombre de usuario (solo visible en escritorio) */}
-        <span className="hidden md:block text-gray-700">
-          {userName}
-        </span>
+        <span className="hidden md:block text-gray-700">{userName}</span>
 
         {/* Iniciales del usuario */}
         <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-400 text-white">
@@ -31,10 +55,7 @@ const Header = ({ userName = 'Nombre de Usuario', notificationsCount = 0 }: Head
 
         {/* Campanita de notificaciones */}
         <div className="relative">
-          <button
-            className="p-2 rounded-full hover:bg-gray-100"
-            aria-label="Notificaciones"
-          >
+          <button className="p-2 rounded-full hover:bg-gray-100" aria-label="Notificaciones">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-6 w-6 text-gray-700"
@@ -53,14 +74,14 @@ const Header = ({ userName = 'Nombre de Usuario', notificationsCount = 0 }: Head
             {/* Solo muestro el contador si hay notificaciones y si hay más de 9, muestro "9+" para que no ocupe tanto espacio */}
             {notificationsCount > 0 && (
               <span className="absolute top-1 right-1 h-4 w-4 bg-red-600 rounded-full flex items-center justify-center text-white text-xs">
-                {notificationsCount > 9 ? '9+' : notificationsCount}
+                {notificationsCount > 9 ? "9+" : notificationsCount}
               </span>
             )}
           </button>
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Header;
+export default Header
