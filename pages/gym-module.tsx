@@ -31,7 +31,7 @@ const Module5 = () => {
                         <NavBtn
                             image={{ src: Reseva.src }}
                             texto="Reserva de salon"
-                            navigate="/gym-module/reservations"
+                            navigate="/gym-module/Reservations"
                         />
                         <NavBtn
                             image={{ src: Progreso.src }}
@@ -41,7 +41,7 @@ const Module5 = () => {
                         <NavBtn
                             image={{ src: Rutina.src }}
                             texto="Rutinas"
-                            navigate="/gym-module/routines"
+                            navigate="/gym-module/Routines"
                         />
                     </>
                 )}

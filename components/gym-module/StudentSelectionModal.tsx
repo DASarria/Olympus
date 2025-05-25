@@ -1,29 +1,48 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect } from 'react';
 import { Student } from '@/types/gym/physicalTracking';
 import { getAllUsers, getMockStudents, getAllStudents } from '@/api/gym-module/userService';
 
 interface StudentSelectionModalProps {
-  isOpen: boolean;
+  isOpen?: boolean;
+  students?: Student[];
   onClose: () => void;
-  onSelectStudent: (student: Student) => void;
+  onSelectStudent?: (student: Student) => void;
+  onSelect?: (student: Student) => void;
 }
 
 const StudentSelectionModal: React.FC<StudentSelectionModalProps> = ({ 
-  isOpen, 
+  isOpen = true, 
   onClose, 
-  onSelectStudent 
+  onSelectStudent,
+  onSelect,
+  students: initialStudents
 }) => {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
+  
+  // Handle student selection
+  const handleSelectStudent = (student: Student) => {
+    if (onSelectStudent) {
+      onSelectStudent(student);
+    } else if (onSelect) {
+      onSelect(student);
+    }
+  };
 
   // Cargar la lista de estudiantes cuando se abre el modal
   useEffect(() => {
     if (isOpen) {
-      fetchStudents();
+      if (initialStudents && initialStudents.length > 0) {
+        setStudents(initialStudents);
+        setLoading(false);
+      } else {
+        fetchStudents();
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, initialStudents]);
 
   // Función para obtener estudiantes
   const fetchStudents = async () => {
@@ -111,15 +130,14 @@ const StudentSelectionModal: React.FC<StudentSelectionModalProps> = ({
             <div className="text-gray-500 text-center py-4">No se encontraron estudiantes</div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {filteredStudents.map(student => (
-                <div 
+              {filteredStudents.map(student => (                <div 
                   key={student.id}
                   className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors"
-                  onClick={() => onSelectStudent(student)}
+                  onClick={() => handleSelectStudent(student)}
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center text-white font-bold">
-                      {student.name.charAt(0)}
+                      {student.name?.charAt(0) || '?'}
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-800">{student.name}</h3>

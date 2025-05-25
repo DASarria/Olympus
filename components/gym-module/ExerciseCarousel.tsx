@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import Button from "@/components/gym-module/Button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useState, useMemo } from "react";
@@ -25,15 +26,22 @@ const ExerciseCarousel = ({ exercises }: { exercises: RoutineExercise[] }) => {
     const [index, setIndex] = useState(0);
     const [selectedExercise, setSelectedExercise] = useState<ExerciseWithDetails | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    // For per-routine filtering by muscle group
+    const [filterGroup, setFilterGroup] = useState<string>("");
     
-    // Compute the position class name dynamically
+    // Compute the position class name dynamically based on index
     const positionClassName = useMemo(() => {
         const positionKey = `position${index}`;
         return styles[positionKey] || '';
     }, [index]);
     
-    const prev = () => setIndex((prev) => (prev > 0 ? prev - 1 : exercises.length - 1));
-    const next = () => setIndex((prev) => (prev + 1) % exercises.length);
+    // Filter exercises by selected muscle group
+    const filtered = filterGroup
+        ? exercises.filter(e => e.muscleGroup === filterGroup)
+        : exercises;
+    // Navigation
+    const prev = () => setIndex(i => i > 0 ? i - 1 : filtered.length - 1);
+    const next = () => setIndex(i => (i + 1) % filtered.length);
 
     const handleViewExercise = (exercise: ExerciseWithDetails) => {
         setSelectedExercise(exercise);

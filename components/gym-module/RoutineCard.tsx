@@ -1,8 +1,15 @@
 import { useState } from "react";
 import Button from "@/components/gym-module/Button";
-import { Routine } from "@/api/gym-module/routinesService";
+import { Routine as BaseRoutine } from "@/api/gym-module/routinesService";
 import { Dialog } from "@/components/Dialog";
 import ExerciseCarousel from "@/components/gym-module/ExerciseCarousel";
+
+/**
+ * Extended Routine interface to include matchesUserGoal property
+ */
+interface Routine extends BaseRoutine {
+  matchesUserGoal?: boolean;
+}
 
 /**
  * Props interface for the RoutineCard component.
@@ -12,6 +19,7 @@ import ExerciseCarousel from "@/components/gym-module/ExerciseCarousel";
 interface Props {
   routine: Routine;
   onAssign?: (routineId: string) => void;
+  highlightMatch?: boolean;
 }
 
 /**
@@ -30,7 +38,7 @@ interface Props {
  * @param {Props} props - The props for the RoutineCard component.
  * @returns {JSX.Element} The rendered routine card with name, description, and a button.
  */
-export const RoutineCard = ({ routine, onAssign }: Props) => {
+export const RoutineCard = ({ routine, onAssign, highlightMatch }: Props) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const handleViewRoutine = () => {
@@ -54,13 +62,23 @@ export const RoutineCard = ({ routine, onAssign }: Props) => {
       default:
         return 'text-gray-500';
     }
-  };
-
-  return (
+  };  return (
     <>
-      <div className="flex-shrink-0 w-[380px] h-[185px] max-h-[185px] border-box inline-flex flex-col items-start justify-center gap-3 px-10 py-[30px] relative bg-[#eaeaea] rounded-[20px] overflow-hidden">
+      <div className={`flex-shrink-0 w-[380px] h-[185px] max-h-[185px] border-box inline-flex flex-col items-start justify-center gap-3 px-10 py-[30px] relative 
+        ${highlightMatch && routine.matchesUserGoal 
+          ? 'bg-gradient-to-r from-blue-100 to-blue-50 border-2 border-blue-400 shadow-md' 
+          : 'bg-[#eaeaea]'} 
+        rounded-[20px] overflow-hidden transition-all duration-300 hover:shadow-lg`}>
+        {highlightMatch && routine.matchesUserGoal && (
+          <div className="absolute top-2 right-2 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            Recomendado
+          </div>
+        )}
         <div className="relative w-fit mt-[-1.00px] font-bold text-black text-lg tracking-[0] leading-[18px] whitespace-nowrap">
-          {routine.name || "Rutina"}
+          {routine.name ?? "Rutina"}
         </div>
         <div className="inline-flex w-full items-start gap-3 relative flex-[0_0_auto] border-box">
           <div className="font-bold text-black text-base leading-4 whitespace-nowrap">Descripción:</div>
@@ -72,21 +90,27 @@ export const RoutineCard = ({ routine, onAssign }: Props) => {
           <div className="flex flex-col">
             <span className="text-xs text-gray-500">Dificultad:</span>
             <span className={`text-sm font-semibold ${getDifficultyColor(routine.difficulty)}`}>
-              {routine.difficulty || "No especificada"}
+              {routine.difficulty ?? "No especificada"}
             </span>
           </div>
+          {routine.goal && (
+            <div className="flex flex-col max-w-[120px] overflow-hidden">
+              <span className="text-xs text-gray-500">Objetivo:</span>
+              <span className="text-sm font-medium text-blue-600 truncate">
+                {routine.goal}
+              </span>
+            </div>
+          )}
           <Button
             onClick={handleViewRoutine}
-            className="all-[unset] box-border inline-flex flex-col items-start px-5 py-2 relative flex-[0_0_auto] bg-[var(--lavender)] rounded-[20px] overflow-hidden"
+            className="all-[unset] box-border inline-flex flex-col items-start px-5 py-2 relative flex-[0_0_auto] bg-[var(--lavender)] rounded-[20px] overflow-hidden hover:bg-purple-700 transition-colors"
           >
             <span className="text-white leading-[16px] whitespace-nowrap">Ver rutina</span>
           </Button>
         </div>
-      </div>
-
-      {isDialogOpen && (
+      </div>{isDialogOpen && (
         <Dialog
-          title={routine.name || "Detalles de la rutina"}
+          title={routine.name ?? "Detalles de la rutina"}
           onClose={() => setIsDialogOpen(false)}
         >
           <div className="flex flex-col gap-6 p-4">
@@ -94,10 +118,10 @@ export const RoutineCard = ({ routine, onAssign }: Props) => {
               <h3 className="text-lg font-semibold">Detalles</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <span className="font-semibold">Objetivo:</span> {routine.goal || "No especificado"}
+                  <span className="font-semibold">Objetivo:</span> {routine.goal ?? "No especificado"}
                 </div>
                 <div>
-                  <span className="font-semibold">Dificultad:</span> <span className={getDifficultyColor(routine.difficulty)}>{routine.difficulty || "No especificada"}</span>
+                  <span className="font-semibold">Dificultad:</span> <span className={getDifficultyColor(routine.difficulty)}>{routine.difficulty ?? "No especificada"}</span>
                 </div>
                 <div className="col-span-2">
                   <span className="font-semibold">Descripción:</span> {routine.description}

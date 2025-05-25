@@ -17,14 +17,21 @@ import styles from './routineCarousel.module.css';
  * @example
  * // Usage example of the RoutineCarousel component
  * <RoutineCarousel routines={routines} />
+ * 
+ * // Highlight routines that match user goals
+ * <RoutineCarousel routines={routines} highlightMatches={true} />
  */
-const RoutineCarousel = ({ routines }: { routines: Routine[] }) => {
-  const [index, setIndex] = useState(0);
+interface RoutineCarouselProps {
+  routines: Routine[];
+  highlightMatches?: boolean;
+}
 
+const RoutineCarousel = ({ routines, highlightMatches = false }: RoutineCarouselProps) => {
+  const [index, setIndex] = useState(0);
   // Compute the position class name dynamically
   const positionClassName = useMemo(() => {
     const positionKey = `position${index}`;
-    return styles[positionKey] || '';
+    return styles[positionKey] ?? '';
   }, [index]);
 
   const prev = () => setIndex((prevState) => (prevState > 0 ? prevState - 1 : routines.length - 1));
@@ -54,12 +61,12 @@ const RoutineCarousel = ({ routines }: { routines: Routine[] }) => {
       <div className={styles.carouselItemsContainer}>
         <div
           className={`${styles.carouselItems} ${positionClassName}`}
-        >
-          {routines.map((routine, i) => (
+        >          {routines.map((routine, i) => (
             <RoutineCard 
               key={routine.id ?? i} 
               routine={routine} 
               onAssign={handleAssignRoutine}
+              highlightMatch={highlightMatches}
             />
           ))}
         </div>

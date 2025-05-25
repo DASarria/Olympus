@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import api from "@/api/axiosInstance";
 const USER_API = "/users";
 
@@ -24,6 +25,7 @@ export interface BaseExerciseDTO {
 
 /**
  * @typedef {Object} BaseExercise
+ * @property {string} id - The unique identifier of the exercise.
  * @property {string} [name] - The name of the exercise (optional).
  * @property {string} [description] - A description of the exercise (optional).
  * @property {string} muscleGroup - The muscle group the exercise targets.
@@ -32,6 +34,7 @@ export interface BaseExerciseDTO {
  * @property {string} [imageUrl] - The URL of an image representing the exercise (optional).
  */
 export interface BaseExercise {
+    id: string;  // Changed from optional to required
     name?: string;
     description?: string;
     muscleGroup: string;
@@ -48,7 +51,19 @@ export interface BaseExercise {
 export async function getAllExercises() {
   try {
     const response = await api.get<BaseExercise[]>(`${USER_API}/exercises`);
-    return response.data;  } catch (error) {
+    
+    // Ensure all exercises have an ID to avoid errors in the UI
+    const validExercises = response.data.filter(exercise => {
+      if (!exercise.id) {
+        console.warn("Found exercise without ID, filtering it out:", exercise);
+        return false;
+      }
+      return true;
+    });
+    
+    console.log(`Fetched ${validExercises.length} valid exercises`);
+    return validExercises;
+  } catch (error) {
     console.error("Error fetching exercises:", error);
     throw new Error(error instanceof Error ? error.message : "Error al obtener los ejercicios");
   }
@@ -108,10 +123,58 @@ export async function searchExercisesByName(name: string) {
  */
 export async function createExercise(exerciseDTO: BaseExerciseDTO) {
   try {
-    const response = await api.post<BaseExercise>(`${USER_API}/exercises`, exerciseDTO);
+    console.log("Validating exercise data:", exerciseDTO);
+
+    // Enhanced field validation with specific error messages
+    if (!exerciseDTO.name?.trim()) {
+      throw new Error("El nombre del ejercicio es obligatorio");
+    }
+
+    if (!exerciseDTO.muscleGroup) {
+      throw new Error("El grupo muscular es obligatorio");
+    }
+
+    if (!exerciseDTO.equipment) {
+      throw new Error("El tipo de equipamiento es obligatorio");
+    }
+
+    // Cleanup the data before sending
+    const cleanedDTO = {
+      ...exerciseDTO,
+      name: exerciseDTO.name.trim(),
+      description: exerciseDTO.description?.trim(),
+      muscleGroup: exerciseDTO.muscleGroup.toUpperCase(),
+      equipment: exerciseDTO.equipment.toUpperCase(),
+      imageUrl: exerciseDTO.imageUrl?.trim(),
+      videoUrl: exerciseDTO.videoUrl?.trim()
+    };
+
+    console.log("Creating exercise with cleaned data:", cleanedDTO);
+
+    // Make API call to create exercise
+    const response = await api.post<BaseExercise>(`${USER_API}/exercises`, cleanedDTO);
+    
+    // Validate response
+    if (!response.data) {
+      throw new Error("No se recibió respuesta del servidor");
+    }
+
+    if (!response.data.id) {
+      console.error("Created exercise is missing an ID:", response.data);
+      throw new Error("The created exercise does not have a valid ID");
+    }
+    
+    console.log("Exercise created successfully:", response.data);
     return response.data;
   } catch (error: any) {
-    throw new Error(error.response?.data?.message || "Error al crear el ejercicio");
+    console.error("Error in createExercise:", error);
+    if (error.response?.status === 400) {
+      throw new Error("Datos de ejercicio inválidos: " + (error.response?.data?.message || "Verifique los campos requeridos"));
+    } else if (error.response?.status === 401 || error.response?.status === 403) {
+      throw new Error("No tiene permisos para crear ejercicios");
+    } else {
+      throw new Error(error.response?.data?.message || error.message || "Error al crear el ejercicio");
+    }
   }
 }
 

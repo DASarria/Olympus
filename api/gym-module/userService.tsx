@@ -1,6 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import api from "@/api/axiosInstance";
-import { Student } from '@/types/gym/physicalTracking';
+import { Student as StudentType } from '@/types/gym/physicalTracking';
 const USER_API = "/users";
+
+// Re-export the Student type
+export type Student = StudentType;
 
 /**
  * @typedef {Object} UserDTO
