@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { Return } from "@/components/Return";
 import { withRoleProtection } from "@/hoc/withRoleProtection";
@@ -22,29 +22,32 @@ const ReservationDetails = () => {
     const router = useRouter();
     const [userId, setUserId] = useState<string | null>(null);
     const [event, setEvent] = useState<CalendarEvent | null>(null);
+    const checkedStorageRef = useRef(false);
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
 
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const storedId = sessionStorage.getItem("id");
-            const storedEvent = sessionStorage.getItem("selectedCalendarEvent");
+        if (typeof window === "undefined") return;
+        if (checkedStorageRef.current) return;
+        checkedStorageRef.current = true;
 
-            if (!storedId) {
-                router.push("/");
-                return;
-            }
+        const storedId = sessionStorage.getItem("gymId");
+        const storedEvent = sessionStorage.getItem("GymEvent");
 
-            if (storedEvent) {
-                setEvent(JSON.parse(storedEvent));
-                sessionStorage.removeItem('selectedCalendarEvent');
-            } else {
-                router.push('/gym-module/reservations');
-                return;
-            }
-
-            setUserId(storedId);
+        if (!storedId) {
+            router.push("/");
+            return;
         }
+
+        if (storedEvent) {
+            setEvent(JSON.parse(storedEvent));
+            sessionStorage.removeItem('GymEvent');
+        } else {
+            router.push('/gym-module/reservations');
+            return;
+        }
+
+        setUserId(storedId);
     }, []);
 
 

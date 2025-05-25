@@ -36,7 +36,6 @@ const Reservations = () => {
     const router = useRouter();
     const [userId, setUserId] = useState<string | null>(null);
     const [role, setRole] = useState<string | null>(null);
-    const [userReservations, setUserReservations] = useState<Reservation[] | null>(null);
     const [events, setEvents] = useState<CalendarEvent[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -44,7 +43,7 @@ const Reservations = () => {
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
-            const storedId = sessionStorage.getItem("id");
+            const storedId = sessionStorage.getItem("gymId");
             const storedRole = sessionStorage.getItem("role");
 
             if (!storedId || !storedRole) {
@@ -67,21 +66,26 @@ const Reservations = () => {
             if (!userId || !role) return;
 
             try {
+                const year = currentDate.getFullYear();
+                const month = currentDate.getMonth();
+
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                const dateStrings = Array.from({ length: daysInMonth }, (_, i) => {
+                    const day = new Date(year, month, i + 1);
+                    return day.toISOString().split('T')[0];
+                });
+
+                const sessionPromises = dateStrings.map(date => getSessionsByDate(date));
+                const sessionResults = await Promise.all(sessionPromises);
+                const allSessions = sessionResults.flat();
+
+                let combinedEvents: CalendarEvent[] = [];
+
                 if (role === "STUDENT") {
-                    let reservations = userReservations;
+                    const reservations = await getUserReservations(userId);
+                    const reservationMap = new Map(reservations.map(res => [res.sessionId, res]));
 
-                    if (!reservations) {
-                        reservations = await getUserReservations(userId);
-                        setUserReservations(reservations);
-                    }
-
-                    const sessions = await getSessionsByDate(currentDate.toISOString().split('T')[0]);
-
-                    const reservationMap = new Map(
-                        reservations.map(res => [res.sessionId, res])
-                    );
-
-                    const combinedEvents: CalendarEvent[] = sessions.map(session => {
+                    combinedEvents = allSessions.map(session => {
                         const reservation = reservationMap.get(session.id);
                         return {
                             id: session.id,
@@ -98,11 +102,8 @@ const Reservations = () => {
                             description: session.description
                         };
                     });
-
-                    setEvents(combinedEvents);
                 } else if (role === "TRAINER") {
-                    const sessions = await getSessionsByDate(currentDate.toISOString().split('T')[0]);
-                    const sessionEvents: CalendarEvent[] = sessions.map(session => ({
+                    combinedEvents = allSessions.map(session => ({
                         id: session.id,
                         type: "trainer",
                         start: new Date(`${session.date}T${session.startTime}`),
@@ -112,8 +113,9 @@ const Reservations = () => {
                         trainerId: session.trainerId,
                         description: session.description
                     }));
-                    setEvents(sessionEvents);
                 }
+
+                setEvents(combinedEvents);
             } catch (error) {
                 console.error('Error fetching sessions:', error);
             } finally {
@@ -122,7 +124,7 @@ const Reservations = () => {
         };
 
         fetchEvents();
-    }, [userId, role, currentDate, userReservations]);
+    }, [userId, role, currentDate]);
 
     /**
      * Custom component that renders a custom event in the calendar.
@@ -135,16 +137,18 @@ const Reservations = () => {
         return (
             <div className='flex flex-col'>
                 <strong>Sesión</strong>
-                {event.type === 'reserved' && (
+                <div>
+                    {event.type === 'reserved' && (
                     <small style={{ fontStyle: 'italic'}}>
-                        Reservado
+                        Reservado - {event.status}
                     </small>
-                )}
-                {event.type === 'available' && (
-                    <small style={{ fontStyle: 'italic'}}>
-                        Disponible
-                    </small>
-                )}
+                    )}
+                    {event.type === 'available' && (
+                        <small style={{ fontStyle: 'italic'}}>
+                            Disponible
+                        </small>
+                    )}
+                </div>
                 <small className="text-sm overflow-hidden text-ellipsis max-w-full line-clamp-2">
                     {event.description}
                 </small>
@@ -200,20 +204,15 @@ const Reservations = () => {
      * @param {Object} event - The selected event.
      */
     const handleSelectEvent = (event: CalendarEvent) => {
-        sessionStorage.setItem('selectedCalendarEvent', JSON.stringify(event));
+        sessionStorage.setItem("GymEvent", JSON.stringify(event));
+        
         if (role === "TRAINER") {
-            router.push({
-                pathname: '/gym-module/reservations/session-details'
-            });
+            router.push('/gym-module/reservations/session-details');
         } else if (role === "STUDENT") {
             if (event.type === "available") {
-                router.push({
-                    pathname: '/gym-module/reservations/book-session'
-                });
+                router.push('/gym-module/reservations/book-session');
             } else if (event.type === "reserved") {
-                router.push({
-                    pathname: '/gym-module/reservations/book-detail'
-                });
+                router.push('/gym-module/reservations/book-detail');
             }
         }
     };

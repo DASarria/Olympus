@@ -35,12 +35,12 @@ export interface User {
 /**
  * Fetches a user by their unique user ID.
  * @param {string} id - The unique identifier for the user.
- * @returns {Promise<UserDTO>} A promise that resolves with the user data.
+ * @returns {Promise<User>} A promise that resolves with the user data.
  * @throws {Error} Throws an error if the API request fails or if an error message is provided by the API.
  */
 export async function getUserById(id: string) {
     try {
-        const response = await api.get(`${USER_API}/${id}`);
+        const response = await api.get<User>(`${USER_API}/${id}`);
         return response.data;
     } catch (error: any) {
         throw new Error(error.response?.data?.message || "Error al obtener usuario");
@@ -50,12 +50,12 @@ export async function getUserById(id: string) {
 /**
  * Fetches a user by their institutional ID.
  * @param {string} institutionalId - The institutional ID of the user.
- * @returns {Promise<UserDTO>} A promise that resolves with the user data.
+ * @returns {Promise<User>} A promise that resolves with the user data.
  * @throws {Error} Throws an error if the API request fails or if an error message is provided by the API.
  */
 export async function getUserByInstitutionalId(institutionalId: string) {
     try {
-        const response = await api.get(`${USER_API}/by-institutional-id/${institutionalId}`);
+        const response = await api.get<User>(`${USER_API}/by-institutional-id/${institutionalId}`);
         return response.data;
     } catch (error: any) {
         throw new Error(error.response?.data?.message || "Error al obtener usuario institucional");
@@ -64,12 +64,12 @@ export async function getUserByInstitutionalId(institutionalId: string) {
 
 /**
  * Fetches all users from the system.
- * @returns {Promise<UserDTO[]>} A promise that resolves with an array of users.
+ * @returns {Promise<User[]>} A promise that resolves with an array of users.
  * @throws {Error} Throws an error if the API request fails or if an error message is provided by the API.
  */
 export async function getAllUsers() {
     try {
-        const response = await api.get(USER_API);
+        const response = await api.get<User[]>(USER_API);
         return response.data;
     } catch (error: any) {
         throw new Error(error.response?.data?.message || "Error al obtener usuarios");
@@ -84,7 +84,7 @@ export async function getAllUsers() {
  */
 export async function getUsersByRole(role: string) {
     try {
-        const response = await api.get(`${USER_API}/by-role/${role}`);
+        const response = await api.get<User[]>(`${USER_API}/by-role/${role}`);
         return response.data;
     } catch (error: any) {
         throw new Error(error.response?.data?.message || "Error al obtener usuarios por rol");

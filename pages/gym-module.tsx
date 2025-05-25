@@ -19,18 +19,29 @@ const Module5 = () => {
         const fetchUser = async () => {
             try {
                 const id = getInstitutionalIdFromToken();
-                console.log(id);
                 if (!id) {
                     console.error("No userId found");
-                    //router.push('/');
+                    router.push('/');
                     return;
                 };
-                sessionStorage.setItem('id', id);
 
-                try {
-                    await getUserByInstitutionalId(id);
-                } catch (Error) {
-                    createUser();
+                const existingUser = sessionStorage.getItem("gymId");
+                if (!existingUser) {
+
+                    try {
+                        await createUser();
+                    } catch (error) {
+                        console.error("User already exists.");
+                    }
+
+                    try {
+                        const gymUser = await getUserByInstitutionalId(id);
+                        sessionStorage.setItem('gymId', gymUser.id);
+                    } catch(error) {
+                        console.log("Couldnt get user id for the gym module");
+                    }
+                } else {
+                    console.log("User already cached, skipping registration.");
                 }
 
                 if (role === "ADMIN" && router.pathname !== "/gym-module/analysis") {

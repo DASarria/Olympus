@@ -1,4 +1,4 @@
-import { useEffect, useState, ChangeEvent, FormEvent } from "react";
+import { useEffect, useState, ChangeEvent, FormEvent, useRef } from "react";
 import { useRouter } from "next/router";
 import { updateSession, cancelSession } from "@/api/gymServicesIndex";
 import { PageTransitionWrapper } from "@/components/PageTransitionWrapper";
@@ -16,6 +16,7 @@ import { CalendarEvent } from "../reservations";
 const SessionDetails = () => {
     const router = useRouter();
     const [event, setEvent] = useState<CalendarEvent | null>(null);
+    const checkedStorageRef = useRef(false);
     const [trainerId, setTrainerId] = useState<string | null>(null);
     const [cancelReason, setCancelReason] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
@@ -35,9 +36,11 @@ const SessionDetails = () => {
      */
     useEffect(() => {
         if (typeof window === "undefined") return;
+        if (checkedStorageRef.current) return;
+        checkedStorageRef.current = true;
 
-        const storedTrainerId = sessionStorage.getItem("id");
-        const storedEvent = sessionStorage.getItem("selectedCalendarEvent");
+        const storedTrainerId = sessionStorage.getItem("gymId");
+        const storedEvent = sessionStorage.getItem("GymEvent");
 
         if (!storedTrainerId) {
             router.push("/");
@@ -51,7 +54,7 @@ const SessionDetails = () => {
 
         const parsedEvent: CalendarEvent = JSON.parse(storedEvent);
         setEvent(parsedEvent);
-        sessionStorage.removeItem("selectedCalendarEvent");
+        sessionStorage.removeItem("GymEvent");
 
         setTrainerId(storedTrainerId);
 
