@@ -17,7 +17,6 @@ const SCRAdmin = () => {
         <ArrowLeft onClick={handleClickBack} className="cursor-pointer mt-3" />
         <h1>Reservas</h1>
       </div>
-
       <div>
         <RevsTable />
       </div>

@@ -114,6 +114,22 @@ const MAX_AFORO = 30
   if (!token) {
     return Swal.fire("Error", "Token no encontrado, inicia sesión", "error");
   }
+
+  const [hourStr, minuteStr] = time.split(":");
+  const hour = parseInt(hourStr);
+  const minute = parseInt(minuteStr);
+
+  const isMorning = hour >= 7 && hour < 10;
+  const isAfternoon = hour >= 13 && hour < 16;
+
+  if (!(isMorning || isAfternoon)) {
+    return Swal.fire(
+      "Horario inválido",
+      "Solo se permiten reservas entre 7:00–10:00 y 13:00–16:00",
+      "warning"
+    );
+  }
+
   const reserva: Reserva = {
     userName,
     userId,
@@ -125,6 +141,7 @@ const MAX_AFORO = 30
     people,
     state: "RESERVA_CONFIRMADA",
   };
+
   console.log("📤 Enviando reserva:", JSON.stringify(reserva, null, 2));
   console.log("🔐 Usando token:", token);
   try {
@@ -144,10 +161,7 @@ const MAX_AFORO = 30
       return;
     }
     Swal.fire("Éxito", "Reserva creada correctamente", "success");
-
-    // Llama a fetchData para actualizar las reservas sin recargar la página
     await fetchData();
-
     setSelectedRoom(null);
     setFormData({ people: 1, time: "", day: "" });
   } catch (e) {
@@ -155,6 +169,7 @@ const MAX_AFORO = 30
     Swal.fire("Error", "No se pudo crear la reserva", "error");
   }
 };
+
 
 
 
