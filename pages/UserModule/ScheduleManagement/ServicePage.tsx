@@ -54,9 +54,17 @@ const ServicePage = () => {
             setServices(res.data.data);
           }
         });
-    } catch (error: any) {
-      console.error("Error al añadir servicio:", error.message);
-      alert("Error al añadir servicio");
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error al añadir servicio:", error.message);
+        alert(`Error al añadir servicio: ${error.response?.data?.message || error.message}`);
+      } else if (error instanceof Error) {
+        console.error("Error al añadir servicio:", error.message);
+        alert(`Error al añadir servicio: ${error.message}`);
+      } else {
+        console.error("Error desconocido:", error);
+        alert("Error desconocido al añadir servicio");
+      }
     }
   };
 
@@ -71,9 +79,18 @@ const ServicePage = () => {
 
       alert("Servicio eliminado correctamente");
       setServices((prev) => prev.filter((s) => s !== serviceName));
-    } catch (error: any) {
-      console.error("Error al eliminar servicio:", error.message);
-      alert("Error al eliminar servicio");
+    
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error al eliminar servicio:", error.message);
+        alert(`Error al eliminar servicio: ${error.response?.data?.message || error.message}`);
+      } else if (error instanceof Error) {
+        console.error("Error al eliminar servicio:", error.message);
+        alert(`Error al eliminar servicio: ${error.message}`);
+      } else {
+        console.error("Error desconocido:", error);
+        alert("Error desconocido al eliminar servicio");
+      }
     }
   };
 
@@ -82,7 +99,7 @@ const ServicePage = () => {
       <div style={{ padding: "20px", fontFamily: "'Open Sans', sans-serif" }}>
         <Return
           className="!self-stretch !flex-[0_0_auto] !w-full mb-6"
-          text="Gestión de Servicios"
+          text="Gestión de Horarios"
           returnPoint="/UserModule/ScheduleManagement/SchedulePage"
         />
 

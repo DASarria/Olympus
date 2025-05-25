@@ -7,7 +7,6 @@ import FloatingConfigurationView from "@/components/gestionUsuario/FloatingConfi
 import ConfigurationContainer from "@/components/gestionUsuario/ConfigurationContainer";
 import { CreateConfiguration } from "@/pages/api/UserManagement/ConfigurationService";
 import ErrorMessage from "@/components/gestionUsuario/ErrorMessage";
-import { useRouter } from 'next/router';
 import { Return } from "@/components/Return";
 import { PageTransitionWrapper } from "@/components/PageTransitionWrapper";
 
@@ -30,7 +29,6 @@ const CreateConfigurationPage = () =>{
         message:string;
         data:null;
     }
-    const router = useRouter();
     const [name,setName] = useState<string>("");
     const options:string[] = [
         "07:00","08:30","10:00","11:30","13:00","14:30","16:00","17:30","19:00"

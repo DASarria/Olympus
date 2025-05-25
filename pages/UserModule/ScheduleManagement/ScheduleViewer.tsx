@@ -144,7 +144,7 @@ const ScheduleViewer = () => {
 
         const daySchedules: Schedule[] = res.data.data;
 
-        for (const schedule of daySchedules) {
+        for (let i = 0; i < daySchedules.length; i++) {
           const updateDTO = {
             serviceName,
             dayOfWeek: removeAccents(day.toLowerCase()),
@@ -164,11 +164,17 @@ const ScheduleViewer = () => {
       // Recargar info actualizada para el día seleccionado
       await fetchData();
 
-    } catch (error: any) {
-      console.error("Error al actualizar configuraciones:", error.response ?? error.message ?? error);
-      alert(`Error al actualizar configuraciones: ${error.response?.data?.message || error.message || "desconocido"}`);
-    } finally {
-      setLoading(false);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error al actualizar configuraciones:", error.response ?? error.message);
+        alert(`Error al actualizar configuraciones: ${error.response?.data?.message || error.message}`);
+      } else if (error instanceof Error) {
+        console.error("Error al actualizar configuraciones:", error.message);
+        alert(`Error al actualizar configuraciones: ${error.message}`);
+      } else {
+        console.error("Error desconocido:", error);
+        alert("Error desconocido al actualizar configuraciones");
+      }
     }
   };
 

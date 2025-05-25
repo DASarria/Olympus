@@ -127,7 +127,7 @@ const ConfigurationPage = () => {
 
     useEffect(() => {
         loadInitialConfigurations();
-    }, []);
+    }, );
 
     return (
         <>
