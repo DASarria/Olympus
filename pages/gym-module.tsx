@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import { NavBtn } from "@/components/NavBtn";
 import { ServiceContainer } from "@/components/ServiceContainer";
 import { PageTransitionWrapper } from "@/components/PageTransitionWrapper";
-import { getUserById, createUser } from "@/api/gymServicesIndex";
-import { getUserIdFromToken } from "@/api/general";
+import { getUserByInstitutionalId, createUser } from "@/api/gymServicesIndex";
+import { getInstitutionalIdFromToken } from "@/api/general";
 import Reseva from "@/assets/images/gym-module/SCHEDULE.svg";
 import Progreso from "@/assets/images/gym-module/PROGRESOFISICO.svg";
 import Rutina from "@/assets/images/gym-module/RUTINA.svg";
@@ -12,23 +12,24 @@ import Analisis from "@/assets/images/gym-module/ANALISIS.svg";
 
 const Module5 = () => {
     const router = useRouter();
-    const [userId, setUserId] = useState('');
     const role = typeof window !== 'undefined' ? sessionStorage.getItem("role") : null;
     const [loading, setLoading ] = useState(true);
 
     useEffect(() => {
-
         const fetchUser = async () => {
             try {
-                const id = getUserIdFromToken();
+                const id = getInstitutionalIdFromToken();
+                console.log(id);
                 if (!id) {
                     console.error("No userId found");
+                    //router.push('/');
                     return;
                 };
-                setUserId(id)
+                sessionStorage.setItem('id', id);
 
-                const user = await getUserById(id);
-                if (!user) {
+                try {
+                    await getUserByInstitutionalId(id);
+                } catch (Error) {
                     createUser();
                 }
 

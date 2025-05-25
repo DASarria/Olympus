@@ -12,7 +12,7 @@ import { jwtDecode } from 'jwt-decode';
  * 
  * @throws {Error} Throws an error if the token format is invalid or there is an issue decoding the token.
  */
-export function getUserIdFromToken(): string | null {
+export function getInstitutionalIdFromToken(): string | null {
   try {
     const token = sessionStorage.getItem('token');
     

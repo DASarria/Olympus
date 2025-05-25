@@ -43,8 +43,7 @@ export async function getUserById(id: string) {
         const response = await api.get(`${USER_API}/${id}`);
         return response.data;
     } catch (error: any) {
-        console.error(error.response?.data?.message || "Error al obtener usuario");
-        return null;
+        throw new Error(error.response?.data?.message || "Error al obtener usuario");
     }
 }
 
@@ -59,8 +58,7 @@ export async function getUserByInstitutionalId(institutionalId: string) {
         const response = await api.get(`${USER_API}/by-institutional-id/${institutionalId}`);
         return response.data;
     } catch (error: any) {
-        console.error(error.response?.data?.message || "Error al obtener usuario institucional");
-        return null;
+        throw new Error(error.response?.data?.message || "Error al obtener usuario institucional");
     }
 }
 
@@ -100,24 +98,12 @@ export async function getUsersByRole(role: string) {
  */
 export async function createUser() {
     try {
-        const token = localStorage.getItem('jwtToken');
+        const token = localStorage.getItem('token');
 
         if (!token) {
             throw new Error("Token JWT no encontrado");
         }
-
-        const cachedUser = localStorage.getItem(`user_${token}`);
-        if (cachedUser) {
-            return JSON.parse(cachedUser);
-        }
-
-        const response = await api.post(`${USER_API}/create`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
-        localStorage.setItem(`user_${token}`, JSON.stringify(response.data));
+        const response = await api.post(`${USER_API}/create`);
         return response.data;
     } catch (error: any) {
         console.error(error.response?.data?.message || "Error al crear usuario");
