@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import styles from "@/components/gestionUsuario/styles.module.css";
-
+import { consultarUsuarios, borrarUsuarioPorId } from "@/pages/api/UserManagement//UserService";
 import { Return } from "@/components/Return";
 import CampoTexto from "@/components/gestionUsuario/CampoTexto";
 import CampoSelect from "@/components/gestionUsuario/CampoSelect";
@@ -48,30 +48,19 @@ const EditarUsuario = () => {
 
   const consultar = async () => {
   try {
-    const token = sessionStorage.getItem("token");
-    console.log("Token enviado:", token);
-
-    const res = await axios.post("https://usermanagement-bhe9cfg4b5b2hthj.eastus-01.azurewebsites.net/user/query", filtrosConSoloUno, {
-    //const res = await axios.post("http://localhost:8080/user/query",filtrosConSoloUno, {
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `${token}`
-        }
-      }
-    );
-    setResultados(res.data.data);
+    const datos = await consultarUsuarios(filtrosConSoloUno);
+    setResultados(datos);
     alert("Consulta realizada con éxito");
   } catch (e) {
     console.error(e);
     alert("Error al consultar usuarios");
   }
-};
+  };
+
 
 
   const editarUsuario = (usuario: any) => {
     setUsuarioEditando(usuario);
-    // Opcional: hacer scroll al formulario
-    // setTimeout(() => document.getElementById("form-editar-usuario")?.scrollIntoView({ behavior: "smooth" }), 0);
   };
 
   const borrarUsuario = async (id: string) => {
@@ -79,24 +68,15 @@ const EditarUsuario = () => {
   if (!confirmacion) return;
 
   try {
-    const token = sessionStorage.getItem("token");
-    console.log("Token enviado:", token); // Para verificar
-
-    await axios.delete(`https://usermanagement-bhe9cfg4b5b2hthj.eastus-01.azurewebsites.net/user/${id}`, {
-    //await axios.delete(`http://localhost:8080/user/${id}`, {
-      headers: {
-        "Authorization": `${token}`,
-        "Content-Type": "application/json"
-      }
-    });
-
+    await borrarUsuarioPorId(id);
     alert("Usuario eliminado con éxito");
     setResultados(prev => prev.filter((u: any) => u.id !== id));
   } catch (e) {
     console.error(e);
     alert("Error al eliminar el usuario");
   }
-};
+  };
+
 
 
   return (

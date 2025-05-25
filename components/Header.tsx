@@ -1,5 +1,9 @@
+'use client';
 import Image from 'next/image';
+import { useState, useRef, useEffect } from 'react';
 import logotransparente from "../assets/images/logotransparente.png";
+import { useRouter } from 'next/navigation';
+
 
 interface HeaderProps {
   userName?: string;
@@ -7,7 +11,10 @@ interface HeaderProps {
 }
 
 const Header = ({ userName = 'Nombre de Usuario', notificationsCount = 0 }: HeaderProps) => {
-  // Esta parte extrae iniciales para el avatar
+  const [menuAbierto, setMenuAbierto] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -17,30 +24,50 @@ const Header = ({ userName = 'Nombre de Usuario', notificationsCount = 0 }: Head
       .substring(0, 2);
   };
 
+  // Cierra el menú si se hace clic afuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuAbierto(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   return (
-    <div className="flex w-full justify-between items-center h-14">
-      {/* Aquí se pone el logo, que pasó de estar en el menú lateral a acá para que no hubiera conflictos cuando se mostrara el contenido */}
+    <div className="flex w-full justify-between items-center h-14 relative">
       <div className="w-[14vw] md:w-[6vw] h-14 bg-eci flex items-center justify-center">
         <Image
           src={logotransparente}
           alt="ECI logo"
-          className="h-auto w-full object-contain" // object-contain evita que se distorsione
+          className="h-auto w-full object-contain"
         />
       </div>
 
-      {/* Controles de usuario a la derecha, nombre y notificaciones */}
-      <div className="flex items-center space-x-4 px-4">
-        {/* Nombre de usuario (solo visible en escritorio) */}
-        <span className="hidden md:block text-gray-700">
-          {userName}
-        </span>
+      <div className="flex items-center space-x-4 px-4 relative" ref={menuRef}>
+        <span className="hidden md:block text-gray-700">{userName}</span>
 
-        {/* Iniciales del usuario */}
-        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-400 text-white">
+        <button
+          onClick={() => setMenuAbierto(!menuAbierto)}
+          className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-400 text-white font-semibold"
+        >
           {getInitials(userName)}
-        </div>
+        </button>
 
-        {/* Campanita de notificaciones */}
+        {menuAbierto && (
+          <div className="absolute top-14 right-4 bg-white border rounded-lg shadow-lg w-40 py-2 z-10">
+            <button
+            onClick={() => router.push('/UserModule/gestionUsuario/VerPerfil')}
+            className="w-full text-left px-4 py-2 hover:bg-gray-100"
+                >
+            Ver perfil
+            </button>
+
+            <button className="w-full text-left px-4 py-2 hover:bg-gray-100">Cerrar sesión</button>
+          </div>
+        )}
+
         <div className="relative">
           <button
             className="p-2 rounded-full hover:bg-gray-100"
@@ -61,7 +88,6 @@ const Header = ({ userName = 'Nombre de Usuario', notificationsCount = 0 }: Head
               />
             </svg>
 
-            {/* Solo muestro el contador si hay notificaciones y si hay más de 9, muestro "9+" para que no ocupe tanto espacio */}
             {notificationsCount > 0 && (
               <span className="absolute top-1 right-1 h-4 w-4 bg-red-600 rounded-full flex items-center justify-center text-white text-xs">
                 {notificationsCount > 9 ? '9+' : notificationsCount}

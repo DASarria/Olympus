@@ -4,6 +4,7 @@ import CampoSelect from './CampoSelect';
 import CampoTexto from './CampoTexto';
 import RectanguloConTexto from './RectanguloConTexto';
 import styles from "@/components/gestionUsuario/styles.module.css";
+import { API_BASE } from "@/pages/api/UserManagement//UserService";
 
 interface UsuarioData {
   fullName: string;
@@ -62,8 +63,8 @@ const FormularioEditarUsuario: React.FC<Props> = ({ datosIniciales }) => {
     try {
       const token = sessionStorage.getItem("token");
 
-      await axios.put("https://usermanagement-bhe9cfg4b5b2hthj.eastus-01.azurewebsites.net/user", payload, {
-      //await axios.put('http://localhost:8080/user', payload, {
+      //await axios.put("https://usermanagement-bhe9cfg4b5b2hthj.eastus-01.azurewebsites.net/user", payload, {
+      await axios.put(`${API_BASE}/user`, payload, {
         headers: {
           "Content-Type": "application/json",
           "Authorization": `${token}` // <-- Aquí se incluye el token
