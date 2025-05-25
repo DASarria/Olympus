@@ -119,7 +119,7 @@ const EditarUsuario = () => {
               <CampoSelect
                 etiqueta="Rol"
                 marcador="Seleccione rol"
-                opciones={["Student", "ADMIN", "TEACHER"]}
+                opciones={["STUDENT","ADMIN", "SALA_ADMIN", "TRAINER", "MEDICAL_SECRETARY", "DOCTOR", "TEACHER", "EXTRACURRICULAR_TEACHER", "BIENESTAR"]}
                 valor={filtros.role}
                 onChange={(v) => setFiltros({ ...filtros, role: v })}
               />
