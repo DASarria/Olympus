@@ -59,7 +59,6 @@ const SCPAdmin = () => {
   const router = useRouter()
   const [elementoUsage, setElementoUsage] = useState<ElementoUsage[]>([])
   const [reservas, setReservas] = useState<Reserva[]>([])
-  const [loans, setLoans] = useState<Loan[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
@@ -133,7 +132,6 @@ const SCPAdmin = () => {
       })
       if (!loansResponse.ok) throw new Error("Error cargando préstamos")
       const loansData: Loan[] = await loansResponse.json()
-      setLoans(loansData)
 
       // Formatear elementos para uso interno
       const formattedElements: Elemento[] = elementsData
@@ -251,9 +249,7 @@ const SCPAdmin = () => {
     setSelectedElementId("")
     setSelectedReservaId("")
     alert("Préstamo creado exitosamente")
-  } catch (error: any) {
-    alert(error.message || "Error al crear préstamo")
-  } finally {
+  }  finally {
     setLoading(false)
   }
 }

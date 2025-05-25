@@ -53,7 +53,6 @@ const RevsTable = () => {
   const [searchId, setSearchId] = useState("")
   const [searchName, setSearchName] = useState("")
   const [searchRoom, setSearchRoom] = useState("")
-  const [elementNames, setElementNames] = useState<Record<string, string>>({})
   const [rooms, setRooms] = useState<RoomsProps[]>([])
   const [dateFilter, setDateFilter] = useState<string>("")
 
@@ -114,7 +113,6 @@ const RevsTable = () => {
         }
       })
 
-      setElementNames(namesMap)
     } catch (error) {
       console.error("Error cargando nombres de elementos:", error)
     }
@@ -161,7 +159,6 @@ const RevsTable = () => {
       // If reservation is now within 1.5 hours 
       if (Math.abs(timeDiff) <= 5400000) {
         // Check if we've already processed this reservation
-        const processedKey = `processed_${reserva.id}`
       }
     }
   }
