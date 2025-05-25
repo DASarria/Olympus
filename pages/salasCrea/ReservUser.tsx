@@ -362,6 +362,8 @@ const ReservUser = () => {
           </form>
         </div>
       )}
+      <br />
+      <br />
 
       <div>
         {reservas.length === 0 && <p className="text-center text-gray-500">.</p>}

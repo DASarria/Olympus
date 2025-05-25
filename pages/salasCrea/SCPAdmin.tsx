@@ -1,10 +1,10 @@
+// ✅ Archivo: SCPAdmin.tsx
 "use client"
 
 import { useState, useEffect } from "react"
 import type { StaticImageData } from "next/image"
 import { ArrowLeft } from "lucide-react"
-import { useRouter } from "next/navigation" // next/router está deprecated en Next.js 13+
-import Image from "next/image"
+import { useRouter } from "next/navigation"
 import defaultImage from "../../assets/images/1imagen.jpg"
 import uno from "../../assets/images/uno.webp"
 import jenga from "../../assets/images/jenga.webp"
@@ -38,36 +38,17 @@ interface Elemento {
 interface Loan {
   id: string
   elementId: string
-  state: string
+  state: "PRESTAMO_PENDIENTE" | "PRESTAMO_DEVUELTO" | "DAMAGE_LOAN"
   revId: string
-}
-
-interface ElementoUsage {
-  elementId: string
-  elementName: string
-  usageCount: number
-  lastUsed: string
-  borrowers: {
-    userId: string
-    userName: string
-    date: string
-  }[]
-  imagen: StaticImageData | string
 }
 
 const SCPAdmin = () => {
   const router = useRouter()
-  const [elementoUsage, setElementoUsage] = useState<ElementoUsage[]>([])
   const [reservas, setReservas] = useState<Reserva[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedElement, setSelectedElement] = useState<ElementoUsage | null>(null)
-
-  // Para crear préstamos:
-  const [selectedReservaId, setSelectedReservaId] = useState<string>("")
-  const [selectedElementId, setSelectedElementId] = useState<string>("")
-
+  const [elementos, setElementos] = useState<Elemento[]>([])
+  const [prestamos, setPrestamos] = useState<Loan[]>([])
+  const [selectedReservaId, setSelectedReservaId] = useState("")
+  const [selectedElementId, setSelectedElementId] = useState("")
   const token = typeof window !== "undefined" ? sessionStorage.getItem("token") : null
   const url = aUr
 
@@ -79,155 +60,64 @@ const SCPAdmin = () => {
     Monos: monos,
   }
 
-  interface ElementoAPI {
-    id: string
-    name: string
-    description?: string
-    quantity?: number
-  }
-
   const fetchData = async () => {
-    if (!token) {
-      setError("No hay token de autenticación.")
-      setLoading(false)
-      return
+    if (!token) return
+    const headers = {
+      "Content-Type": "application/json",
+      Authorization: `${token}`,
     }
-    try {
-      setLoading(true)
-      setError(null)
 
-      // Obtener reservas
-      const revsResponse = await fetch(`${url}/revs`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `${token}`,
-        },
-        cache: "no-store",
-      })
-      if (!revsResponse.ok) throw new Error("Error cargando reservas")
-      const revsData: Reserva[] = await revsResponse.json()
-      setReservas(revsData)
+    const [resvRes, elemRes, loanRes] = await Promise.all([
+      fetch(`${url}/revs`, { headers }),
+      fetch(`${url}/elements`, { headers }),
+      fetch(`${url}/loans`, { headers }),
+    ])
 
-      // Obtener elementos
-      const elementsResponse = await fetch(`${url}/elements`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `${token}`,
-        },
-        cache: "no-store",
-      })
-      if (!elementsResponse.ok) throw new Error("Error cargando elementos")
-      const elementsData: ElementoAPI[] = await elementsResponse.json()
+    const resvs: Reserva[] = await resvRes.json()
+    const elemsData = await elemRes.json()
+    const loans: Loan[] = await loanRes.json()
 
-      // Obtener préstamos
-      const loansResponse = await fetch(`${url}/loans`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `${token}`,
-        },
-        cache: "no-store",
-      })
-      if (!loansResponse.ok) throw new Error("Error cargando préstamos")
-      const loansData: Loan[] = await loansResponse.json()
+    const formattedElems: Elemento[] = elemsData.map((el: { id: string; name: string; description?: string; quantity?: number }) => ({
+      id: el.id,
+      nombre: el.name,
+      descripcion: el.description || "Sin descripción",
+      cantidad: el.quantity ?? 0,
+      imagen: imagenesPorNombre[el.name] || defaultImage,
+    }))
 
-      // Formatear elementos para uso interno
-      const formattedElements: Elemento[] = elementsData
-        .filter((el) => el.name)
-        .map((el) => ({
-          id: el.id,
-          nombre: el.name,
-          descripcion: el.description || "Sin descripción",
-          cantidad: el.quantity || 0,
-          // Pasa la importación completa de la imagen o default
-          imagen: imagenesPorNombre[el.name] || defaultImage,
-        }))
-
-      processElementUsage(revsData, loansData, formattedElements)
-    } catch (error) {
-      console.error("Error fetching data:", error)
-      setError("Error cargando datos. Por favor, intente de nuevo.")
-    } finally {
-      setLoading(false)
-    }
+    setReservas(resvs)
+    setElementos(formattedElems)
+    setPrestamos(loans)
   }
 
-  useEffect(() => {
-    if (token) fetchData()
-  }, [token, url])
-
-  // Procesa el uso de elementos para mostrar estadísticas
-  const processElementUsage = (
-    reservas: Reserva[],
-    loans: Loan[],
-    elementos: Elemento[]
-  ) => {
-    const usageMap = new Map<string, ElementoUsage>()
-
-    elementos.forEach((elemento) => {
-      usageMap.set(elemento.id, {
-        elementId: elemento.id,
-        elementName: elemento.nombre,
-        usageCount: 0,
-        lastUsed: "",
-        borrowers: [],
-        imagen: elemento.imagen,
-      })
+  const updateElementoCantidad = async (elementId: string, delta: number) => {
+    const el = elementos.find((e) => e.id === elementId)
+    if (!el) return
+    const nuevaCantidad = el.cantidad + delta
+    await fetch(`${url}/elements/${elementId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `${token}`,
+      },
+      body: JSON.stringify({
+        quantity: nuevaCantidad < 0 ? 0 : nuevaCantidad,
+        description: el.descripcion,
+      }),
     })
-
-    // Filtramos loans activos (por ejemplo, que no estén en estado "PRESTAMO_DEVUELTO")
-    const activeLoans = loans.filter((loan) => loan.state !== "PRESTAMO_DEVUELTO")
-
-    // Para cada préstamo activo, buscamos la reserva correspondiente por revId
-    activeLoans.forEach((loan) => {
-      const reserva = reservas.find((r) => r.id === loan.revId)
-      if (!reserva) return // si no hay reserva asociada, saltar
-
-      const usage = usageMap.get(loan.elementId)
-      if (usage) {
-        usage.usageCount += 1
-        const reservaDate = reserva.date.day
-        if (!usage.lastUsed || new Date(reservaDate) > new Date(usage.lastUsed)) {
-          usage.lastUsed = reservaDate
-        }
-        usage.borrowers.push({
-          userId: reserva.userId,
-          userName: reserva.userName,
-          date: `${reserva.date.day} ${reserva.date.time}`,
-        })
-      }
-    })
-
-    setElementoUsage(Array.from(usageMap.values()).sort((a, b) => b.usageCount - a.usageCount))
   }
 
-  // Filtra elementos según búsqueda
-  const filteredElements = elementoUsage.filter((elemento) =>
-    elemento.elementName.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const getDisponibles = (elementId: string) => {
+    const total = elementos.find((e) => e.id === elementId)?.cantidad || 0
+    return total
+  }
 
-  // Filtra reservas para mostrar solo vigentes o activas, por ejemplo estado "ACTIVA"
-  const activeReservas = reservas.filter((r) => r.state === "RESERVA_CONFIRMADA")
-
-  // Función para crear préstamo
   const handleCreateLoan = async () => {
-  if (!selectedReservaId) {
-    alert("Seleccione una reserva")
-    return
-  }
-  if (!selectedElementId) {
-    alert("Selecciona un elemento")
-    return
-  }
+    if (!selectedReservaId || !selectedElementId) return alert("Selecciona reserva y elemento")
+    const disponibles = getDisponibles(selectedElementId)
+    if (disponibles <= 0) return alert("No hay unidades disponibles de ese elemento")
 
-  console.log("Token:", token)
-  console.log("URL:", `${url}/loans`)
-
-  try {
-    setLoading(true)
-    const response = await fetch(`${url}/loans`, {
+    await fetch(`${url}/loans`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -240,147 +130,94 @@ const SCPAdmin = () => {
       }),
     })
 
-    if (!response.ok) {
-      const text = await response.text()
-      throw new Error(`Error al crear préstamo: ${text}`)
+    await updateElementoCantidad(selectedElementId, -1)
+    setSelectedElementId("")
+    setSelectedReservaId("")
+    await fetchData()
+    alert("Préstamo creado exitosamente")
+  }
+
+  const updateLoanState = async (loanId: string, newState: Loan["state"]) => {
+    await fetch(`${url}/loans/state/${loanId}/${newState}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `${token}`,
+      },
+    })
+
+    const loan = prestamos.find((p) => p.id === loanId)
+    if (loan && (newState === "PRESTAMO_DEVUELTO" || newState === "DAMAGE_LOAN")) {
+      await updateElementoCantidad(loan.elementId, 1)
     }
 
     await fetchData()
-    setSelectedElementId("")
-    setSelectedReservaId("")
-    alert("Préstamo creado exitosamente")
-  }  finally {
-    setLoading(false)
-  }
-}
-
-
-
-  // Manejo para abrir modal de detalles
-  const openModal = (elemento: ElementoUsage) => {
-    setSelectedElement(elemento)
-  }
-  const closeModal = () => {
-    setSelectedElement(null)
   }
 
-  if (loading) {
-    return <div className="p-6 text-center font-bold">Cargando datos...</div>
-  }
-
-  if (error) {
-    return <div className="p-6 text-center text-red-600 font-bold">{error}</div>
-  }
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
-      <button
-        onClick={() => router.back()}
-        className="mb-4 px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded"
-      >
-        <ArrowLeft className="inline-block mr-2" />
-        Volver
+      <button onClick={() => router.back()} className="mb-4 text-blue-600 flex items-center gap-2">
+        <ArrowLeft /> Volver
+      </button>
+      <h1 className="text-2xl font-bold mb-4">Gestión de Préstamos</h1>
+
+      <div className="mb-4">
+        <label>Reserva:</label>
+        <select value={selectedReservaId} onChange={(e) => setSelectedReservaId(e.target.value)} className="w-full p-2 border">
+          <option value="">Seleccione una reserva</option>
+          {reservas.map((r) => (
+            <option key={r.id} value={r.id}>
+              {r.userName} - {r.date.day} {r.date.time}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="mb-4">
+        <label>Elemento:</label>
+        <select value={selectedElementId} onChange={(e) => setSelectedElementId(e.target.value)} className="w-full p-2 border">
+          <option value="">Seleccione un elemento</option>
+          {elementos.map((e) => (
+            <option key={e.id} value={e.id}>
+              {e.nombre} (Cantidad total: {e.cantidad})
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <button onClick={handleCreateLoan} className="bg-blue-600 text-white px-4 py-2 rounded">
+        Crear préstamo
       </button>
 
-      <h1 className="text-2xl font-bold mb-4">Estadísticas de Préstamos de Elementos</h1>
-
-      <input
-        type="text"
-        placeholder="Buscar elemento"
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        className="mb-6 p-2 border rounded w-full max-w-md"
-      />
-
-      <div className="mb-8">
-        <h2 className="font-semibold mb-2">Crear nuevo préstamo</h2>
-        <select
-          value={selectedReservaId}
-          onChange={(e) => setSelectedReservaId(e.target.value)}
-          className="mr-4 p-2 border rounded"
-        >
-          <option value="">Selecciona una reserva activa</option>
-          {activeReservas.map((reserva) => (
-            <option key={reserva.id} value={reserva.id}>
-              {reserva.userName} - {reserva.date.day} {reserva.date.time}
-            </option>
-          ))}
-        </select>
-
-        <select
-          value={selectedElementId}
-          onChange={(e) => setSelectedElementId(e.target.value)}
-          className="p-2 border rounded"
-        >
-          <option value="">Selecciona un elemento</option>
-          {elementoUsage.map((el) => (
-            <option key={el.elementId} value={el.elementId}>
-              {el.elementName} (Prestados: {el.usageCount})
-            </option>
-          ))}
-        </select>
-
-        <button
-          onClick={handleCreateLoan}
-          className="ml-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Crear préstamo
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {filteredElements.map((elemento) => (
-          <div
-            key={elemento.elementId}
-            className="border rounded p-4 cursor-pointer hover:shadow-lg"
-            onClick={() => openModal(elemento)}
-          >
-            <h3 className="text-lg font-semibold mb-2">{elemento.elementName}</h3>
-            <Image
-              src={elemento.imagen}
-              alt={`Imagen de ${elemento.elementName}`}
-              width={300}
-              height={200}
-              className="rounded"
-            />
-            <p>Total veces prestado: {elemento.usageCount}</p>
-            <p>Último uso: {elemento.lastUsed || "Nunca"}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Modal detalles elemento */}
-      {selectedElement && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg max-w-md w-full relative">
-            <button
-              onClick={closeModal}
-              className="absolute top-2 right-2 text-red-600 font-bold text-xl"
-              aria-label="Cerrar"
-            >
-              ×
-            </button>
-            <h3 className="text-xl font-semibold mb-2">{selectedElement.elementName}</h3>
-            <Image
-              src={selectedElement.imagen}
-              width={300}
-              height={200}
-              alt={`Imagen de ${selectedElement.elementName}`}
-              className="mb-3 rounded"
-            />
-            <p className="mb-2 font-medium">Total veces prestado: {selectedElement.usageCount}</p>
-            <p className="mb-2 font-medium">Último uso: {selectedElement.lastUsed || "Nunca"}</p>
-            <h4 className="font-semibold mt-4 mb-1">Usuarios:</h4>
-            <ul className="list-disc ml-5 max-h-48 overflow-auto">
-              {selectedElement.borrowers.map((b, idx) => (
-                <li key={idx}>
-                  {b.userName} – {b.date}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      )}
+      <h2 className="text-xl font-bold mt-8 mb-2">Todos los préstamos</h2>
+      <ul className="space-y-2">
+        {prestamos.map((p) => {
+          const el = elementos.find((e) => e.id === p.elementId)
+          const res = reservas.find((r) => r.id === p.revId)
+          return (
+            <li key={p.id} className="border p-2 rounded">
+              <p>
+                <strong>{el?.nombre || "Elemento Eliminado"}</strong> - {res?.userName} ({res?.date.day} {res?.date.time})<br />
+                Estado: <span className="font-semibold">{p.state}</span>
+              </p>
+              {p.state === "PRESTAMO_PENDIENTE" && (
+                <div className="mt-2 space-x-2">
+                  <button onClick={() => updateLoanState(p.id, "PRESTAMO_DEVUELTO")} className="bg-green-500 text-white px-2 py-1 rounded">
+                    Devolver
+                  </button>
+                  <button onClick={() => updateLoanState(p.id, "DAMAGE_LOAN")} className="bg-red-600 text-white px-2 py-1 rounded">
+                    Reportar Daño
+                  </button>
+                </div>
+              )}
+            </li>
+          )
+        })}
+      </ul>
     </div>
   )
 }

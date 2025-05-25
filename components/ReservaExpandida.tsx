@@ -56,11 +56,26 @@ const ReservaExpandida: React.FC<Props> = ({ reserva, onClose, onSave }) => {
 
   // Store the original loans when component mounts
   useEffect(() => {
-    fetchAvailableElements()
-    fetchRooms()
-    checkTimeWindow(reserva.date)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reserva])
+  fetchAvailableElements()
+  fetchRooms()
+  checkTimeWindow(reserva.date)
+
+  // Verificar si ya pasaron 90 minutos desde la reserva y actualizar estado
+  const now = new Date()
+  const reservationDateTime = new Date(`${reserva.date.day}T${reserva.date.time}`)
+  const diffMs = now.getTime() - reservationDateTime.getTime()
+
+  // 90 minutos en milisegundos = 90 * 60 * 1000 = 5400000
+  if (diffMs > 5400000 && reserva.state === "RESERVA_CONFIRMADA") {
+    setEditedReserva((prev) => ({
+      ...prev,
+      state: "RESERVA_TERMINADA"
+    }))
+  }
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [reserva])
+
   
 
   // Check if the reservation time is within 1.5 hours of current time
