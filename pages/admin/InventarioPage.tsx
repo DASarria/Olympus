@@ -31,6 +31,14 @@ export default function InventarioPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    const [mostrarModal, setMostrarModal] = useState(false);
+
+    // Campos del formulario nuevo artículo
+    const [nuevoNombre, setNuevoNombre] = useState("");
+    const [nuevaDescripcion, setNuevaDescripcion] = useState("");
+    const [nuevoEstado, setNuevoEstado] = useState("Disponible");
+    const [nuevaCantidad, setNuevaCantidad] = useState(1);
+
     useEffect(() => {
         if (role !== "ADMIN") {
             alert("No tienes permisos para acceder a esta página");
@@ -70,20 +78,20 @@ export default function InventarioPage() {
                     observaciones: []
                 };
             }
-            
+
             acc[key].total += 1;
-            
+
             if (articulo.articleStatus === 'Disponible') {
                 acc[key].available += 1;
             }
-            
+
             if (articulo.articleStatus === 'Danado' || articulo.articleStatus === 'RequireMantenimiento') {
                 acc[key].observaciones.push(articulo);
             }
-            
+
             return acc;
         }, {});
-        
+
         return Object.values(grouped);
     };
 
@@ -92,13 +100,16 @@ export default function InventarioPage() {
         fetchArticulos(searchTerm);
     };
 
-    const agregarArticulo = async (name: string, description: string) => {
+    const agregarArticulo = async (name: string, description: string, articleStatus: string, cantidad: number) => {
         try {
-            await api.post('/Article', {
-                name,
-                description,
-                articleStatus: "Disponible"
-            });
+            // Crear la cantidad que el usuario indique
+            for (let i = 0; i < cantidad; i++) {
+                await api.post('/Article', {
+                    name,
+                    description,
+                    articleStatus
+                });
+            }
             fetchArticulos();
         } catch (error) {
             alert('Error al crear artículo');
@@ -107,43 +118,21 @@ export default function InventarioPage() {
 
     const eliminarArticulo = async (name: string) => {
         try {
-            const disponible = articulos.find(a => 
+            const disponible = articulos.find(a =>
                 a.name === name && a.articleStatus === 'Disponible'
             );
-            
+
             if (!disponible) {
                 alert('No hay unidades disponibles para eliminar');
                 return;
             }
-            
+
             await api.delete(`/Article/${disponible.id}`);
             fetchArticulos();
         } catch (error) {
             alert('Error al eliminar artículo');
         }
     };
-
-    if (loading) {
-        return (
-            <Layout>
-                <div className="flex justify-center items-center h-screen">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-500"></div>
-                </div>
-            </Layout>
-        );
-    }
-
-    if (error) {
-        return (
-            <Layout>
-                <div className="flex justify-center items-center h-screen">
-                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                        <p>{error}</p>
-                    </div>
-                </div>
-            </Layout>
-        );
-    }
 
     const groupedArticulos = groupArticulos();
 
@@ -153,7 +142,7 @@ export default function InventarioPage() {
                 <div className="flex flex-col flex-grow">
                     <main className="flex-grow p-8">
                         <h1 className="text-3xl font-bold mb-6">Inventario Deportivo</h1>
-                        
+
                         <form onSubmit={handleSearch} className="mb-6 flex gap-2">
                             <input
                                 type="text"
@@ -168,7 +157,83 @@ export default function InventarioPage() {
                             >
                                 Buscar
                             </button>
+                            <button
+                                type="button"
+                                onClick={() => setMostrarModal(true)}
+                                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                            >
+                                + Nuevo
+                            </button>
                         </form>
+
+                        {mostrarModal && (
+                            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                                <div className="bg-white p-6 rounded shadow-lg w-full max-w-md">
+                                    <h2 className="text-xl font-semibold mb-4">Nuevo Artículo</h2>
+
+                                    <input
+                                        type="text"
+                                        placeholder="Nombre del producto"
+                                        value={nuevoNombre}
+                                        onChange={(e) => setNuevoNombre(e.target.value)}
+                                        className="w-full mb-3 p-2 border rounded"
+                                    />
+
+                                    <input
+                                        type="text"
+                                        placeholder="Descripción"
+                                        value={nuevaDescripcion}
+                                        onChange={(e) => setNuevaDescripcion(e.target.value)}
+                                        className="w-full mb-3 p-2 border rounded"
+                                    />
+
+                                    <select
+                                        value={nuevoEstado}
+                                        onChange={(e) => setNuevoEstado(e.target.value)}
+                                        className="w-full mb-3 p-2 border rounded"
+                                    >
+                                        <option value="Disponible">Disponible</option>
+                                        <option value="Danado">Dañado</option>
+                                        <option value="RequireMantenimiento">Requiere mantenimiento</option>
+                                    </select>
+
+                                    <input
+                                        type="number"
+                                        min={1}
+                                        placeholder="Cantidad"
+                                        value={nuevaCantidad}
+                                        onChange={(e) => setNuevaCantidad(Number(e.target.value))}
+                                        className="w-full mb-4 p-2 border rounded"
+                                    />
+
+                                    <div className="flex justify-end space-x-2">
+                                        <button
+                                            onClick={() => setMostrarModal(false)}
+                                            className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                                        >
+                                            Cancelar
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                if(!nuevoNombre.trim()){
+                                                  alert("El nombre es obligatorio");
+                                                  return;
+                                                }
+                                                agregarArticulo(nuevoNombre, nuevaDescripcion, nuevoEstado, nuevaCantidad);
+                                                setMostrarModal(false);
+                                                setNuevoNombre("");
+                                                setNuevaDescripcion("");
+                                                setNuevoEstado("Disponible");
+                                                setNuevaCantidad(1);
+                                            }}
+                                            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                                        >
+                                            Guardar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                         <div className="overflow-x-auto rounded-lg shadow">
                             <table className="min-w-full table-auto bg-white text-sm text-gray-700 border border-gray-200">
@@ -199,7 +264,7 @@ export default function InventarioPage() {
                                                 </button>
                                                 <button
                                                     className="bg-green-500 hover:bg-green-600 text-white px-2 rounded"
-                                                    onClick={() => agregarArticulo(grupo.name, grupo.description)}
+                                                    onClick={() => agregarArticulo(grupo.name, grupo.description, "Disponible", 1)}
                                                 >
                                                     +
                                                 </button>
