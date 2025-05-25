@@ -1,7 +1,7 @@
 import axios from "axios";
 
-//export const API_BASE = "https://usermanagement-bhe9cfg4b5b2hthj.eastus-01.azurewebsites.net";
-export const API_BASE = "http://localhost:8080"; // Usa esta línea para desarrollo local
+export const API_BASE = "https://usermanagement-bhe9cfg4b5b2hthj.eastus-01.azurewebsites.net";
+//export const API_BASE = "http://localhost:8080"; // Usa esta línea para desarrollo local
 
 const headers = () => {
   const token = sessionStorage.getItem("token");
