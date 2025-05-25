@@ -233,12 +233,12 @@ const SCPAdmin = () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        Authorization: `${token}`,
       },
       body: JSON.stringify({
         elementId: selectedElementId,
         revId: selectedReservaId,
-        state: "PRESTAMO_ACTIVO",
+        state: "PRESTAMO_PENDIENTE",
       }),
     })
 
