@@ -1,0 +1,1 @@
+export const aUr = "http://colliseum-gvh2h4bbd8bgcbfm.brazilsouth-01.azurewebsites.net/"

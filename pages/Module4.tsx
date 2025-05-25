@@ -14,7 +14,7 @@ import Layout from "@/components/Layout";
 import Opciones from "@/components/Opciones";
 
 
-const Dashboard = () => {
+const Module4 = () => {
   const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
@@ -52,4 +52,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default Module4;

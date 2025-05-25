@@ -18,7 +18,7 @@ interface Prestamo {
     devolutionDate: string;
     startTime: string;
     endTime: string;
-    loanStatus: string;
+    loanStatus: "Prestado" | "Vencido" | "Devuelto"; // Tipado específico
     equipmentStatus: string;
     devolutionRegister: string;
     creationDate: string;
@@ -29,7 +29,7 @@ export default function PrestamosPage() {
     const [prestamos, setPrestamos] = useState<Prestamo[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [filtro, setFiltro] = useState("Prestado");
+    const [filtro, setFiltro] = useState<"activos" | "historial">("activos");
     const [detalle, setDetalle] = useState<Prestamo | null>(null);
     const [mostrarFormulario, setMostrarFormulario] = useState(false);
     const [nuevoPrestamo, setNuevoPrestamo] = useState({
@@ -46,17 +46,19 @@ export default function PrestamosPage() {
 
     const getAllPrestamos = async (): Promise<Prestamo[]> => {
         try {
-            const response = await api.get('/loans');
+            const response = await api.get('/LoanArticle');
             return response.data;
         } catch (error) {
-            console.error('Error al obtener préstamos:', error);
+            if (axios.isAxiosError(error)) {
+                console.error('Error detallado:', error.response?.data);
+            }
             throw error;
         }
     };
 
     const createPrestamo = async (prestamoData: Omit<Prestamo, 'id'>): Promise<Prestamo> => {
         try {
-            const response = await api.post('/loans', prestamoData);
+            const response = await api.post('/LoanArticle', prestamoData);
             return response.data;
         } catch (error) {
             console.error('Error al crear préstamo:', error);
@@ -70,7 +72,7 @@ export default function PrestamosPage() {
         if (!window.confirm("¿Estás seguro de que deseas eliminar este préstamo?")) return;
         try {
             setLoading(true);
-            await api.delete(`/loans/${id}`);
+            await api.delete(`/LoanArticle/${id}`);
             setPrestamos(prestamos.filter((p) => p.id !== id));
         } catch (err: unknown) {
             if (axios.isAxiosError(err)) {
@@ -87,7 +89,7 @@ export default function PrestamosPage() {
     const actualizarPrestamo = async (prestamoActualizado: Prestamo) => {
         try {
             setLoading(true);
-            const response = await api.put(`/loans/${prestamoActualizado.id}`, prestamoActualizado);
+            const response = await api.put(`/LoanArticle/${prestamoActualizado.id}`, prestamoActualizado);
             setPrestamos(prestamos.map((p) => p.id === prestamoActualizado.id ? response.data : p));
             setPrestamoEditando(null);
         } catch (err: unknown) {
@@ -104,25 +106,19 @@ export default function PrestamosPage() {
 
 
     useEffect(() => {
-        const fetchPrestamos = async () => {
-            try {
-                setLoading(true);
-                const data = await getAllPrestamos();
-                setPrestamos(data);
-                setError(null);
-            } catch (err: unknown) {
-                if (axios.isAxiosError(err)) {
-                    setError(err.response?.data?.message || 'Error al cargar préstamos');
-                } else {
-                    setError('Error desconocido al cargar préstamos');
-                }
-                console.error('Error al cargar préstamos:', err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchPrestamos();
+    const fetchPrestamos = async () => {
+        try {
+        setLoading(true);
+        const data = await getAllPrestamos();
+        // Ordenar por fecha más reciente primero
+        setPrestamos(data.sort((a, b) => 
+            new Date(b.creationDate).getTime() - new Date(a.creationDate).getTime()
+        ));
+        } catch (error) {
+        // Manejo de errores existente
+        }
+    };
+    fetchPrestamos();
     }, []);
 
     const agregarPrestamo = async () => {
@@ -183,10 +179,11 @@ export default function PrestamosPage() {
     };
 
     const filteredPrestamos = prestamos.filter((p) => {
-        if (filtro === "historial") return p.loanStatus === "Devuelto";
-        return p.loanStatus === filtro;
-    }).filter(p =>
-        p.nameUser.toLowerCase().includes(searchTerm.toLowerCase())
+    if (filtro === "historial") return p.loanStatus === "Devuelto";
+    return p.loanStatus === "Prestado" || p.loanStatus === "Vencido";
+    }).filter(p => 
+    p.nameUser.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    p.userId.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
@@ -213,19 +210,20 @@ export default function PrestamosPage() {
 
                         {/* Filtros */}
                         <div className="mb-6 flex flex-wrap gap-4">
-                            <button 
-                                onClick={() => setFiltro("Prestado")} 
-                                className={`px-4 py-2 rounded text-white ${filtro === "Prestado" ? "bg-blue-600" : "bg-gray-400"}`}
-                            >
-                                Activos
-                            </button>
-                            <button 
-                                onClick={() => setFiltro("Devuelto")} 
-                                className={`px-4 py-2 rounded text-white ${filtro === "Devuelto" ? "bg-yellow-600" : "bg-gray-400"}`}
-                            >
-                                Historial
-                            </button>
+                        <button 
+                            onClick={() => setFiltro("activos")} 
+                            className={`px-4 py-2 rounded text-white ${filtro === "activos" ? "bg-blue-600" : "bg-gray-400"}`}
+                        >
+                            Activos
+                        </button>
+                        <button 
+                            onClick={() => setFiltro("historial")} 
+                            className={`px-4 py-2 rounded text-white ${filtro === "historial" ? "bg-yellow-600" : "bg-gray-400"}`}
+                        >
+                            Historial
+                        </button>
                         </div>
+
 
                         {/* Buscador de usuario */}
                         <div className="mb-6">
