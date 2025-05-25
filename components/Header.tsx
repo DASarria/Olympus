@@ -23,6 +23,10 @@ const Header = ({ userName = 'Nombre de Usuario', notificationsCount = 0 }: Head
       .toUpperCase()
       .substring(0, 2);
   };
+  const logOut = () => {
+    sessionStorage.clear();
+    router.push('/');
+  }
 
   // Cierra el menú si se hace clic afuera
   useEffect(() => {
@@ -64,7 +68,9 @@ const Header = ({ userName = 'Nombre de Usuario', notificationsCount = 0 }: Head
             Ver perfil
             </button>
 
-            <button className="w-full text-left px-4 py-2 hover:bg-gray-100">Cerrar sesión</button>
+            <button
+            onClick={logOut}
+            className="w-full text-left px-4 py-2 hover:bg-gray-100">Cerrar sesión</button>
           </div>
         )}
 

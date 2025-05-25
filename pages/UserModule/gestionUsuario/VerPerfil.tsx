@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 import styles from "@/components/gestionUsuario/styles.module.css";
 import { consultarUsuarios } from "@/pages/api/UserManagement//UserService";
 import { Return } from "@/components/Return";
 import CampoTexto from "@/components/gestionUsuario/CampoTexto";
 import RectanguloConTexto from "@/components/gestionUsuario/RectanguloConTexto";
 import { jwtDecode } from "jwt-decode";
+import { motion } from "framer-motion";
 
 const VerPerfil = () => {
+  const router = useRouter();
   const [datos, setDatos] = useState({
     tipoUsuario: "",
     nombre: "",
@@ -29,6 +32,9 @@ const VerPerfil = () => {
     id: string;
     [key: string]: any;
   };
+  function changePassword () {
+        router.push("/UserModule/gestionUsuario/ChangePasswordPage")
+    }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -155,9 +161,36 @@ const VerPerfil = () => {
                 </div>
               ))}
           </div>
+          <div
+            style={{marginTop:"20px"}}
+          >
+            <motion.div
+              whileHover={{
+                scale: 1.005,
+                transition: { duration: 0.15 },
+              }}
+            >
+              <button
+                onClick = {changePassword}
+                style={{
+                  backgroundColor: "#990000",
+                  color: "#ffffff",
+                  fontFamily: "'Open Sans', sans-serif",
+                  borderRadius: "16px",
+                  padding: "10px 20px",
+                  border: "none",
+                  cursor: "pointer",
+                  fontSize: "20px",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Cambiar contraseña
+              </button>
+            </motion.div>
+          </div>
         </RectanguloConTexto>
       )}
-    <div style={{ height: "80px" }}></div>
+    
     </div>
     
   );

@@ -1,4 +1,5 @@
 import axios from "axios";
+import { promises } from "dns";
 
 export const API_BASE = "https://usermanagement-bhe9cfg4b5b2hthj.eastus-01.azurewebsites.net";
 //export const API_BASE = "http://localhost:8080"; // Usa esta línea para desarrollo local
@@ -71,5 +72,38 @@ export const crearUsuarioAdministrador = async (datos: any) => {
   });
   return res.data;
 };
+
+
+interface changePasswordDTO{
+  password:string;
+  newPassword:string;
+  newPasswordConfirm:string;
+}
+interface Response{
+  status:string;
+  message:string;
+  data:null;
+}
+export async function changePassword(params:changePasswordDTO):Promise<Response> {
+  try{
+    const response = await axios.put(`${API_BASE}/user/password`, params, {
+      headers: headers()
+    });
+    return response.data;
+  }catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      const errorBody = error.response?.data;
+      return errorBody;
+    }
+    // Garantiza que la función no finaliza sin retornar
+    const errorResponse:Response = {
+        status:"500",
+        message:"Error Desconocido",
+        data:null
+    }
+    throw error;
+  }
+    
+}
 
 
