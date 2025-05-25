@@ -1,67 +1,57 @@
 import { useRouter } from "next/router";
-import { useEffect } from "react";
-import React,{useState} from "react";
+import { useEffect, useState } from "react";
 import { PageTransitionWrapper } from "@/components/PageTransitionWrapper";
-import servicio1 from "@/assets/images/UserModule/salaCrea.png"
-import servicio2 from "@/assets/images/UserModule/medico.png"
-import servicio3 from "@/assets/images/UserModule/gym.png"
-
+import servicio from "@/assets/images/UserModule/service.png"
+import { Return } from "@/components/Return";
 import { NavBtn } from "@/components/NavBtn";
+import axios from "axios";
+
+//https://usermanagement-bhe9cfg4b5b2hthj.eastus-01.azurewebsites.net
 
 const ServicePage = () => {
-    const router = useRouter();
-    // const role = typeof window !== 'undefined' ? sessionStorage.getItem("role") : null;
-    const role: string|null = sessionStorage.getItem("role");
+  const router = useRouter();
+  //const [role, setRole] = useState<string | null>(null);
+  const [services, setServices] = useState<string[]>([]);
 
+  useEffect(() => {
     
-    useEffect(() => {
-    
-    }, [role, router]);
+      axios
+        .get("http://localhost:8080/schedule/service")
+        .then((res) => {
+          if (res.data?.data) {
+            setServices(res.data.data);
+          }
+        })
+        .catch((err) => {
+          console.error("Error al obtener servicios:", err.message);
+        });
 
-    const handleNavigate = (serviceName: string) => {
-        router.push(`/UserModule/ScheduleManagement/ScheduleViewer?serviceName=${encodeURIComponent(serviceName)}`);
-    };
+  }, []);
 
-    return (
-        <>
-            <PageTransitionWrapper>
-                <div className="max-w-[40vw]     /* Ancho máximo 28rem (~448px), ancho full */
-                                max-h-[80vh]         /* Máximo alto 80% de viewport height */
-                                overflow-y-auto
-                                p-2
-                                bg-gray-50
-                                rounded-md
-                                shadow-md
-                                ml-0
-                                ">
-                    <div className="flex flex-wrap items-start gap-2 relative">
-                        {role === "ADMIN" && (
-                        <>
-                            <NavBtn
-                            image={{ src: servicio1.src }}
-                            texto="Salas CREA"
-                            navigate="/UserModule/ScheduleManagement/ScheduleViewer?serviceName=Salas CREA"
-                            />
-                            
-                            <NavBtn
-                            image={{ src: servicio2.src }}
-                            texto="Medicos"
-                            navigate="/UserModule/ScheduleManagement/ScheduleViewer?serviceName=Medicos"
-                            />
+  return (
+    <PageTransitionWrapper>
+      <div>
+        <Return
+          className="!self-stretch !flex-[0_0_auto] !w-full mb-6"
+          text="Servicios"
+          returnPoint="/UserModule/ScheduleManagement/SchedulePage"
+        />
+      </div>
 
-                            <NavBtn
-                            image={{ src: servicio3.src }}
-                            texto="Gimnasio"
-                            navigate="/UserModule/ScheduleManagement/ScheduleViewer?serviceName=Gimnasio"
-                            />
-                        </>
-                        )}
-                    </div>
-                </div>
-
-            </PageTransitionWrapper>
-        </>
-    );
+      <div className="max-w-[40vw] max-h-[80vh] overflow-y-auto p-2 bg-gray-50 rounded-md shadow-md ml-0">
+        <div className="flex flex-wrap items-start gap-2 relative">
+          {
+            services.map((serviceName) => (
+              <NavBtn
+                image={{src:servicio.src}}
+                texto={serviceName}
+                navigate={`/UserModule/ScheduleManagement/ScheduleViewer?serviceName=${encodeURIComponent(serviceName)}`}
+              />
+            ))}
+        </div>
+      </div>
+    </PageTransitionWrapper>
+  );
 };
 
 export default ServicePage;
