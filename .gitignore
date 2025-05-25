@@ -40,11 +40,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-
 # Visual Studio
 .vs/
 *.suo
 *.user
 *.userosscache
 *.sln.docstates
-

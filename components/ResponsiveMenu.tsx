@@ -33,8 +33,8 @@ const modules = [
     },
     {
         moduleName: "module 5",
-        roleCanUse: ["ADMIN"],
-        urlToNavigate: "/Module5",
+        roleCanUse: ["ADMIN", "STUDENT", "TRAINER"],
+        urlToNavigate: "/gym-module",
         image: modulo5,
     },
     {
