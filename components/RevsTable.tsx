@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus, Clock, Pencil, Trash, Calendar  } from "lucide-react"
+import { Plus, Clock, Pencil, Trash } from "lucide-react"
 import ReservaModal from "./ReservaModal"
 import ReservaExpandida from "./ReservaExpandida"
 import React from "react"
@@ -50,7 +50,6 @@ const RevsTable = () => {
   const [reservas, setReservas] = useState<Reserva[]>([])
   const [showModal, setShowModal] = useState(false)
   const [editingReserva, setEditingReserva] = useState<Reserva | null>(null)
-  const [hiddenRows, setHiddenRows] = useState<{ [key: string]: boolean }>({})
   const [searchId, setSearchId] = useState("")
   const [searchName, setSearchName] = useState("")
   const [searchRoom, setSearchRoom] = useState("")
@@ -400,25 +399,25 @@ const RevsTable = () => {
   return (
     <div className="flex justify-center mt-6">
       {showModal && <ReservaModal onClose={() => setShowModal(false)} onSubmit={handleAddReserva} />}
-      <section className="bg-[#EAEAEA] p-4 rounded-2xl shadow-md w-[80vw]">
-        <div className="flex justify-between items-center mb-4 ml-4">
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full">
+      <section className="bg-[#EAEAEA] p-4 rounded-2xl shadow-md w-[70vw]">
+        <div className="flex justify-between items-center mb-4 sm:ml-4">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-[1vw] text-sm">
             <input
               type="text"
               placeholder="Buscar id"
-              className="px-3 py-1 rounded-xl bg-white drop-shadow-xl"
+              className="w-[55vw] px-3 py-1 rounded-xl bg-white drop-shadow-xl sm:w-[12vw] text-center sm:h-[5vh]"
               value={searchId}
               onChange={(e) => setSearchId(e.target.value)}
             />
             <input
               type="text"
               placeholder="Buscar Nombre"
-              className="px-3 py-1 rounded-xl bg-white drop-shadow-xl"
+              className="w-[55vw] px-3 py-1 rounded-xl bg-white drop-shadow-xl sm:w-[12vw] text-center sm:h-[5vh]"
               value={searchName}
               onChange={(e) => setSearchName(e.target.value)}
             />
             <select
-              className="px-3 py-1 rounded-xl bg-white drop-shadow-xl"
+              className="w-[55vw] px-3 py-1 rounded-xl bg-white drop-shadow-xl sm:w-[15vw] text-center sm:h-[5vh]"
               value={searchRoom}
               onChange={(e) => setSearchRoom(e.target.value)}
             >
@@ -432,41 +431,39 @@ const RevsTable = () => {
             <div className="relative w-full md:w-64">
             <input
               type="date"
-              className="w-full px-4 py-2 rounded-xl bg-white drop-shadow-xl pl-10"
+              className="w-[55vw] sm:w-[15vw] px-4 py-2 rounded-xl bg-white drop-shadow-xl pl-3 text-center sm:h-[5vh]"
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
             />
-            <Calendar className="absolute left-3 top-2.5 text-gray-400 w-4 h-4" />
             </div>
           </div>
-          <div>
-            <button onClick={() => setShowModal(true)} className="bg-white rounded-xl p-2 drop-shadow-xl">
-              <Plus className="text-[#990000] w-5 h-5" />
+          <div className="flex flex-col sm:flex-row">
+            <button onClick={() => setShowModal(true)} className="bg-white rounded-xl p-2 drop-shadow-xl sm:h-[5vh]">
+              <Plus className="text-[#990000] w-[3vw] h-[3vh] sm:w-5 sm:h-5" />
             </button>
           </div>
         </div>
 
-        <div className="max-h-[500px] overflow-y-auto">
+        <div className="max-h-[40vh] overflow-y-auto  ">
           <table className="w-full text-center border-separate border-spacing-y-3 border-spacing-x-3 drop-shadow-xl">
             <thead>
               <tr className="text-sm font-semibold drop-shadow-xl">
-                <th className="bg-white rounded-xl px-4 py-2">Nombre</th>
-                <th className="bg-white rounded-xl px-4 py-2">Identificación</th>
-                <th className="bg-white rounded-xl px-4 py-2">Fecha</th>
-                <th className="bg-white rounded-xl px-4 py-2">Hora</th>
-                <th className="bg-white rounded-xl px-4 py-2">Sala</th>
-                <th className="bg-white rounded-xl px-4 py-2">Acción</th>
+                <th className="bg-white rounded-xl px-4 py-2 h-[1vh]">Nombre</th>
+                <th className="bg-white rounded-xl px-4 py-2 h-[1vh]">Identificación</th>
+                <th className="bg-white rounded-xl px-4 py-2 h-[1vh]">Fecha</th>
+                <th className="bg-white rounded-xl px-4 py-2 h-[1vh]">Hora</th>
+                <th className="bg-white rounded-xl px-4 py-2 h-[1vh]">Sala</th>
+                <th className="bg-white rounded-xl px-4 py-2 h-[1vh]">Acción</th>
               </tr>
             </thead>
             <tbody>
               {filteredReservas.map((reserva) => (
                 <React.Fragment key={reserva.id}>
-                  {!hiddenRows[reserva.id!] && (
                     <tr
                       key={reserva.id}
-                      className="bg-white rounded-xl hover:bg-[#990000] hover:text-white drop-shadow-xl"
+                      className="bg-white rounded-xl hover:bg-[#990000] hover:text-white drop-shadow-xl text-sm"
                     >
-                      <td className={`px-4 py-2 rounded-xl`}>
+                      <td className={`px-4 py-2 rounded-xl `}>
                         <div>
                           <div className={`absolute left-0 top-0 h-full w-2 rounded-l-xl ${getRowColor(reserva)}`} />
                           <span>{reserva.userName}</span>
@@ -477,7 +474,7 @@ const RevsTable = () => {
                       <td className="px-4 py-2 rounded-xl">
                         <div className="flex items-center justify-center gap-1">
                           {reserva.date.time}
-                          {isWithinTimeWindow(reserva.date) && <Clock className="w-4 h-4 text-green-500" />}
+                          {isWithinTimeWindow(reserva.date) && reserva.state ==="RESERVA_CONFIRMADA" &&(<Clock className="w-4 h-4 text-green-500" />)}
                         </div>
                       </td>
                       <td className="px-4 py-2 rounded-xl">
@@ -490,7 +487,6 @@ const RevsTable = () => {
                             className="cursor-pointer"
                             onClick={() => {
                               setEditingReserva(reserva)
-                              setHiddenRows((prev) => ({ ...prev, [reserva.id!]: true }))
                             }}
                           />
                           <Trash
@@ -500,14 +496,12 @@ const RevsTable = () => {
                         </div>
                       </td>
                     </tr>
-                  )}
 
                   {editingReserva === reserva && (
                     <ReservaExpandida
                       reserva={reserva}
                       onClose={() => {
                         setEditingReserva(null)
-                        setHiddenRows((prev) => ({ ...prev, [reserva.id!]: false }))
                       }}
                       onSave={handleUpdateReserva}
                     />

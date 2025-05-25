@@ -4,6 +4,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import Swal from "sweetalert2"
 import { aUr } from "@/pages/api/salasCreaU"
+import { PackagePlus } from "lucide-react"
 
 interface Reserva {
   id?: string
@@ -219,11 +220,12 @@ await onSave(updatedReserva)
 
 
   return (
-    <tr className="bg-white rounded-xl drop-shadow-xl max-h-[50vh]">
+    <tr className="rounded-xl drop-shadow-xl">
       <td colSpan={7}>
-        <div className="bg-white p-4 rounded-xl mt-2 shadow-md">
-          <div className="grid grid-cols-3 gap-6">
-            <div className="flex flex-col">
+        <div className="bg-white px-2 rounded-xl -mt-2.5 shadow-md">
+          <div className="grid grid-cols-5 gap-6">
+            
+            {/* <div className="flex flex-col">
               <label>
                 <strong>Nombre:</strong>
               </label>
@@ -234,8 +236,8 @@ await onSave(updatedReserva)
                 onChange={handleChange}
                 className="px-3 py-1 rounded-xl bg-white drop-shadow-md"
               />
-            </div>
-            <div className="flex flex-col">
+            </div> */}
+            {/* <div className="flex flex-col">
               <label>
                 <strong>Identificación:</strong>
               </label>
@@ -246,7 +248,7 @@ await onSave(updatedReserva)
                 onChange={handleChange}
                 className="px-3 py-1 rounded-xl bg-white drop-shadow-md"
               />
-            </div>
+            </div> */}
             <div className="flex flex-col">
               <label>
                 <strong>Estado:</strong>
@@ -278,7 +280,7 @@ await onSave(updatedReserva)
               />
             </div>
 
-            <div className="flex flex-col">
+            {/* <div className="flex flex-col">
               <label>
                 <strong>Fecha:</strong>
               </label>
@@ -289,7 +291,7 @@ await onSave(updatedReserva)
                 onChange={handleChange}
                 className="px-3 py-1 rounded-xl bg-white drop-shadow-md"
               />
-            </div>
+            </div> */}
 
             <div className="flex flex-col">
               <label>
@@ -321,11 +323,17 @@ await onSave(updatedReserva)
               ))}
               </select>
             </div>
+            <div className=" flex justify-center items-center">
+              <button className="flex items-center justify-center w-10 h-10 bg-gray-300 rounded-full hover:bg-gray-400">
+                <PackagePlus className="text-[#990000] w-5 h-5" />
+              </button>
+
+            </div>
           </div>
 
           {/* Time window indicator */}
           <div
-            className={`mt-4 p-2 rounded-lg text-sm ${isWithinTimeWindow ? "bg-green-50 text-green-700" : "bg-amber-50 text-amber-700"}`}
+            className={`mt-1 p-1 rounded-lg text-sm ${isWithinTimeWindow ? "bg-green-50 text-green-700" : "bg-amber-50 text-amber-700"}`}
           >
             <p>
               {isWithinTimeWindow
@@ -335,10 +343,10 @@ await onSave(updatedReserva)
           </div>
 
           <div className="flex justify-end gap-4 mt-4">
-            <button onClick={onClose} className="px-4 py-1 text-sm rounded-full bg-[#990000] text-white">
+            <button onClick={onClose} className="px-4 py-1 text-sm rounded-full bg-[#990000] text-white mb-1 -mt-4">
               Cerrar
             </button>
-            <button onClick={handleSave} className="px-4 py-1 text-sm rounded-full bg-[#990000] text-white">
+            <button onClick={handleSave} className="px-4 py-1 text-sm rounded-full bg-[#990000] text-white mb-1 -mt-4">
               Guardar
             </button>
           </div>
