@@ -123,43 +123,18 @@ export async function searchExercisesByName(name: string) {
  */
 export async function createExercise(exerciseDTO: BaseExerciseDTO) {
   try {
-    console.log("Validating exercise data:", exerciseDTO);
+    console.log("Creating exercise with data:", exerciseDTO);
 
-    // Enhanced field validation with specific error messages
-    if (!exerciseDTO.name?.trim()) {
-      throw new Error("El nombre del ejercicio es obligatorio");
+    // Validate required fields
+    if (!exerciseDTO.name || !exerciseDTO.muscleGroup || !exerciseDTO.equipment) {
+      throw new Error("Name, muscle group and equipment are required fields");
     }
-
-    if (!exerciseDTO.muscleGroup) {
-      throw new Error("El grupo muscular es obligatorio");
-    }
-
-    if (!exerciseDTO.equipment) {
-      throw new Error("El tipo de equipamiento es obligatorio");
-    }
-
-    // Cleanup the data before sending
-    const cleanedDTO = {
-      ...exerciseDTO,
-      name: exerciseDTO.name.trim(),
-      description: exerciseDTO.description?.trim(),
-      muscleGroup: exerciseDTO.muscleGroup.toUpperCase(),
-      equipment: exerciseDTO.equipment.toUpperCase(),
-      imageUrl: exerciseDTO.imageUrl?.trim(),
-      videoUrl: exerciseDTO.videoUrl?.trim()
-    };
-
-    console.log("Creating exercise with cleaned data:", cleanedDTO);
 
     // Make API call to create exercise
-    const response = await api.post<BaseExercise>(`${USER_API}/exercises`, cleanedDTO);
+    const response = await api.post<BaseExercise>(`${USER_API}/exercises`, exerciseDTO);
     
-    // Validate response
-    if (!response.data) {
-      throw new Error("No se recibió respuesta del servidor");
-    }
-
-    if (!response.data.id) {
+    // Make sure the response includes an ID
+    if (!response.data || !response.data.id) {
       console.error("Created exercise is missing an ID:", response.data);
       throw new Error("The created exercise does not have a valid ID");
     }

@@ -24,9 +24,11 @@ import styles from './routineCarousel.module.css';
 interface RoutineCarouselProps {
   routines: Routine[];
   highlightMatches?: boolean;
+  currentRoutineId?: string;
+  onSetCurrent?: (routineId: string) => Promise<void>;
 }
 
-const RoutineCarousel = ({ routines, highlightMatches = false }: RoutineCarouselProps) => {
+const RoutineCarousel = ({ routines, highlightMatches = false, currentRoutineId, onSetCurrent }: RoutineCarouselProps) => {
   const [index, setIndex] = useState(0);
   // Compute the position class name dynamically
   const positionClassName = useMemo(() => {
@@ -52,7 +54,6 @@ const RoutineCarousel = ({ routines, highlightMatches = false }: RoutineCarousel
       toast.error("Error al asignar la rutina");
     }
   };
-
   return (
     <div className={styles.carouselContainer}>
       <Button onClick={prev} className="p-2">
@@ -67,6 +68,8 @@ const RoutineCarousel = ({ routines, highlightMatches = false }: RoutineCarousel
               routine={routine} 
               onAssign={handleAssignRoutine}
               highlightMatch={highlightMatches}
+              isCurrentRoutine={routine.id === currentRoutineId}
+              onSetCurrent={onSetCurrent}
             />
           ))}
         </div>

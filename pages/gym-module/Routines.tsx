@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
@@ -14,7 +15,8 @@ import {
     getAllExercises,
     BaseExercise,
     BaseExerciseDTO,
-    createExercise
+    createExercise,
+    setCurrentRoutine as apiSetCurrentRoutine
 } from "@/api/gymServicesIndex";
 import { getUserGoals } from "@/api/gym-module/goalService";
 import { getAllStudents, Student } from "@/api/gym-module/userService";
@@ -72,6 +74,7 @@ const Routines: React.FC = () => {
     const [currentRoutine, setCurrentRoutine] = useState<Routine | null>(null);
     const [routines, setRoutines] = useState<Routine[]>([]);
     const [recommendedRoutines, setRecommendedRoutines] = useState<Routine[]>([]);
+    const [isSettingCurrentRoutine, setIsSettingCurrentRoutine] = useState<boolean>(false);
     
     // State for filtered routines
     const [filteredRoutines, setFilteredRoutines] = useState<Routine[]>([]);
@@ -355,6 +358,40 @@ const Routines: React.FC = () => {
         }
     }, [selectedMuscleGroup, routines, recommendedRoutines]);
     
+    // Handles setting a routine as the current routine for the user
+    const handleSetCurrentRoutine = async (routineId: string) => {
+        try {
+            setIsSettingCurrentRoutine(true);
+            
+            const targetUserId = studentId ? studentId as string : currentUserId;
+            if (!targetUserId) {
+                toast.error("No se pudo identificar al usuario");
+                return;
+            }
+            
+            // Call the API function to set the current routine
+            await apiSetCurrentRoutine(targetUserId, routineId);
+            
+            // Find the routine that was set as current
+            const routine = [...routines, ...recommendedRoutines].find(r => r.id === routineId);
+            
+            if (routine) {
+                // Update the current routine in state
+                setCurrentRoutine(routine);
+                toast.success(`"${routine.name}" establecida como rutina actual`);
+            } else {
+                // Reload the data to get the updated current routine
+                loadUserData(targetUserId);
+                toast.success("Rutina establecida como actual");
+            }
+        } catch (error) {
+            console.error("Error al establecer la rutina actual:", error);
+            toast.error("Error al establecer la rutina actual");
+        } finally {
+            setIsSettingCurrentRoutine(false);
+        }
+    };
+    
     // Handle student selection from modal
     const handleStudentSelect = (student: Student) => {
         setShowStudentSelector(false);
@@ -435,8 +472,8 @@ const Routines: React.FC = () => {
             
             // Reload user data to show the new routine
             loadUserData(selectedStudent.id);
-            
-            // Reset form
+              // Reset form but keep the muscle group filter
+            const previousMuscleGroup = selectedMuscleGroup;
             setNewRoutine({
                 name: '',
                 description: '',
@@ -444,6 +481,9 @@ const Routines: React.FC = () => {
                 goal: '',
                 exercises: []
             });
+            
+            // Preserve the muscle group filter if it was set
+            setSelectedMuscleGroup(previousMuscleGroup);
             
             // Close any open exercise form
             const form = document.getElementById('create-exercise-form');
@@ -541,11 +581,16 @@ const Routines: React.FC = () => {
                 if (exists) return prevExercises;
                 return [...prevExercises, createdExercise];
             });
-            
-            // Reset form
+              // Reset form
             if (nameInput) nameInput.value = '';
-            // Don't reset muscle group if it's from the 3D model
-            if (muscleGroupSelect && selectedMuscleGroup === null) muscleGroupSelect.value = '';
+            // Don't reset muscle group selector if a muscle group is selected from 3D model
+            if (muscleGroupSelect && selectedMuscleGroup === null) {
+                // Only reset if no muscle group is selected from 3D model
+                muscleGroupSelect.value = '';
+            } else if (muscleGroupSelect && selectedMuscleGroup !== null) {
+                // Make sure the dropdown reflects the selected muscle group from 3D model
+                muscleGroupSelect.value = zoneToMuscle[selectedMuscleGroup].toUpperCase();
+            }
             if (equipmentSelect) equipmentSelect.value = '';
             if (descriptionTextarea) descriptionTextarea.value = '';
             if (imageUrlInput) imageUrlInput.value = '';
@@ -575,7 +620,7 @@ const Routines: React.FC = () => {
             toast.dismiss();
             toast.error("Error al crear el ejercicio. Intente nuevamente.");
         }
-    };// Handle adding exercise to new routine
+    };    // Handle adding exercise to new routine
     const handleAddExercise = (exercise: BaseExercise) => {
         if (!exercise.id) {
             console.error("Exercise is missing ID:", exercise);
@@ -614,6 +659,9 @@ const Routines: React.FC = () => {
             }));
             
             toast.success(`Ejercicio "${exercise.name}" agregado a la rutina (${newExercise.sets} series x ${newExercise.repetitions} repeticiones)`);
+            
+            // Keep the current muscle group filter applied
+            // No need to reset selectedMuscleGroup here
             
             // Scroll to the added exercise section
             setTimeout(() => {
@@ -741,20 +789,32 @@ const Routines: React.FC = () => {
                             Estos objetivos te ayudarán a crear rutinas personalizadas para este estudiante.
                         </p>
                     </div>
-                )}
-                
-                {/* Selector de grupos musculares para filtrar ejercicios */}
-                <div className="mb-6">
-                    <MuscleGroupSelector 
-                        onSelect={setSelectedMuscleGroup}
-                        selectedMuscleGroup={selectedMuscleGroup}
-                        zoneMap={zoneToMuscle}
-                    />
-                </div>
+                )}                
+                {/* Selector de grupos musculares para filtrar ejercicios - REMOVED GLOBAL FILTER */}
                 
                 {/* Crear nueva rutina form */}
                 <div className="bg-white p-6 rounded-lg shadow-md mb-8">
                     <h2 className="text-xl font-semibold mb-4">Crear nueva rutina</h2>
+                      {/* Add MuscleGroupSelector for filtering exercises */}
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Filtrar ejercicios por grupo muscular</label>
+                        <MuscleGroupSelector 
+                            onSelect={setSelectedMuscleGroup}
+                            selectedMuscleGroup={selectedMuscleGroup}
+                            zoneMap={zoneToMuscle}
+                        />
+                        {selectedMuscleGroup !== null && (
+                            <div className="mt-2 text-sm text-blue-600 flex items-center">
+                                <span>Filtrando por: {zoneToMuscle[selectedMuscleGroup]}</span>
+                                <button 
+                                    onClick={() => setSelectedMuscleGroup(null)} 
+                                    className="ml-2 text-xs bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded"
+                                >
+                                    Quitar filtro
+                                </button>
+                            </div>
+                        )}
+                    </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
@@ -823,11 +883,19 @@ const Routines: React.FC = () => {
                                 <h4 className="font-semibold text-gray-700">Crear nuevo ejercicio</h4>
                                 <button
                                     type="button"
-                                    className="text-blue-600 text-sm flex items-center gap-1"
-                                    onClick={() => {
+                                    className="text-blue-600 text-sm flex items-center gap-1"                                    onClick={() => {
                                         const form = document.getElementById('create-exercise-form');
                                         if (form) {
                                             form.classList.toggle('hidden');
+                                            
+                                            // If opening the form and a muscle group is selected from 3D model,
+                                            // make sure the dropdown reflects it
+                                            if (!form.classList.contains('hidden') && selectedMuscleGroup !== null) {
+                                                const muscleGroupSelect = document.getElementById('exercise-muscle-group') as HTMLSelectElement;
+                                                if (muscleGroupSelect) {
+                                                    muscleGroupSelect.value = zoneToMuscle[selectedMuscleGroup].toUpperCase();
+                                                }
+                                            }
                                         }
                                     }}
                                 >
@@ -959,21 +1027,19 @@ const Routines: React.FC = () => {
                                     </button>
                                 </div>
                             </div>
-                        </div>
-                          {/* Listado de ejercicios disponibles, agrupados por grupo muscular */}
+                        </div>                          {/* Listado de ejercicios disponibles, agrupados por grupo muscular */}
                         <div className="mb-4">
                             <label className="block text-sm font-medium text-gray-700 mb-1" id="exercises-label">Agregar ejercicios</label>
                             
                             {/* Mensaje para indicar filtrado */}
                             {selectedMuscleGroup !== null && (
-                                <div className="mb-2 text-sm text-blue-600">
-                                    Mostrando ejercicios para {zoneToMuscle[selectedMuscleGroup]}
-                                    <button 
-                                        onClick={() => setSelectedMuscleGroup(null)} 
-                                        className="ml-2 text-xs bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded"
-                                    >
-                                        Ver todos
-                                    </button>
+                                <div className="mb-2 text-sm bg-blue-50 p-2 rounded-md border border-blue-100">
+                                    <p className="text-blue-700 font-medium">
+                                        Mostrando ejercicios para: <span className="font-bold">{zoneToMuscle[selectedMuscleGroup]}</span>
+                                    </p>
+                                    <p className="text-xs text-blue-600 mt-1">
+                                        Utiliza el selector de arriba para cambiar el grupo muscular o ver todos
+                                    </p>
                                 </div>
                             )}
                             
@@ -1186,7 +1252,11 @@ const Routines: React.FC = () => {
                     <h2 className="text-xl font-semibold mb-4">Rutinas Actuales</h2>
                     {routines.length > 0 ? (
                         <div className="mb-4">
-                            <RoutineCarousel routines={routines} />
+                            <RoutineCarousel 
+                                routines={routines} 
+                                currentRoutineId={currentRoutine?.id}
+                                onSetCurrent={handleSetCurrentRoutine}
+                            />
                         </div>
                     ) : (
                         <p className="text-center py-4 bg-gray-50 rounded-md text-gray-500">
@@ -1215,7 +1285,12 @@ const Routines: React.FC = () => {
                     
                     {recommendedRoutines.length > 0 ? (
                         <div className="mb-4">
-                            <RoutineCarousel routines={recommendedRoutines} />
+                            <RoutineCarousel 
+                                routines={recommendedRoutines} 
+                                highlightMatches={true}
+                                currentRoutineId={currentRoutine?.id}
+                                onSetCurrent={handleSetCurrentRoutine}
+                            />
                         </div>
                     ) : (
                         <p className="text-center py-4 bg-gray-50 rounded-md text-gray-500">
@@ -1234,26 +1309,18 @@ const Routines: React.FC = () => {
                 className="self-stretch flex-[0_0_auto] w-full"
                 text="Rutinas"
                 returnPoint="/gym-module"
-            />
-            
-            <div className="flex flex-col md:flex-row gap-6">
+            />                <div className="flex flex-col md:flex-row gap-6">
                 {/* 3D Body model - ONLY shown for USER role */}
                 <div className="w-full md:w-1/2 lg:w-5/12 flex flex-col items-center justify-center gap-5">
                     <BodyCanvasInteractive
                         modelPath="/models/male/scene.gltf"
                     />
                     <div className="text-center text-sm text-gray-500">
-                        Usa el selector de arriba para filtrar por grupo muscular
+                        Haz clic en las diferentes zonas musculares para ver los ejercicios correspondientes
                     </div>
                 </div>
 
                 <div className="flex flex-col w-full">
-                    {/* Selector de grupos musculares mejorado */}
-                    <MuscleGroupSelector 
-                        onSelect={setSelectedMuscleGroup}
-                        selectedMuscleGroup={selectedMuscleGroup}
-                        zoneMap={zoneToMuscle}
-                    />
                     
                     {/* Pestañas */}
                     <div className="mb-6">
@@ -1292,7 +1359,11 @@ const Routines: React.FC = () => {
                                         className="flex flex-col gap-4"
                                     >
                                         <h2 className="text-2xl font-bold mb-4">Tus Rutinas</h2>
-                                        <RoutineCarousel routines={filteredRoutines} />
+                                        <RoutineCarousel 
+                                            routines={filteredRoutines} 
+                                            currentRoutineId={currentRoutine?.id}
+                                            onSetCurrent={handleSetCurrentRoutine}
+                                        />
                                     </motion.div>
                                 )}
                             </>
@@ -1322,10 +1393,11 @@ const Routines: React.FC = () => {
                     )}
                     
                     <div>
-                        {filteredRecommended.length > 0 ? (
-                            <RoutineCarousel 
+                        {filteredRecommended.length > 0 ? (                            <RoutineCarousel 
                                 routines={filteredRecommended} 
-                                highlightMatches={true} // Add ability to highlight routines that match goals
+                                highlightMatches={true}
+                                currentRoutineId={currentRoutine?.id}
+                                onSetCurrent={handleSetCurrentRoutine}
                             />
                         ) : (
                             <div className="col-span-full text-center py-6 text-gray-500">

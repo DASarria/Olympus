@@ -38,6 +38,7 @@ export interface RoutineExerciseDTO {
  * @property {string} [videoUrl] - URL to a video demonstrating the exercise (optional).
  */
 export interface RoutineExercise {
+  equipment: any;
   id?: string;
   routineId?: string;
   baseExerciseId?: string;
@@ -306,5 +307,24 @@ export async function getRecommendedRoutines(userId: string) {
     // For other errors, log but don't throw to prevent app breaking
     console.error("Other error in getRecommendedRoutines:", error);
     return []; // Return empty array instead of throwing
+  }
+}
+
+/**
+ * Sets a routine as the current routine for a user.
+ * @param {string} userId - The unique identifier of the user.
+ * @param {string} routineId - The unique identifier of the routine to set as current.
+ * @returns {Promise<any>} A promise that resolves with the response data after setting the current routine.
+ * @throws {Error} Throws an error if the API request fails.
+ */
+export async function setCurrentRoutine(userId: string, routineId: string) {
+  try {
+    console.log(`Setting routine ${routineId} as current for user ${userId}`);
+    // Fixed endpoint to match backend controller route
+    const response = await api.post(`${USER_API}/${userId}/routines/assign/${routineId}`);
+    return response.data;
+  } catch (error: any) {
+    console.error(`Error setting current routine for user ${userId}:`, error);
+    throw new Error(error.response?.data?.message || "Error al establecer la rutina actual");
   }
 }

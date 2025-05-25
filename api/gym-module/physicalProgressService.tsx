@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import api from '../axiosInstance';
 import { 
   BodyMeasurements, 
@@ -69,12 +71,14 @@ export async function getLatestPhysicalMeasurement(
     const response = await api.get(`/users/${userId}/physical-progress/latest`);
     return response.data;
   } catch (error: any) {
-    if (error.response?.status === 404) {
+    if (error.response?.status === 404 || error.response?.status === 500) {
+      console.warn(`Error ${error.response?.status} al obtener la última medición:`, error);
       return null;
     }
     
     console.error("Error al obtener la última medición:", error);
-    throw new Error(error.response?.data?.message || "Error al obtener la última medida");
+    // Evitar el uso del mensaje del servidor que puede contener errores de serialización
+    return null;
   }
 }
 
