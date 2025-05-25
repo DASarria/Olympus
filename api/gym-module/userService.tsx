@@ -19,6 +19,19 @@ export interface UserDTO {
     institutionalId: string;
 }
 
+export interface User {
+    id: string
+    createdAt: Date,
+    updatedAt: Date,
+    deletedAt: Date,
+    institutionalId: number,
+    name: string
+    weight: number,
+    height: number,
+    role: string,
+    deleted: boolean
+}
+
 /**
  * Fetches a user by their unique user ID.
  * @param {string} id - The unique identifier for the user.
@@ -30,7 +43,8 @@ export async function getUserById(id: string) {
         const response = await api.get(`${USER_API}/${id}`);
         return response.data;
     } catch (error: any) {
-        throw new Error(error.response?.data?.message || "Error al obtener usuario");
+        console.error(error.response?.data?.message || "Error al obtener usuario");
+        return null;
     }
 }
 
@@ -45,7 +59,8 @@ export async function getUserByInstitutionalId(institutionalId: string) {
         const response = await api.get(`${USER_API}/by-institutional-id/${institutionalId}`);
         return response.data;
     } catch (error: any) {
-        throw new Error(error.response?.data?.message || "Error al obtener usuario institucional");
+        console.error(error.response?.data?.message || "Error al obtener usuario institucional");
+        return null;
     }
 }
 
@@ -66,7 +81,7 @@ export async function getAllUsers() {
 /**
  * Fetches users by their role.
  * @param {string} role - The role of the users to fetch.
- * @returns {Promise<UserDTO[]>} A promise that resolves with an array of users with the specified role.
+ * @returns {Promise<User>} A promise that resolves with an array of users with the specified role.
  * @throws {Error} Throws an error if the API request fails or if an error message is provided by the API.
  */
 export async function getUsersByRole(role: string) {
@@ -80,16 +95,33 @@ export async function getUsersByRole(role: string) {
 
 /**
  * Creates a new user in the system.
- * @param {UserDTO} userDTO - The data for the user to be created.
- * @returns {Promise<UserDTO>} A promise that resolves with the created user's data.
+ * @returns {Promise<User>} A promise that resolves with the created user's data.
  * @throws {Error} Throws an error if the API request fails or if an error message is provided by the API.
  */
-export async function createUser(userDTO: UserDTO) {
+export async function createUser() {
     try {
-        const response = await api.post(USER_API, userDTO);
+        const token = localStorage.getItem('jwtToken');
+
+        if (!token) {
+            throw new Error("Token JWT no encontrado");
+        }
+
+        const cachedUser = localStorage.getItem(`user_${token}`);
+        if (cachedUser) {
+            return JSON.parse(cachedUser);
+        }
+
+        const response = await api.post(`${USER_API}/create`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        localStorage.setItem(`user_${token}`, JSON.stringify(response.data));
         return response.data;
     } catch (error: any) {
-        throw new Error(error.response?.data?.message || "Error al crear usuario");
+        console.error(error.response?.data?.message || "Error al crear usuario");
+        return null;
     }
 }
 
