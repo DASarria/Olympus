@@ -5,9 +5,10 @@ interface Props {
   marcador: string;
   valor: string;
   onChange: (valor: string) => void;
+  soloLectura?: boolean;
 }
 
-const CampoTexto: React.FC<Props> = ({ etiqueta, marcador, valor, onChange }) => {
+const CampoTexto: React.FC<Props> = ({ etiqueta, marcador, valor, onChange, soloLectura }) => {
   return (
     <div style={{ marginBottom: "1rem", fontFamily: "'Open Sans', sans-serif" }}>
       <label
@@ -16,6 +17,7 @@ const CampoTexto: React.FC<Props> = ({ etiqueta, marcador, valor, onChange }) =>
           marginBottom: "4px",
           color: "#2d2d2d",
           fontSize: "clamp(14px, 2vw, 20px)",
+          
         }}
       >
         {etiqueta}
@@ -25,6 +27,7 @@ const CampoTexto: React.FC<Props> = ({ etiqueta, marcador, valor, onChange }) =>
         placeholder={marcador}
         value={valor}
         onChange={(e) => onChange(e.target.value)}
+        readOnly={soloLectura}
         style={{
           width: "100%",
           padding: "10px 14px",

@@ -8,7 +8,7 @@ import CampoSelect from "@/components/gestionUsuario/CampoSelect";
 import CampoTexto from "@/components/gestionUsuario/CampoTexto";
 import RectanguloConTexto from "@/components/gestionUsuario/RectanguloConTexto";
 
-
+import {crearUsuarioEstudiante,crearUsuarioAdministrador,} from "@/pages/api/UserManagement//UserService";
 
 const CrearUsuario = () => {
 
@@ -39,72 +39,21 @@ const CrearUsuario = () => {
   });
 
   const handleSubmit = async () => {
-  try {
-    const token = sessionStorage.getItem("token"); // <-- Obtener el token
-    let res;
+    try {
+      let res;
 
-    if (datos.tipoUsuario === "Usuario") {
-      const payload = {
-        codeStudent: datos.carnet,
-        studentPassword: datos.doc,
-        fullNameStudent: datos.nombre,
-        academicProgram: datos.programa,
-        emailAddress: datos.correo,
-        contactNumber: datos.tel,
-        birthDate: datos.cumple,
-        address: datos.dir,
-        typeIdStudent: datos.tipoId,
-        idStudent: datos.doc,
-        idContact: datos.contactoDoc,
-        typeIdContact: datos.contactoTipoId,
-        fullNameContact: datos.contactoNombre,
-        phoneNumber: datos.contactoTel,
-        relationship: datos.contactoRelacion,
-      };
+      if (datos.tipoUsuario === "Usuario") {
+        res = await crearUsuarioEstudiante(datos);
+      } else if (datos.tipoUsuario === "Administrador") {
+        res = await crearUsuarioAdministrador(datos);
+      }
 
-      res = await axios.post("https://usermanagement-bhe9cfg4b5b2hthj.eastus-01.azurewebsites.net/authentication/student", payload, {
-      //res = await axios.post("http://localhost:8080/authentication/student", payload, {
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `${token}` // <-- Aquí se incluye el token
-        }
-      });
-
-      alert("Usuario creado: " + res.data.message);
-      return;
-
-    } else if (datos.tipoUsuario === "Administrador") {
-
-      const payload = {
-        idAdmin: datos.doc,
-        typeId: datos.tipoId,
-        fullName: datos.nombre,
-        specialty: datos.especialidad,
-        role: datos.rol,
-        emailAddress: datos.correo,
-        contactNumber: datos.tel,
-        adminPassword: datos.doc,
-        schedule: [],
-      };
-
-      res = await axios.post("https://usermanagement-bhe9cfg4b5b2hthj.eastus-01.azurewebsites.net/authentication/admin", payload, {
-      //res = await axios.post("http://localhost:8080/authentication/admin", payload, {
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `${token}` // <-- También aquí
-        }
-      });
-
-      alert("Usuario creado: " + res.data.message);
-      return;
-
+      alert("Usuario creado: " + res.message);
+    } catch (e) {
+      console.error(e);
+      alert("Error al crear usuario");
     }
-
-  } catch (e) {
-    console.error(e);
-    alert("Error al crear usuario");
-  }
-};
+  };
 
 
 
