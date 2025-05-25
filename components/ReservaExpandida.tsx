@@ -230,7 +230,7 @@ await onSave(updatedReserva)
 
   }
 
-  const stateOptions = ["RESERVA_CONFIRMADA", "RESERVA_CANCELADA", "RESERVA_TERMINADA"]
+  const stateOptions = ["RESERVA_CONFIRMADA", "RESERVA_CANCELADA", "RESERVA_TERMINADA", "RESERVA_CREADA"]
 
 
 

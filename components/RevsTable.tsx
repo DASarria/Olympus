@@ -42,6 +42,7 @@ const stateColors: Record<string, string> = {
   RESERVA_CONFIRMADA: "bg-yellow-400",
   RESERVA_CANCELADA: "bg-red-700",
   RESERVA_TERMINADA: "bg-green-600",
+  RESERVA_CREADA: "bg-blue-500"
 }
 
 const RevsTable = () => {
@@ -64,6 +65,8 @@ const RevsTable = () => {
         return stateColors.RESERVA_CANCELADA
       case "reserva_terminada":
         return stateColors.RESERVA_TERMINADA
+        case "reserva_creada":
+        return stateColors.RESERVA_CREADA
     }
   }
 
@@ -195,7 +198,7 @@ const RevsTable = () => {
           time: formattedTime,
         },
         roomId: nueva.roomId.charAt(0).toUpperCase() + nueva.roomId.slice(1), // Asegurar que comienza con mayúscula
-        state: "RESERVA_CONFIRMADA",
+        state: "RESERVA_CREADA",
         people: nueva.people,
       }
 
