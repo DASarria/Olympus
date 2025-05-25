@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import { NavBtn } from "@/components/NavBtn";
 import { ServiceContainer } from "@/components/ServiceContainer";
 import { PageTransitionWrapper } from "@/components/PageTransitionWrapper";
-import { getUserById, createUser } from "@/api/gymServicesIndex";
-import { getUserIdFromToken } from "@/api/general";
+import { getUserByInstitutionalId, createUser } from "@/api/gymServicesIndex";
+import { getInstitutionalIdFromToken } from "@/api/general";
 import Reseva from "@/assets/images/gym-module/SCHEDULE.svg";
 import Progreso from "@/assets/images/gym-module/PROGRESOFISICO.svg";
 import Rutina from "@/assets/images/gym-module/RUTINA.svg";
@@ -12,24 +12,36 @@ import Analisis from "@/assets/images/gym-module/ANALISIS.svg";
 
 const Module5 = () => {
     const router = useRouter();
-    const [userId, setUserId] = useState('');
     const role = typeof window !== 'undefined' ? sessionStorage.getItem("role") : null;
     const [loading, setLoading ] = useState(true);
 
     useEffect(() => {
-
         const fetchUser = async () => {
             try {
-                const id = getUserIdFromToken();
+                const id = getInstitutionalIdFromToken();
                 if (!id) {
                     console.error("No userId found");
+                    router.push('/');
                     return;
                 };
-                setUserId(id)
 
-                const user = await getUserById(id);
-                if (!user) {
-                    createUser();
+                const existingUser = sessionStorage.getItem("gymId");
+                if (!existingUser) {
+
+                    try {
+                        await createUser();
+                    } catch (error) {
+                        console.error("User already exists.");
+                    }
+
+                    try {
+                        const gymUser = await getUserByInstitutionalId(id);
+                        sessionStorage.setItem('gymId', gymUser.id);
+                    } catch(error) {
+                        console.log("Couldnt get user id for the gym module");
+                    }
+                } else {
+                    console.log("User already cached, skipping registration.");
                 }
 
                 if (role === "ADMIN" && router.pathname !== "/gym-module/analysis") {
