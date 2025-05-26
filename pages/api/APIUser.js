@@ -1,13 +1,22 @@
-import createClient from './Cliente';
+import createClient from './ClienteAPI';
 import { APIUser, endPointUser } from './ConfigurationAPI';
 
 
-export const login = (credentials) => {
-  const client = createClient(APIUser);
-  return client.post(endPointUser.login, credentials);
+export const login = async (credentials) => {
+  try{
+    const client = createClient(APIUser);
+    return await client.post(endPointUser.login, credentials);
+  }catch(error){
+    console.error("Error al obtener token con credenciales")
+  }
 };
 
-export const find = (filters,token) => {
-    const client = createClient(APIUser);
-    return client.post(endPointUser.findUsers, filters);
+export const find = async (filters,token) => {
+  try{
+    const client = createClient(APIUser,token);
+    return await client.post(endPointUser.findUsers, filters);
+  }catch(error){
+    console.error("Error al obtener usuarios");
+  }
+    
 };

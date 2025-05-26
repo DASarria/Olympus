@@ -102,10 +102,6 @@ const CEAdminActividades = () => {
   const tokenJWT =
     "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEyMTMyMTQxIiwidXNlck5hbWUiOiJhZG1pbiIsImVtYWlsIjoiYWRtaW5AZXNjdWVsYWluZy5lZHUuY28iLCJuYW1lIjoiZWwgYWRtaW4iLCJyb2xlIjoiQURNSU4iLCJzcGVjaWFsdHkiOiJudWxsIiwiZXhwIjoxNzQ3OTY2MTQyfQ.vjOpZTA2Q_XxqbWe5uEFoX6EUZ61R8L_72BmF1TgdhE";
 
-  const linkAPI =
-    "https://hadesback-app-c5fwbybjd0gnf0fx.canadacentral-01.azurewebsites.net";
-  const linkAPIUSER =
-    "https://usermanagement-bhe9cfg4b5b2hthj.eastus-01.azurewebsites.net";
 
   //VARIABLES GENERALES (Guardar informacion o usarla)
   const router = useRouter();
