@@ -8,7 +8,6 @@ import {
   ProgressMetrics, 
   SetGoalDTO,
   Weight,
-  AdditionalMeasurements
 } from '@/types/gym/physicalTracking';
 import { calculateBMI } from '@/utils/physicalTrackingUtils';
 
@@ -124,6 +123,9 @@ export async function setPhysicalGoal(
   try {
     const payload: SetGoalDTO = { goal };
     const response = await api.put(`/users/${userId}/physical-progress/goal`, payload);
+    const goalsArray: string[] = [goal]; 
+
+    await api.post(`/users/${userId}/goals`, goalsArray);
     return response.data;
   } catch (error: any) {
     console.error("Error al establecer meta física:", error);
