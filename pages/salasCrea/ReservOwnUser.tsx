@@ -23,12 +23,16 @@ interface Reservation {
 export default function ReservOwnUser() {
   const [reservations, setReservations] = useState<Reservation[]>([])
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
-  const token = sessionStorage.getItem("token")
+  const token = typeof window !== "undefined" ? sessionStorage.getItem("token") : null
   const url = aUr
   const router = useRouter()
 
   useEffect(() => {
     const fetchReservas = async () => {
+      if (!token) {
+        setErrorMsg("No autorizado. Por favor inicia sesión.")
+        return
+      }
       try {
         const response = await fetch(`${url}/revs/user`, {
           method: "GET",
@@ -49,51 +53,50 @@ export default function ReservOwnUser() {
     }
 
     fetchReservas()
-  }, [])
+  }, [token, url])
 
   const handleClickBack = () => router.back()
 
   const formatEstado = (estado: string, date: { day: string; time: string }) => {
-  const startDate = new Date(`${date.day}T${date.time}`)
-  const now = new Date()
-
-  if (estado === "RESERVA_CREADA") {
-    return now < startDate ? "Reserva creada" : "Reserva confirmada"
-  }
-
-  if (estado === "RESERVA_CONFIRMADA") {
-    return now >= startDate ? "Reserva terminada" : "Reserva confirmada"
-  }
-  switch (estado) {
-    case "RESERVA_TERMINADA":
-      return "Reserva terminada"
-    case "RESERVA_CANCELADA":
-      return "Reserva cancelada"
-    default:
-      return estado
-  }
-}
-
-
-  const isEditableReserva = (res: Reservation) => {
-    const start = new Date(`${res.date.day}T${res.date.time}`)
-    const before = new Date(start.getTime() - 2 * 60 * 60000)
-    const after = new Date(start.getTime() + 90 * 60000)
+    const startDate = new Date(`${date.day}T${date.time}`)
+    const endDate = new Date(startDate.getTime() + 90 * 60000)
     const now = new Date()
 
-    // Permitir editar si:
-    // - Está dentro de la ventana editable (como antes)
-    // - O si está en estado CREADA (permitir cancelar o terminar antes de que empiece)
-    return (
-      (res.state === "RESERVA_CONFIRMADA" && now >= before && now <= after) ||
-      res.state === "RESERVA_CREADA"
-    )
+    if (now > endDate) return "Reserva terminada"
+
+    if (estado === "RESERVA_CONFIRMADA") {
+      if (now >= startDate && now <= endDate) return "Reserva en curso"
+      return "Reserva confirmada"
+    }
+
+    if (estado === "RESERVA_CREADA") {
+      return now < startDate ? "Reserva creada" : "Reserva confirmada"
+    }
+
+    switch (estado) {
+      case "RESERVA_TERMINADA":
+        return "Reserva terminada"
+      case "RESERVA_CANCELADA":
+        return "Reserva cancelada"
+      default:
+        return estado
+    }
   }
 
-  const updateReservaState = async (id: string, newState: "RESERVA_CANCELADA" | "RESERVA_TERMINADA") => {
+  const updateReservaState = async (
+    id: string,
+    newState: "RESERVA_CANCELADA" | "RESERVA_TERMINADA"
+  ) => {
+    if (!token) {
+      Swal.fire("Error", "No autorizado. Por favor inicia sesión.", "error")
+      return
+    }
+
     const confirm = await Swal.fire({
       title: `¿Estás seguro?`,
-      text: `Vas a marcar la reserva como ${formatEstado(newState, { day: "", time: "" })}.`,
+      text: `Vas a marcar la reserva como ${
+        newState === "RESERVA_TERMINADA" ? "terminada" : "cancelada"
+      }.`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "Sí, confirmar",
@@ -103,17 +106,18 @@ export default function ReservOwnUser() {
     if (!confirm.isConfirmed) return
 
     try {
-      const response = await fetch(`${url}/revs/${id}/state`, {
+      const response = await fetch(`${url}/revs/state/${id}/${newState}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `${token}`,
         },
-        body: JSON.stringify({ newState }),
       })
+
       if (!response.ok) throw new Error("Error actualizando estado")
 
       Swal.fire("Actualizado", "Estado de la reserva actualizado", "success")
+
       setReservations((prev) =>
         prev.map((r) => (r.id === id ? { ...r, state: newState } : r))
       )
@@ -152,7 +156,15 @@ export default function ReservOwnUser() {
               <div className="space-y-3">
                 {reservations.map((res) => {
                   const { id, roomId, date, people, state } = res
-                  const canEdit = isEditableReserva(res)
+                  const start = new Date(`${date.day}T${date.time}`)
+                  const end = new Date(start.getTime() + 90 * 60000)
+                  const now = new Date()
+
+                  const estadoActual = formatEstado(state, date)
+
+                  const mostrarBotones =
+                    (state === "RESERVA_CREADA" && now < start) ||
+                    (state === "RESERVA_CONFIRMADA" && now >= start && now <= end)
 
                   return (
                     <div key={id} className="grid grid-cols-5 gap-4 px-2 items-center">
@@ -170,10 +182,10 @@ export default function ReservOwnUser() {
                       </div>
                       <div className="flex flex-col items-center gap-2">
                         <div className="bg-white rounded-[15px] px-4 py-2 text-center shadow-md">
-                          {formatEstado(state, date)}
+                          {estadoActual}
                         </div>
 
-                        {canEdit && (
+                        {mostrarBotones && (
                           <div className="flex gap-2">
                             <button
                               onClick={() => updateReservaState(id!, "RESERVA_TERMINADA")}
@@ -190,6 +202,7 @@ export default function ReservOwnUser() {
                           </div>
                         )}
                       </div>
+                      <br />
                     </div>
                   )
                 })}

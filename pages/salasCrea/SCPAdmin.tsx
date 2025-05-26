@@ -66,17 +66,14 @@ const SCPAdmin = () => {
       "Content-Type": "application/json",
       Authorization: `${token}`,
     }
-
     const [resvRes, elemRes, loanRes] = await Promise.all([
       fetch(`${url}/revs`, { headers }),
       fetch(`${url}/elements`, { headers }),
       fetch(`${url}/loans`, { headers }),
     ])
-
     const resvs: Reserva[] = await resvRes.json()
     const elemsData = await elemRes.json()
     const loans: Loan[] = await loanRes.json()
-
     const formattedElems: Elemento[] = elemsData.map((el: { id: string; name: string; description?: string; quantity?: number }) => ({
       id: el.id,
       nombre: el.name,
@@ -84,7 +81,6 @@ const SCPAdmin = () => {
       cantidad: el.quantity ?? 0,
       imagen: imagenesPorNombre[el.name] || defaultImage,
     }))
-
     setReservas(resvs)
     setElementos(formattedElems)
     setPrestamos(loans)
