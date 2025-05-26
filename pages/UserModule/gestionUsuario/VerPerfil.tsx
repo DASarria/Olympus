@@ -222,7 +222,7 @@ const VerPerfil = () => {
                   fontSize: "20px",
                   whiteSpace: "nowrap",
                 }}>
-          Guardar cambios
+          Cambiar contraseña
         </button>
       </div>
 

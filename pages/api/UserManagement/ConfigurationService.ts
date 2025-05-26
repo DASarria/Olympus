@@ -1,6 +1,6 @@
 import axios,{InternalAxiosRequestConfig} from "axios";
 
-const USER_API_BASE_URL = "https://schedulemanagement-bqg2a7a3cgf8hfhc.eastus-01.azurewebsites.net/configuration";
+const USER_API_BASE_URL = "https://scheculeproduction-fpgeb8c4b8abddfx.eastus-01.azurewebsites.net/configuration";
 //const USER_API_BASE_URL = "http://localhost:8080/configuration";
 
 const api = axios.create({ baseURL: USER_API_BASE_URL });

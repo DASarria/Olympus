@@ -2,7 +2,7 @@ import axios, { InternalAxiosRequestConfig } from 'axios';
 
 // URL base
 
-const USER_API_BASE_URL = "https://usermanagement-bhe9cfg4b5b2hthj.eastus-01.azurewebsites.net/";
+const USER_API_BASE_URL = "https://chronosproduction-accheze7aycuc6dk.eastus-01.azurewebsites.net/";
 //const USER_API_BASE_URL = "http://localhost:8080/";
 
 // Crear instancia de axios

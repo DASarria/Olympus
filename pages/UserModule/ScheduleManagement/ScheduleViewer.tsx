@@ -58,7 +58,7 @@ const ScheduleViewer = () => {
 
     try {
       // Traer horarios para ese día
-      const res = await axios.get("https://schedulemanagement-bqg2a7a3cgf8hfhc.eastus-01.azurewebsites.net/schedule", {
+      const res = await axios.get("https://scheculeproduction-fpgeb8c4b8abddfx.eastus-01.azurewebsites.net/schedule", {
         params: {
           serviceName,
           dayOfWeek: removeAccents(dayOfWeek.toLowerCase()),
@@ -74,7 +74,7 @@ const ScheduleViewer = () => {
       await Promise.all(scheduleList.map(async (schedule) => {
         if (!newConfigMap[schedule.idConfiguration]) {
           try {
-            const configRes = await axios.get("https://schedulemanagement-bqg2a7a3cgf8hfhc.eastus-01.azurewebsites.net/configuration/id", {
+            const configRes = await axios.get("https://scheculeproduction-fpgeb8c4b8abddfx.eastus-01.azurewebsites.net/configuration/id", {
               params: { id: schedule.idConfiguration },
               headers: { Authorization: token }
             });
@@ -95,7 +95,7 @@ const ScheduleViewer = () => {
       setConfigMap(newConfigMap);
 
       // Traer todas las configuraciones para selección
-      const allConfigRes = await axios.get("https://schedulemanagement-bqg2a7a3cgf8hfhc.eastus-01.azurewebsites.net/configuration", {
+      const allConfigRes = await axios.get("https://scheculeproduction-fpgeb8c4b8abddfx.eastus-01.azurewebsites.net/configuration", {
         headers: { Authorization: token }
       });
       setAllConfigs(allConfigRes.data.data);
@@ -137,7 +137,7 @@ const ScheduleViewer = () => {
     setLoading(true);
     try {
       for (const day of selectedDays) {
-        const res = await axios.get("https://schedulemanagement-bqg2a7a3cgf8hfhc.eastus-01.azurewebsites.net/schedule", {
+        const res = await axios.get("https://scheculeproduction-fpgeb8c4b8abddfx.eastus-01.azurewebsites.net/schedule", {
           params: { serviceName, dayOfWeek: removeAccents(day.toLowerCase()) },
           headers: { Authorization: token }
         });
@@ -152,7 +152,7 @@ const ScheduleViewer = () => {
             configurationName: selectedConfigId,
           };
 
-          await axios.put("https://schedulemanagement-bqg2a7a3cgf8hfhc.eastus-01.azurewebsites.net/schedule", updateDTO, {
+          await axios.put("https://scheculeproduction-fpgeb8c4b8abddfx.eastus-01.azurewebsites.net/schedule", updateDTO, {
             headers: { Authorization: token }
           });
         }

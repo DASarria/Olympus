@@ -16,7 +16,7 @@ const ServicePage = () => {
 
   useEffect(() => {
     axios
-      .get("https://schedulemanagement-bqg2a7a3cgf8hfhc.eastus-01.azurewebsites.net/schedule/service")
+      .get("https://scheculeproduction-fpgeb8c4b8abddfx.eastus-01.azurewebsites.net/schedule/service")
       .then((res) => {
         if (res.data?.data) {
           setServices(res.data.data);
@@ -37,7 +37,7 @@ const ServicePage = () => {
     }
 
     try {
-      await axios.post("https://schedulemanagement-bqg2a7a3cgf8hfhc.eastus-01.azurewebsites.net/schedule", {
+      await axios.post("https://scheculeproduction-fpgeb8c4b8abddfx.eastus-01.azurewebsites.net/schedule", {
         serviceName: newServiceName,
         responsibleUser: responsibleUser,
       });
@@ -48,7 +48,7 @@ const ServicePage = () => {
       setShowForm(false);
 
       axios
-        .get("https://schedulemanagement-bqg2a7a3cgf8hfhc.eastus-01.azurewebsites.net/schedule/service")
+        .get("https://scheculeproduction-fpgeb8c4b8abddfx.eastus-01.azurewebsites.net/schedule/service")
         .then((res) => {
           if (res.data?.data) {
             setServices(res.data.data);
@@ -73,7 +73,7 @@ const ServicePage = () => {
     if (!confirmDelete) return;
 
     try {
-      await axios.delete("https://schedulemanagement-bqg2a7a3cgf8hfhc.eastus-01.azurewebsites.net/schedule", {
+      await axios.delete("https://scheculeproduction-fpgeb8c4b8abddfx.eastus-01.azurewebsites.net/schedule", {
         params: { serviceName },
       });
 
