@@ -23,7 +23,7 @@ const PhysicalProgress = () => {
     const { studentId, tab } = router.query;
     
     // Obtener información del usuario actual
-    const currentUserId = typeof window !== 'undefined' ? sessionStorage.getItem("id") : null;
+    const currentUserId = typeof window !== 'undefined' ? sessionStorage.getItem("gymId") : null;
     const [role, setRole] = useState<string | null>(null);
     
     // Estados para filtrado y selección

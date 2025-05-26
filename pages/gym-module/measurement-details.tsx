@@ -28,7 +28,7 @@ const MeasurementDetailsPage = () => {
       setError(null);
       
       // Determinar qué ID usar para cargar las mediciones
-      const targetUserId = studentId ? studentId as string : sessionStorage.getItem('id');
+      const targetUserId = studentId ? studentId as string : sessionStorage.getItem('gymId');
       
       if (!targetUserId) {
         setError('No se pudo determinar el ID de usuario');
@@ -105,4 +105,4 @@ const MeasurementDetailsPage = () => {
   );
 };
 
-export default withRoleProtection(["USER", "TRAINER"], "/gym-module")(MeasurementDetailsPage);
+export default withRoleProtection(["STUDENT", "TRAINER"], "/gym-module")(MeasurementDetailsPage);
