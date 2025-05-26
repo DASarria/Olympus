@@ -2,7 +2,7 @@ import api from "@/api/axiosInstance";
 const USER_API = "/users";
 
 /**
- * @typedef {Object} GymSessionDTO
+ * @typedef {Object} GymSession
  * @description Represents the details of a gym session.
  * @property {string} id - The unique identifier of the gym session.
  * @property {string} sessionDate - The date when the gym session occurs.
@@ -11,19 +11,16 @@ const USER_API = "/users";
  * @property {number} capacity - The total capacity of the gym session.
  * @property {number} reservedSpots - The number of spots already reserved for the session.
  * @property {string} trainerId - The unique identifier of the trainer leading the session.
- * @property {string} sessionType - The type of the session (e.g., yoga, strength training).
- * @property {string} location - The location where the gym session takes place.
- * @property {string} description - A description of the gym session.
  */
-export interface GymSessionDTO {
-    id: string;
-    date: string;
-    startTime: string;
-    endTime: string;
-    capacity: number;
-    reservedSpots: number;
-    trainerId: string;
-    description: string;
+export interface GymSession {
+  id: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  capacity: number;
+  reservedSpots: number;
+  trainerId?: string;
+  description?: string;
 }
 
 /**
@@ -79,11 +76,11 @@ export interface CreateSessionDTO {
  * @property {string} trainerId - The unique identifier of the trainer leading the session.
  */
 export interface UpdateSessionDTO {
-    date: string;
-    startTime: string;
-    endTime: string;
-    capacity: number;
-    trainerId: string;
+    date?: string;
+    startTime?: string;
+    endTime?: string;
+    capacity?: number;
+    trainerId?: string;
 }
 
 
@@ -154,12 +151,12 @@ export async function cancelSession(sessionId: string, data: CancelSessionDTO): 
 /**
  * Fetches all gym sessions on a specific date.
  * @param {string} date - The date for which to fetch gym sessions.
- * @returns {Promise<GymSessionDTO[]>} A promise that resolves with an array of gym session data.
+ * @returns {Promise<GymSession[]>} A promise that resolves with an array of gym session data.
  * @throws {Error} Throws an error if the sessions cannot be fetched.
  */
-export async function getSessionsByDate(date: string): Promise<GymSessionDTO[]> {
+export async function getSessionsByDate(date: string): Promise<GymSession[]> {
   try {
-    const response = await api.get<GymSessionDTO[]>(`${USER_API}/trainer/sessions`, { params: { date } });
+    const response = await api.get<GymSession[]>(`${USER_API}/trainer/sessions`, { params: { date } });
     return response.data;
   } catch (error: any) {
     throw new Error(error.response?.data?.error || 'Error al obtener sesiones por fecha');
@@ -169,12 +166,12 @@ export async function getSessionsByDate(date: string): Promise<GymSessionDTO[]> 
 /**
  * Fetches all gym sessions led by a specific trainer.
  * @param {string} trainerId - The unique identifier of the trainer whose sessions are to be fetched.
- * @returns {Promise<GymSessionDTO[]>} A promise that resolves with an array of gym session data.
+ * @returns {Promise<GymSession[]>} A promise that resolves with an array of gym session data.
  * @throws {Error} Throws an error if the sessions cannot be fetched.
  */
-export async function getTrainerSessions(trainerId: string): Promise<GymSessionDTO[]> {
+export async function getTrainerSessions(trainerId: string): Promise<GymSession[]> {
   try {
-    const response = await api.get<GymSessionDTO[]>(`${USER_API}/trainer/${trainerId}/sessions`);
+    const response = await api.get<GymSession[]>(`${USER_API}/trainer/${trainerId}/sessions`);
     return response.data;
   } catch (error: any) {
     throw new Error(error.response?.data?.error || 'Error al obtener sesiones del entrenador');

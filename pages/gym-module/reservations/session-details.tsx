@@ -1,9 +1,10 @@
-import { useEffect, useState, ChangeEvent, FormEvent } from "react";
+import { useEffect, useState, ChangeEvent, FormEvent, useRef } from "react";
 import { useRouter } from "next/router";
-import { getSessionById, updateSession, cancelSession } from "@/api/gymServicesIndex";
+import { updateSession, cancelSession } from "@/api/gymServicesIndex";
 import { PageTransitionWrapper } from "@/components/PageTransitionWrapper";
 import { Return } from "@/components/Return";
 import { withRoleProtection } from "@/hoc/withRoleProtection";
+import { CalendarEvent } from "../reservations";
 
 /**
  * Component for displaying and managing session details.
@@ -14,21 +15,18 @@ import { withRoleProtection } from "@/hoc/withRoleProtection";
  */
 const SessionDetails = () => {
     const router = useRouter();
-    const sessionId = Array.isArray(router.query.sessionId)
-        ? router.query.sessionId[0]
-        : router.query.sessionId;
-
-    const trainerId = typeof window !== "undefined" ? sessionStorage.getItem("id") : null;
+    const [event, setEvent] = useState<CalendarEvent | null>(null);
+    const checkedStorageRef = useRef(false);
+    const [trainerId, setTrainerId] = useState<string | null>(null);
+    const [cancelReason, setCancelReason] = useState("");
+    const [successMessage, setSuccessMessage] = useState("");
+    const [errorMessage, setErrorMessage] = useState("");
     const [formData, setFormData] = useState({
         date: "",
         startTime: "",
         endTime: "",
-        capacity: 0,
-        trainerId: ""
+        capacity: 0
     });
-    const [cancelReason, setCancelReason] = useState("");
-    const [successMessage, setSuccessMessage] = useState("");
-    const [errorMessage, setErrorMessage] = useState("");
 
     /**
      * Effect hook that fetches session data when the component mounts.
@@ -37,26 +35,39 @@ const SessionDetails = () => {
      * @async
      */
     useEffect(() => {
-        if (!sessionId || typeof sessionId !== "string") return;
+        if (typeof window === "undefined") return;
+        if (checkedStorageRef.current) return;
+        checkedStorageRef.current = true;
 
-        const fetchSession = async () => {
-        try {
-            const session = await getSessionById(sessionId);
-            setFormData({
-                date: session.date,
-                startTime: session.startTime,
-                endTime: session.endTime,
-                capacity: session.capacity,
-                trainerId: session.trainerId
-            });
-            } catch (error) {
-                console.error("Error fetching session:", error);
-                setErrorMessage("No se pudo cargar la sesión.");
-            }
-        };
+        const storedTrainerId = sessionStorage.getItem("gymId");
+        const storedEvent = sessionStorage.getItem("GymEvent");
 
-        fetchSession();
-    }, [sessionId]);
+        if (!storedTrainerId) {
+            router.push("/");
+            return;
+        }
+
+        if (!storedEvent) {
+            router.push("/gym-module/reservations");
+            return;
+        }
+
+        const parsedEvent: CalendarEvent = JSON.parse(storedEvent);
+        setEvent(parsedEvent);
+        sessionStorage.removeItem("GymEvent");
+
+        setTrainerId(storedTrainerId);
+
+        const start = new Date(parsedEvent.start);
+        const end = new Date(parsedEvent.end);
+
+        setFormData({
+            date: start.toISOString().split("T")[0],
+            startTime: start.toTimeString().slice(0, 5),
+            endTime: end.toTimeString().slice(0, 5),
+            capacity: parsedEvent.capacity
+        });
+    }, []);
 
     /**
      * Handles input changes in the form.
@@ -81,17 +92,22 @@ const SessionDetails = () => {
      */
     const handleUpdate = async (e: FormEvent) => {
         e.preventDefault();
-        if (!trainerId || !sessionId || typeof sessionId !== "string") {
-            return setErrorMessage("ID de entrenador o sesión no válido.");
+        if (!trainerId || !event) {
+            setErrorMessage("Faltan datos para actualizar la sesión.");
+            return;
         }
 
         try {
-            await updateSession(sessionId, { ...formData, trainerId });
+            await updateSession(event.id, {
+                ...formData,
+                trainerId
+            });
             setSuccessMessage("Sesión actualizada exitosamente.");
             setErrorMessage("");
         } catch (error) {
             console.error("Error al actualizar:", error);
             setErrorMessage("Ocurrió un error al actualizar la sesión.");
+            setSuccessMessage("");
         }
     };
 
@@ -102,19 +118,30 @@ const SessionDetails = () => {
      * @async
      */
     const handleCancel = async () => {
-        if (!trainerId || !sessionId || typeof sessionId !== "string") {
-            return setErrorMessage("ID de entrenador o sesión no válido.");
+        if (!trainerId || !event) {
+            setErrorMessage("Faltan datos para cancelar la sesión.");
+            return;
         }
 
         try {
-            await cancelSession(sessionId, { reason: cancelReason, trainerId });
+            await cancelSession(event.id, { reason: cancelReason, trainerId });
             setSuccessMessage("Sesión cancelada exitosamente.");
             setErrorMessage("");
         } catch (error) {
             console.error("Error al cancelar:", error);
             setErrorMessage("Ocurrió un error al cancelar la sesión.");
+            setSuccessMessage("");
         }
     };
+
+
+    if (!event) {
+        return (
+            <PageTransitionWrapper>
+                <div className="text-center py-8 text-gray-500">Cargando detalles de la sesión...</div>
+            </PageTransitionWrapper>
+        );
+    }
 
     return (
         <PageTransitionWrapper>
