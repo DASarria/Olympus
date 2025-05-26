@@ -1,7 +1,7 @@
-
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import Image from "next/image"
-import axios from "axios"
+import axios, { AxiosInstance, AxiosError } from "axios"
+import { useRouter } from "next/router"
 
 // Definimos la URL base de la API
 const TURNS_API_BASE_URL = "https://eciturnos-e5egf4dyezdkdgfq.canadaeast-01.azurewebsites.net/api"
@@ -37,6 +37,7 @@ interface Slide {
 }
 
 export default function SalaDeEspera() {
+    const router = useRouter()
     const [currentSlide, setCurrentSlide] = useState(0)
     const [slides, setSlides] = useState<Slide[]>([])
     const [slidesLoading, setSlidesLoading] = useState(true)
@@ -48,22 +49,21 @@ export default function SalaDeEspera() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [autenticado, setAutenticado] = useState(false)
-    const [token, setToken] = useState<string | null>(null)
 
     // Crear instancia de axios que se actualiza dinámicamente
-    const createApiClient = () => {
+    const createApiClient = useCallback((): AxiosInstance => {
         return axios.create({
             baseURL: TURNS_API_BASE_URL,
             headers: {
                 "Content-Type": "application/json",
             },
         })
-    }
+    }, [])
 
     // Interceptor para agregar el token automáticamente
-    const setupAxiosInterceptor = (apiClient: any) => {
+    const setupAxiosInterceptor = useCallback((apiClient: AxiosInstance): AxiosInstance => {
         apiClient.interceptors.request.use(
-            (config: any) => {
+            (config) => {
                 const currentToken = sessionStorage.getItem('token')
                 if (currentToken) {
                     // El token ya viene con 'Bearer ' desde sessionStorage
@@ -71,96 +71,49 @@ export default function SalaDeEspera() {
                 }
                 return config
             },
-            (error: any) => {
+            (error) => {
                 return Promise.reject(error)
             }
         )
         return apiClient
-    }
+    }, [])
 
-    const nextSlide = () => {
+    const nextSlide = useCallback(() => {
         if (slides.length > 0) {
             setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1))
         }
-    }
+    }, [slides.length])
 
-    const prevSlide = () => {
+    const prevSlide = useCallback(() => {
         if (slides.length > 0) {
             setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1))
         }
-    }
+    }, [slides.length])
 
-    // Función para autenticar la pantalla usando credenciales específicas
-    const autenticarPantalla = async () => {
-        try {
-            // Crear cliente axios para autenticación
-            const authClient = axios.create({
-                baseURL: "https://usermanagement-bhe9cfg4b5b2hthj.eastus-01.azurewebsites.net",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            })
-
-            // Credenciales específicas para la pantalla de sala de espera
-            const credenciales = {
-                userName: "sala_espera", // Cambia por las credenciales reales
-                password: "password123"  // Cambia por las credenciales reales
-            }
-
-            console.log("Intentando autenticar pantalla de sala de espera...")
-
-            const response = await authClient.post('/authentication/login', credenciales)
-
-            if (response.data?.data?.token) {
-                const tokenCompleto = `Bearer ${response.data.data.token}`
-                sessionStorage.setItem('token', tokenCompleto)
-                setToken(tokenCompleto)
-                setAutenticado(true)
-                console.log("✓ Pantalla autenticada exitosamente")
-                return true
-            } else {
-                console.error("❌ No se recibió token en la respuesta:", response.data)
-                setError("Error de autenticación: No se recibió token válido")
-                return false
-            }
-        } catch (error: any) {
-            console.error("❌ Error de autenticación:", error)
-            if (error.response) {
-                console.error("Status:", error.response.status)
-                console.error("Data:", error.response.data)
-                setError(`Error de autenticación: ${error.response.data?.message || error.response.statusText}`)
-            } else {
-                setError("Error de autenticación: No se pudo conectar con el servidor")
-            }
-            return false
-        }
-    }
 
     // Función para obtener la lista de archivos de media
-    const obtenerArchivosMedia = async (): Promise<MediaFile[]> => {
+    const obtenerArchivosMedia = useCallback(async (): Promise<MediaFile[]> => {
         try {
             console.log("Obteniendo lista de archivos de media...")
 
             const apiClient = setupAxiosInterceptor(createApiClient())
-            const response = await apiClient.get('/files/')
+            const response = await apiClient.get<MediaFile[]>('/files/')
 
             console.log("✓ Archivos de media obtenidos:", response.data)
             return Array.isArray(response.data) ? response.data : []
-        } catch (error: any) {
+        } catch (error) {
             console.error("❌ Error al obtener archivos de media:", error)
-            if (error.response?.status === 401) {
-                console.log("Token expirado, intentando reautenticar...")
-                const reauth = await autenticarPantalla()
-                if (reauth) {
-                    return obtenerArchivosMedia()
-                }
+            const axiosError = error as AxiosError
+            if (axiosError.response?.status === 401) {
+                console.log("Token expirado")
+                router.push('/')
             }
             return []
         }
-    }
+    }, [setupAxiosInterceptor, createApiClient, router])
 
     // Función para cargar las imágenes del carrusel
-    const cargarImagenesCarrusel = async () => {
+    const cargarImagenesCarrusel = useCallback(async () => {
         setSlidesLoading(true)
         try {
             console.log("🔄 Cargando imágenes del carrusel...")
@@ -168,11 +121,8 @@ export default function SalaDeEspera() {
             // Verificar autenticación
             if (!autenticado && !sessionStorage.getItem("token")) {
                 console.log("No hay token, autenticando...")
-                const autenticacionExitosa = await autenticarPantalla()
-                if (!autenticacionExitosa) {
-                    setSlidesLoading(false)
-                    return
-                }
+                router.push('/')
+                return
             }
 
             const archivos = await obtenerArchivosMedia()
@@ -185,8 +135,7 @@ export default function SalaDeEspera() {
             if (imagenesCarrusel.length === 0) {
                 console.log("No se encontraron imágenes, usando slides por defecto...")
                 // Usar slides por defecto si no hay imágenes en el servidor
-                setSlides([
-                ])
+                setSlides([])
             } else {
                 // Convertir archivos de media a slides
                 const slidesFromAPI = imagenesCarrusel.map(archivo => ({
@@ -199,93 +148,84 @@ export default function SalaDeEspera() {
                 setSlides(slidesFromAPI)
                 console.log("✅ Imágenes del carrusel cargadas:", slidesFromAPI.length)
             }
-        } catch (error: any) {
+        } catch (error) {
             console.error("❌ Error al cargar imágenes del carrusel:", error)
             // Usar slides por defecto en caso de error
-            setSlides([
-
-            ])
+            setSlides([])
         } finally {
             setSlidesLoading(false)
         }
-    }
+    }, [autenticado, obtenerArchivosMedia, router])
 
     // Verificar token existente al cargar el componente
     useEffect(() => {
         const tokenExistente = sessionStorage.getItem('token')
         if (tokenExistente) {
-            setToken(tokenExistente)
             setAutenticado(true)
             console.log("✓ Token existente encontrado")
         }
     }, [])
 
     // Función para obtener turnos por especialización
-    const obtenerTurnos = async (especialidad: string): Promise<Turno[]> => {
+    const obtenerTurnos = useCallback(async (especialidad: string): Promise<Turno[]> => {
         try {
             console.log(`Obteniendo turnos para especialidad: ${especialidad}`)
 
             const apiClient = setupAxiosInterceptor(createApiClient())
-            const response = await apiClient.get(`/turns/list`, {
+            const response = await apiClient.get<Turno[]>(`/turns/list`, {
                 params: { specialization: especialidad },
             })
 
             console.log(`✓ Respuesta para turnos de ${especialidad}:`, response.data)
             return Array.isArray(response.data) ? response.data : []
-        } catch (error: any) {
+        } catch (error) {
             console.error(`❌ Error al obtener turnos de ${especialidad}:`, error)
-            if (error.response) {
-                console.error("Status:", error.response.status)
-                console.error("Data:", error.response.data)
+            const axiosError = error as AxiosError
+            if (axiosError.response) {
+                console.error("Status:", axiosError.response.status)
+                console.error("Data:", axiosError.response.data)
 
                 // Si es error 401, intentar reautenticar
-                if (error.response.status === 401) {
-                    console.log("Token expirado, intentando reautenticar...")
-                    const reauth = await autenticarPantalla()
-                    if (reauth) {
-                        // Reintentar la solicitud
-                        return obtenerTurnos(especialidad)
-                    }
+                if (axiosError.response.status === 401) {
+                    console.log("Token expirado")
+                    router.push('/')
                 }
             }
             return []
         }
-    }
+    }, [setupAxiosInterceptor, createApiClient, router])
 
     // Función para obtener turno actual por especialización
-    const obtenerTurnoActual = async (especialidad: string): Promise<Turno | null> => {
+    const obtenerTurnoActual = useCallback(async (especialidad: string): Promise<Turno | null> => {
         try {
             console.log(`Obteniendo turno actual para especialidad: ${especialidad}`)
 
             const apiClient = setupAxiosInterceptor(createApiClient())
-            const response = await apiClient.get(`/turns/actualTurn`, {
+            const response = await apiClient.get<Turno>(`/turns/actualTurn`, {
                 params: { specialization: especialidad },
             })
 
             console.log(`✓ Respuesta para turno actual de ${especialidad}:`, response.data)
             return response.data || null
-        } catch (error: any) {
+        } catch (error) {
             console.error(`❌ Error al obtener turno actual de ${especialidad}:`, error)
-            if (error.response) {
-                console.error("Status:", error.response.status)
-                console.error("Data:", error.response.data)
+            const axiosError = error as AxiosError
+            if (axiosError.response) {
+                console.error("Status:", axiosError.response.status)
+                console.error("Data:", axiosError.response.data)
 
                 // Si es error 401, intentar reautenticar
-                if (error.response.status === 401) {
+                if (axiosError.response.status === 401) {
                     console.log("Token expirado, intentando reautenticar...")
-                    const reauth = await autenticarPantalla()
-                    if (reauth) {
-                        // Reintentar la solicitud
-                        return obtenerTurnoActual(especialidad)
-                    }
+                    router.push('/')
                 }
             }
             return null
         }
-    }
+    }, [setupAxiosInterceptor, createApiClient, router])
 
     // Cargar datos de turnos
-    const cargarDatos = async () => {
+    const cargarDatos = useCallback(async () => {
         setLoading(true)
         try {
             console.log("🔄 Iniciando carga de datos...")
@@ -293,11 +233,8 @@ export default function SalaDeEspera() {
             // Verificar autenticación
             if (!autenticado && !sessionStorage.getItem("token")) {
                 console.log("No hay token, autenticando...")
-                const autenticacionExitosa = await autenticarPantalla()
-                if (!autenticacionExitosa) {
-                    setLoading(false)
-                    return
-                }
+                router.push('/')
+                return
             }
 
             // Obtener datos para cada especialidad
@@ -307,7 +244,11 @@ export default function SalaDeEspera() {
                 { nombre: "Psicologia", key: "psicologia" },
             ]
 
-            const nuevosDatos = { ...turnosData }
+            const nuevosDatos: TurnosData = {
+                medicinaGeneral: { actual: null, proximos: [] },
+                odontologia: { actual: null, proximos: [] },
+                psicologia: { actual: null, proximos: [] },
+            }
 
             for (const esp of especialidades) {
                 try {
@@ -342,13 +283,13 @@ export default function SalaDeEspera() {
             setTurnosData(nuevosDatos)
             setError(null) // Limpiar errores previos si la carga fue exitosa
             console.log("✅ Carga de datos completada")
-        } catch (err: any) {
+        } catch (err) {
             console.error("❌ Error general al cargar datos:", err)
             setError("Error al cargar datos de turnos")
         } finally {
             setLoading(false)
         }
-    }
+    }, [autenticado, obtenerTurnoActual, obtenerTurnos, router])
 
     // Efecto para el carrusel
     useEffect(() => {
@@ -358,7 +299,7 @@ export default function SalaDeEspera() {
             nextSlide()
         }, 5000)
         return () => clearInterval(interval)
-    }, [slides.length])
+    }, [slides.length, nextSlide])
 
     // Efecto para cargar datos iniciales
     useEffect(() => {
@@ -371,7 +312,7 @@ export default function SalaDeEspera() {
         // Configurar actualización periódica de datos
         const intervalDatos = setInterval(() => {
             cargarDatos()
-        }, 30000) // Actualizar cada 30 segundos
+        }, 10000) // Actualizar cada 30 segundos
 
         // Recargar imágenes cada 5 minutos por si se agregan nuevas
         const intervalImagenes = setInterval(() => {
@@ -383,7 +324,7 @@ export default function SalaDeEspera() {
             clearInterval(intervalDatos)
             clearInterval(intervalImagenes)
         }
-    }, [])
+    }, [cargarDatos, cargarImagenesCarrusel])
 
     const renderizarTurno = (turno: Turno | null, esTurnoActual = false) => {
         if (!turno)
@@ -456,7 +397,7 @@ export default function SalaDeEspera() {
                     URL.revokeObjectURL(imageSrc)
                 }
             }
-        }, [slide.url])
+        }, [slide.url, imageSrc, setupAxiosInterceptor, createApiClient])
 
         if (imageLoading) {
             return (

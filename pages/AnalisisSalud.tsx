@@ -1,7 +1,5 @@
-"use client"
-
 import { useRouter } from "next/navigation"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import axios from "axios"
 import {
   BarChart,
@@ -43,15 +41,25 @@ interface ReportRequest {
   userRole?: string
 }
 
-const Analisis = () => {
+interface ErrorResponse {
+  response?: {
+    status?: number
+  }
+  message?: string
+}
+
+const AnalisisSalud = () => {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState("general")
   const [selectedRole, setSelectedRole] = useState<string | null>(null)
   const [reporte, setReporte] = useState<ReporteAnalisis | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [autenticado, setAutenticado] = useState(false)
   const [generandoReporte, setGenerandoReporte] = useState(false)
+
+  // Estados para exportación
+  const [exportandoExcel, setExportandoExcel] = useState(false)
+  const [exportandoPdf, setExportandoPdf] = useState(false)
 
   // Configuración de fechas para el reporte
   const [fechaInicial, setFechaInicial] = useState(() => {
@@ -67,7 +75,6 @@ const Analisis = () => {
   const [filtroRol, setFiltroRol] = useState<string>("")
 
   const especialidades = ["Estudiante", "Docente", "Administrativo", "ServiciosGenerales"]
-  const discapacidades = ["NoTiene", "MayorDeEdad", "DisfuncionMotriz", "Embarazo", "Otra"]
 
   // Crear cliente API con interceptor
   const createApiClient = () => {
@@ -96,25 +103,25 @@ const Analisis = () => {
   }
 
   // Función para verificar autenticación
-  const verificarAutenticacion = async () => {
+  const verificarAutenticacion = () => {
     const token = sessionStorage.getItem('token')
     if (!token) {
       setError("Es necesario autenticarse para generar reportes")
+      router.push('/')
       return false
     }
-    setAutenticado(true)
     return true
   }
 
-  // Función para generar reporte
-  const generarReporte = async () => {
+  // Función para generar reporte usando useCallback para evitar re-renders innecesarios
+  const generarReporte = useCallback(async () => {
     setGenerandoReporte(true)
     setError(null)
     setLoading(true)
 
     try {
       // Verificar autenticación
-      const authOk = await verificarAutenticacion()
+      const authOk = verificarAutenticacion()
       if (!authOk) {
         return
       }
@@ -140,11 +147,14 @@ const Analisis = () => {
         setError("No se recibieron datos del reporte")
       }
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("❌ Error al generar reporte:", error)
-      if (error.response?.status === 401) {
+      const typedError = error as ErrorResponse
+
+      if (typedError.response?.status === 401) {
         setError("No autorizado. Verifica tus permisos para generar reportes.")
-      } else if (error.response?.status === 400) {
+        router.push('/')
+      } else if (typedError.response?.status === 400) {
         setError("Datos de solicitud inválidos. Verifica las fechas.")
       } else {
         setError("Error al generar el reporte. Inténtalo de nuevo.")
@@ -153,12 +163,122 @@ const Analisis = () => {
       setGenerandoReporte(false)
       setLoading(false)
     }
+  }, [fechaInicial, fechaFinal, filtroRol]) // Dependencias necesarias para useCallback
+
+  // Función para descargar archivo
+  const descargarArchivo = (blob: Blob, nombreArchivo: string) => {
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = nombreArchivo
+    document.body.appendChild(a)
+    a.click()
+    window.URL.revokeObjectURL(url)
+    document.body.removeChild(a)
+  }
+
+  // Función para exportar a Excel
+  const exportarExcel = async () => {
+    if (!reporte || !reporte.id) {
+      setError("No hay reporte disponible para exportar")
+      return
+    }
+
+    setExportandoExcel(true)
+    setError(null)
+
+    try {
+      const authOk = verificarAutenticacion()
+      if (!authOk) {
+        return
+      }
+
+      console.log("Exportando reporte a Excel...")
+      const apiClient = createApiClient()
+
+      const response = await apiClient.get(`/export/excel/${reporte.id}`, {
+        responseType: 'blob'
+      })
+
+      // Generar nombre del archivo
+      const fechaInicio = reporte.initialDate.replace(/[-:]/g, '')
+      const fechaFin = reporte.finalDate.replace(/[-:]/g, '')
+      const rolSufijo = reporte.userRole ? `_${reporte.userRole.toLowerCase()}` : ''
+      const nombreArchivo = `reporte_turnos_${fechaInicio}_a_${fechaFin}${rolSufijo}.xlsx`
+
+      descargarArchivo(response.data, nombreArchivo)
+      console.log("✅ Reporte Excel descargado exitosamente")
+
+    } catch (error: unknown) {
+      console.error("❌ Error al exportar a Excel:", error)
+      const typedError = error as ErrorResponse
+
+      if (typedError.response?.status === 401) {
+        setError("No autorizado para exportar reportes.")
+        router.push('/')
+      } else if (typedError.response?.status === 404) {
+        setError("Reporte no encontrado. Genera un nuevo reporte.")
+      } else {
+        setError("Error al exportar a Excel. Inténtalo de nuevo.")
+      }
+    } finally {
+      setExportandoExcel(false)
+    }
+  }
+
+  // Función para exportar a PDF
+  const exportarPdf = async () => {
+    if (!reporte || !reporte.id) {
+      setError("No hay reporte disponible para exportar")
+      return
+    }
+
+    setExportandoPdf(true)
+    setError(null)
+
+    try {
+      const authOk = verificarAutenticacion()
+      if (!authOk) {
+        return
+      }
+
+      console.log("Exportando reporte a PDF...")
+      const apiClient = createApiClient()
+
+      const response = await apiClient.get(`/export/pdf/${reporte.id}`, {
+        responseType: 'blob'
+      })
+
+      // Generar nombre del archivo
+      const fechaInicio = reporte.initialDate.replace(/[-:]/g, '')
+      const fechaFin = reporte.finalDate.replace(/[-:]/g, '')
+      const rolSufijo = reporte.userRole ? `_${reporte.userRole.toLowerCase()}` : ''
+      const nombreArchivo = `reporte_turnos_${fechaInicio}_a_${fechaFin}${rolSufijo}.pdf`
+
+      descargarArchivo(response.data, nombreArchivo)
+      console.log("✅ Reporte PDF descargado exitosamente")
+
+    } catch (error: unknown) {
+      console.error("❌ Error al exportar a PDF:", error)
+      const typedError = error as ErrorResponse
+
+      if (typedError.response?.status === 401) {
+        setError("No autorizado para exportar reportes.")
+        router.push('/')
+      } else if (typedError.response?.status === 404) {
+        setError("Reporte no encontrado. Genera un nuevo reporte.")
+      } else {
+        setError("Error al exportar a PDF. Inténtalo de nuevo.")
+      }
+    } finally {
+      setExportandoPdf(false)
+    }
   }
 
   // Cargar reporte inicial
   useEffect(() => {
     generarReporte()
-  }, [])
+  }, [generarReporte]) // Ahora generarReporte está en las dependencias
 
   // Filtrar por rol en la visualización
   const handleRoleFilter = (role: string) => {
@@ -268,6 +388,52 @@ const Analisis = () => {
             </div>
           </div>
         </div>
+
+        {/* Botones de exportación */}
+        {reporte && (
+            <div className="bg-gray-50 p-4 rounded-lg border border-red-100 mb-6">
+              <h2 className="text-lg font-semibold mb-3">Exportar Reporte</h2>
+              <div className="flex flex-wrap gap-3">
+                <button
+                    onClick={exportarExcel}
+                    disabled={exportandoExcel || !reporte.id}
+                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                >
+                  {exportandoExcel ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Exportando...
+                      </>
+                  ) : (
+                      <>
+                        📊 Exportar a Excel
+                      </>
+                  )}
+                </button>
+                <button
+                    onClick={exportarPdf}
+                    disabled={exportandoPdf || !reporte.id}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                >
+                  {exportandoPdf ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Exportando...
+                      </>
+                  ) : (
+                      <>
+                        📄 Exportar a PDF
+                      </>
+                  )}
+                </button>
+                <div className="text-sm text-gray-600 flex items-center">
+                  <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">
+                    ID: {reporte.id}
+                  </span>
+                </div>
+              </div>
+            </div>
+        )}
 
         {/* Mensaje de error */}
         {error && (
@@ -570,4 +736,4 @@ const Analisis = () => {
   )
 }
 
-export default Analisis
+export default AnalisisSalud

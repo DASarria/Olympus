@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation" // Cambiado para App Router
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import axios from "axios"
 
 // Definir la URL base del API
@@ -14,13 +14,20 @@ interface MediaFile {
     contentType: string
 }
 
+// Interface para errores de Axios
+interface ErrorResponse {
+    response?: {
+        status?: number
+    }
+    message?: string
+}
+
 const Contenido_Visual = () => {
     const router = useRouter()
     const [files, setFiles] = useState<MediaFile[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [deleting, setDeleting] = useState<string | null>(null)
-    const [autenticado, setAutenticado] = useState(false)
 
     // Crear cliente API con interceptor
     const createApiClient = () => {
@@ -49,37 +56,38 @@ const Contenido_Visual = () => {
     }
 
     // Función para autenticar (reutilizar credenciales del sistema)
-    const autenticarUsuario = async () => {
+    const autenticarUsuario = () => {
         try {
             // Verificar si ya hay un token válido
             const tokenExistente = sessionStorage.getItem('token')
             if (tokenExistente) {
-                setAutenticado(true)
                 return true
             }
 
             // Si no hay token, intentar obtener uno (esto dependerá de tu sistema de auth)
             console.log("No hay token disponible. Es necesario autenticarse.")
             setError("Es necesario autenticarse para gestionar el contenido visual")
+            router.push('/')
             return false
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Error de autenticación:", error)
+            router.push('/')
             setError("Error de autenticación")
             return false
         }
     }
 
     // Función para obtener todos los archivos
-    const obtenerArchivos = async () => {
+    const obtenerArchivos = useCallback(async () => {
         setLoading(true)
         setError(null)
 
         try {
             // Verificar autenticación
-            const authOk = await autenticarUsuario()
+            const authOk = autenticarUsuario()
             if (!authOk) {
                 setLoading(false)
-                return
+                router.push('/')
             }
 
             console.log("Obteniendo lista de archivos...")
@@ -93,10 +101,13 @@ const Contenido_Visual = () => {
                 setFiles([])
                 console.log("No se encontraron archivos")
             }
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("❌ Error al obtener archivos:", error)
-            if (error.response?.status === 401) {
+            const typedError = error as ErrorResponse
+
+            if (typedError.response?.status === 401) {
                 setError("No autorizado. Por favor, inicia sesión.")
+                router.push('/')
             } else {
                 setError("Error al cargar los archivos. Inténtalo de nuevo.")
             }
@@ -104,7 +115,7 @@ const Contenido_Visual = () => {
         } finally {
             setLoading(false)
         }
-    }
+    }, [])
 
     // Función para eliminar un archivo
     const handleDelete = async (id: string, fileName: string) => {
@@ -123,11 +134,14 @@ const Contenido_Visual = () => {
             // Actualizar la lista local
             setFiles(files.filter((file) => file.id !== id))
             console.log("✓ Archivo eliminado exitosamente")
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("❌ Error al eliminar archivo:", error)
-            if (error.response?.status === 401) {
+            const typedError = error as ErrorResponse
+
+            if (typedError.response?.status === 401) {
                 setError("No autorizado para eliminar archivos")
-            } else if (error.response?.status === 404) {
+                router.push('/')
+            } else if (typedError.response?.status === 404) {
                 setError("El archivo no fue encontrado")
                 // Remover de la lista local si no existe en el servidor
                 setFiles(files.filter((file) => file.id !== id))
@@ -180,10 +194,13 @@ const Contenido_Visual = () => {
 
             // Recargar la lista de archivos
             await obtenerArchivos()
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("❌ Error al subir archivo:", error)
-            if (error.response?.status === 401) {
+            const typedError = error as ErrorResponse
+
+            if (typedError.response?.status === 401) {
                 setError("No autorizado para subir archivos")
+                router.push('/')
             } else {
                 setError(`Error al subir "${file.name}". Inténtalo de nuevo.`)
             }
@@ -193,7 +210,7 @@ const Contenido_Visual = () => {
     // Cargar archivos al montar el componente
     useEffect(() => {
         obtenerArchivos()
-    }, [])
+    }, [obtenerArchivos])
 
     // Función para obtener el tipo de archivo de manera legible
     const obtenerTipoArchivo = (contentType: string) => {
@@ -201,14 +218,6 @@ const Contenido_Visual = () => {
             return `Imagen (${contentType.split('/')[1].toUpperCase()})`
         }
         return contentType
-    }
-
-    // Función para formatear el tamaño del archivo (si estuviera disponible)
-    const formatearTamano = (bytes?: number) => {
-        if (!bytes) return ''
-        const sizes = ['Bytes', 'KB', 'MB', 'GB']
-        const i = Math.floor(Math.log(bytes) / Math.log(1024))
-        return `${Math.round(bytes / Math.pow(1024, i) * 100) / 100} ${sizes[i]}`
     }
 
     return (
