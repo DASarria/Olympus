@@ -1,6 +1,3 @@
-import Image from 'next/image';
-import logotransparente from "../assets/images/logotransparente.png";
-
 interface HeaderProps {
   userName?: string;
   notificationsCount?: number;
@@ -18,15 +15,7 @@ const Header = ({ userName = 'Nombre de Usuario', notificationsCount = 0 }: Head
   };
 
   return (
-    <div className="flex w-full justify-between items-center h-14">
-      {/* Aquí se pone el logo, que pasó de estar en el menú lateral a acá para que no hubiera conflictos cuando se mostrara el contenido */}
-      <div className="w-[14vw] md:w-[6vw] h-14 bg-eci flex items-center justify-center">
-        <Image
-          src={logotransparente}
-          alt="ECI logo"
-          className="h-auto w-full object-contain" // object-contain evita que se distorsione
-        />
-      </div>
+    <div className="flex w-full justify-end items-center h-14">
 
       {/* Controles de usuario a la derecha, nombre y notificaciones */}
       <div className="flex items-center space-x-4 px-4">
