@@ -2,8 +2,8 @@ import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { NavBtn } from "@/components/NavBtn";
 import Horario from "@/assets/images/UserModule/horario.png";
-import Usuario from "@/assets/images/UserModule/usuarios.webp";
-import EditUser from "@/assets/images/CrearUser.jpg";
+import Usuario from "@/assets/images/UserModule/usuarios.png";
+import EditUser from "@/assets/images/CrearUser.png";
 
 const Module6 = () => {
   const router = useRouter();

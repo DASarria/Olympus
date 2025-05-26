@@ -5,7 +5,7 @@ import { Return } from "@/components/Return";
 import CampoTexto from "@/components/gestionUsuario/CampoTexto";
 import RectanguloConTexto from "@/components/gestionUsuario/RectanguloConTexto";
 import { jwtDecode } from "jwt-decode";
-import { motion } from "framer-motion";
+
 
 const VerPerfil = () => {
   const router = useRouter();
@@ -36,7 +36,7 @@ const VerPerfil = () => {
     id: string | null;
   }
 
-  // ✅ Tipo del token JWT corregido
+
   interface MiToken {
     id: string;
     exp?: number;
@@ -50,32 +50,50 @@ const VerPerfil = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const tokenConBearer = sessionStorage.getItem("token");
+  const tokenConBearer = sessionStorage.getItem("token");
 
-      if (!tokenConBearer) {
-        console.error("No hay token en sessionStorage");
-        return;
-      }
+  if (!tokenConBearer) {
+    console.error("No hay token en sessionStorage");
+    return;
+  }
 
-      const token = tokenConBearer.replace("Bearer ", "");
-      const decoded = jwtDecode<MiToken>(token);
-      const idUsuario = decoded.id;
+  const token = tokenConBearer.replace("Bearer ", "");
+  const decoded = jwtDecode<MiToken>(token);
+  const idUsuario = decoded.id;
+  const rol = decoded.role;
 
-      const filtrosConSoloUno: FiltrosUsuario = {
-        academicProgram: null,
-        codeStudent: null,
-        userName: null,
-        fullName: null,
-        role: null,
-        id: idUsuario,
-      };
+  console.log("ID del usuario:", idUsuario);
+  console.log("Rol del usuario:", rol);
+
+  let filtrosConSoloUno: FiltrosUsuario;
+
+  if (rol === "STUDENT") {
+    filtrosConSoloUno = {
+      academicProgram: null,
+      codeStudent: idUsuario,
+      userName: null,
+      fullName: null,
+      role: null,
+      id: null,
+    };
+  } else {
+    filtrosConSoloUno = {
+      academicProgram: null,
+      codeStudent: null,
+      userName: null,
+      fullName: null,
+      role: null,
+      id: idUsuario,
+    };
+  }
+
 
       try {
         const res = await consultarUsuarios(filtrosConSoloUno);
         if (res && res.length > 0) {
           const u = res[0];
           setDatos({
-            tipoUsuario: u.role === "ADMIN" ? "Administrador" : "Usuario",
+            tipoUsuario: u.role === "Student" ? "Usuario" : "Administrador",
             nombre: u.fullName || "",
             correo: u.userName || "",
             tipoId: u.typeIdStudent || "CC",
@@ -187,15 +205,13 @@ const VerPerfil = () => {
           <div
             style={{marginTop:"20px"}}
           >
-            <motion.div
-              whileHover={{
-                scale: 1.005,
-                transition: { duration: 0.15 },
-              }}
-            >
-              <button
-                onClick = {changePassword}
-                style={{
+          </div>
+        </RectanguloConTexto>
+      )}
+    
+
+      <div style={{ width: "90%", margin: "30px auto 60px" }}>
+        <button onClick={changePassword} style={{
                   backgroundColor: "#990000",
                   color: "#ffffff",
                   fontFamily: "'Open Sans', sans-serif",
@@ -205,17 +221,14 @@ const VerPerfil = () => {
                   cursor: "pointer",
                   fontSize: "20px",
                   whiteSpace: "nowrap",
-                }}
-              >
-                Cambiar contraseña
-              </button>
-            </motion.div>
-          </div>
-        </RectanguloConTexto>
-      )}
-    
+                }}>
+          Guardar cambios
+        </button>
+      </div>
+
     </div>
     
+
   );
 };
 
