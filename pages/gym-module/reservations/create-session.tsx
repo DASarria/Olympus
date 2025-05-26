@@ -21,7 +21,7 @@ const CreateSessionForm = () => {
     const [errorMessage, setErrorMessage] = useState('');
 
     // Retrieve trainer ID from sessionStorage
-    const trainerId = typeof window !== 'undefined' ? sessionStorage.getItem("id") : null;
+    const trainerId = typeof window !== 'undefined' ? sessionStorage.getItem("gymId") : null;
 
     // State for form fields
     const [formData, setFormData] = useState({
