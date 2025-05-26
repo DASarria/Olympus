@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { all } from "../api/APIActivity"
+import React, { useState, useEffect, act } from 'react';
+import { useRouter } from "next/router";
+import { all,find, del } from "../api/APIActivity"
 
 interface Actividad {
   id: string;
@@ -15,8 +16,13 @@ interface ActividadProcesada {
 }
 
 const HorarioClasesOptimizado: React.FC = () => {
+  const router = useRouter();
+  const navegarA = (ruta:string) => {
+    router.push(ruta);
+  };
+
   const [diaActual, setDiaActual] = useState(0);
-  const [actividadSeleccionada, setActividadSeleccionada] = useState<{ nombre: string; inicio: string; fin: string; } | null>(null);
+  const [actividadSeleccionada, setActividadSeleccionada] = useState<{ id:number, nombre: string; inicio: string; fin: string; } | null>(null);
   const [actividades, setActividades] = useState<ActividadProcesada[]>([]);
   const [horarios, setHorarios] = useState<[number, string, string, string][]>([]);
   const [actividadesRaw, setActividadesRaw] = useState<Actividad[]>([]);
@@ -183,7 +189,7 @@ const HorarioClasesOptimizado: React.FC = () => {
                         key={idx}
                         className={`${actividad.color} ${actividad.borderColor} cursor-pointer h-12 flex items-center justify-center text-xs font-medium hover:opacity-80`}
                         style={{ gridColumnStart: sesion.inicioIdx + 1, gridColumnEnd: `span ${sesion.finIdx - sesion.inicioIdx}` }}
-                        onClick={() => setActividadSeleccionada({ nombre: actividad.nombre, inicio: sesion.inicio, fin: sesion.fin })}
+                        onClick={() => setActividadSeleccionada({ id: actividad.id, nombre: actividad.nombre, inicio: sesion.inicio, fin: sesion.fin })}
                         title={`${actividad.nombre}: ${formatearHora(sesion.inicio)} - ${formatearHora(sesion.fin)}`}
                       >
                         {formatearHora(sesion.inicio)} - {formatearHora(sesion.fin)}
@@ -218,23 +224,55 @@ const HorarioClasesOptimizado: React.FC = () => {
           </div>
           <div className="flex space-x-2 mt-4">
             {['Ver asistencias', 'Editar', 'Borrar'].map(texto => (
-              <button 
-                key={texto}
-                onClick={() => texto === 'Ver asistencias' && verAsistencias(actividadSeleccionada.nombre)}
-                className="text-white px-3 py-1 rounded-md text-sm hover:opacity-90" 
-                style={{ backgroundColor: '#990000' }}
-              >
-                {texto}
-              </button>
-            ))}
+  <button
+    key={texto}
+    onClick={async ()=> {
+      if (texto === 'Ver asistencias') {
+        verAsistencias(actividadSeleccionada.nombre);
+      } else if (texto === 'Editar') {
+      
+        const actividad = await find(
+          {"activityType": actividadSeleccionada.nombre},null
+        );
+        const act = actividad?.data[0];
+        if(act){
+          navegarA(`/clasesExtracurriculares/CEAdminActividades?id=${act.id}`);
+        }else{
+          navegarA(`/clasesExtracurriculares/CEAdminActividades`);
+        }
+        
+      } else if (texto === 'Borrar') {
+        const actividad = await find(
+          {"activityType": actividadSeleccionada.nombre},null
+        );
+        const act = actividad?.data[0];
+        
+        
+        if(act){
+          del(act,null);
+        }
+      }
+      
+    }}
+    className="text-white px-3 py-1 rounded-md text-sm hover:opacity-90"
+    style={{ backgroundColor: '#990000' }}
+  >
+    {texto}
+  </button>
+))}
+
           </div>
         </div>
       )}
 
       <div className="flex justify-end">
-        <button className="text-white px-4 py-2 rounded hover:opacity-90" style={{ backgroundColor: '#990000' }}>
-          Nueva actividad
-        </button>
+         <button
+      className="text-white px-4 py-2 rounded hover:opacity-90"
+      style={{ backgroundColor: '#990000' }}
+      onClick={() => router.push('/clasesExtracurriculares/CEAdminActividades')}
+    >
+      Nueva actividad
+    </button>
       </div>
     </div>
   );

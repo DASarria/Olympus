@@ -41,9 +41,10 @@ export const all = async (token) => {
 export const del = async (activity,token) => {
     try{
         const client = createClient(API, token);
-        return await client.delete(endPointActivity.delete);
+        await client.delete(endPointActivity.delete,  { data: activity } );
+
     }catch(error){
-        console.error("Error al eliminar actividad");
+        console.error("Error al eliminar actividad",error);
     }
 };
 

@@ -80,6 +80,8 @@ interface Actividad {
   resources: Recurso[];
 }
 
+
+
 //Esto es igual que actividad (Lo uso para actividades nuevas, donde no debo enviar el id)
 type ActividadNueva = Omit<Actividad, "id"> & { id?: string };
 
