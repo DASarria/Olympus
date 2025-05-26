@@ -1,3 +1,4 @@
+
 import modulo1 from "../assets/images/1imagen.jpg";
 // import modulo2 from "../assets/images/2imagen.jpg";
 import modulo3 from "../assets/images/3imagen.jpg";
@@ -15,6 +16,7 @@ const modules = [
     },
     {
         moduleName: "module 2",
+
         roleCanUse: ["STUDENT"],
         urlToNavigate: "/salasCrea/InicioSalasCreaUsuario",
         image: modulo3,
@@ -35,6 +37,7 @@ const modules = [
         moduleName: "module 5",
         roleCanUse: ["ADMIN", "STUDENT", "TRAINER"],
         urlToNavigate: "/gym-module",
+
         image: modulo5,
     },
     {

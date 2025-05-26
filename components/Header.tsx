@@ -1,7 +1,10 @@
-"use client"
 
-import Image from "next/image"
-import logotransparente from "../assets/images/logotransparente.png"
+'use client';
+import Image from 'next/image';
+import { useState, useRef, useEffect } from 'react';
+import logotransparente from "../assets/images/logotransparente.png";
+import { useRouter } from 'next/navigation';
+
 
 
 interface HeaderProps {
@@ -9,8 +12,11 @@ interface HeaderProps {
   notificationsCount?: number
 }
 
-const Header = ({ userName = "Nombre de Usuario", notificationsCount = 0 }: HeaderProps) => {
-  
+const Header = ({ userName = 'Nombre de Usuario', notificationsCount = 0 }: HeaderProps) => {
+  const [menuAbierto, setMenuAbierto] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+
 
   const getInitials = (name: string) => {
     return name
@@ -18,8 +24,21 @@ const Header = ({ userName = "Nombre de Usuario", notificationsCount = 0 }: Head
       .map((word) => word[0])
       .join("")
       .toUpperCase()
-      .substring(0, 2)
+      .substring(0, 2);
+  };
+  const logOut = () => {
+    sessionStorage.clear();
+    router.push('/');
   }
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuAbierto(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleLogoClick = () => {
     window.location.href = "/salasCrea/InicioSalasCreaADMIN"
@@ -33,13 +52,12 @@ const Header = ({ userName = "Nombre de Usuario", notificationsCount = 0 }: Head
         onClick={handleLogoClick}
       >
         <Image
-  src={logotransparente || "/placeholder.svg"}
-  alt="ECI logo"
-  width={50}
-  height={50}
-  className="object-contain"
-/>
-
+          src={logotransparente || "/placeholder.svg"}
+          alt="ECI logo"
+          width={50}
+          height={50}
+          className="object-contain"
+        />
 
       </div>
 
@@ -48,12 +66,28 @@ const Header = ({ userName = "Nombre de Usuario", notificationsCount = 0 }: Head
         {/* Nombre de usuario (solo visible en escritorio) */}
         <span className="hidden md:block text-gray-700">{userName}</span>
 
-        {/* Iniciales del usuario */}
-        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-400 text-white">
+        <button
+          onClick={() => setMenuAbierto(!menuAbierto)}
+          className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-400 text-white font-semibold"
+        >
           {getInitials(userName)}
-        </div>
+        </button>
 
-        {/* Campanita de notificaciones */}
+        {menuAbierto && (
+          <div className="absolute top-14 right-4 bg-white border rounded-lg shadow-lg w-40 py-2 z-10">
+            <button
+            onClick={() => router.push('/UserModule/gestionUsuario/VerPerfil')}
+            className="w-full text-left px-4 py-2 hover:bg-gray-100"
+                >
+            Ver perfil
+            </button>
+
+            <button
+            onClick={logOut}
+            className="w-full text-left px-4 py-2 hover:bg-gray-100">Cerrar sesión</button>
+          </div>
+        )}
+
         <div className="relative">
           <button className="p-2 rounded-full hover:bg-gray-100" aria-label="Notificaciones">
             <svg
@@ -71,7 +105,6 @@ const Header = ({ userName = "Nombre de Usuario", notificationsCount = 0 }: Head
               />
             </svg>
 
-            {/* Solo muestro el contador si hay notificaciones y si hay más de 9, muestro "9+" para que no ocupe tanto espacio */}
             {notificationsCount > 0 && (
               <span className="absolute top-1 right-1 h-4 w-4 bg-red-600 rounded-full flex items-center justify-center text-white text-xs">
                 {notificationsCount > 9 ? "9+" : notificationsCount}
@@ -84,4 +117,6 @@ const Header = ({ userName = "Nombre de Usuario", notificationsCount = 0 }: Head
   )
 }
 
-export default Header
+
+export default Header;
+

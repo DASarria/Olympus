@@ -49,6 +49,7 @@ export const NavBtn = ({ image, texto, navigate }: Props) => {
                     width={150}
                     height={150}
                     className="object-cover relative"
+
                 />
                 <div className="[font-family: 'Montserrat-Bold', Helvetica] self-stretch tracking-[0] text-2xl text-black font-bold text-center leading-[normal] relative">
                     {texto}

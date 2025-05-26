@@ -1,3 +1,4 @@
+
 import { useRouter } from "next/router";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -7,9 +8,11 @@ import { motion, AnimatePresence } from "framer-motion";
  * 
  * @interface
  */
+
 interface Props {
   children: React.ReactNode;
 }
+
 
 /**
  * Transition variants for the page animation.
@@ -52,3 +55,4 @@ export const PageTransitionWrapper = ({ children }: Props) => {
     </AnimatePresence>
   );
 };
+
