@@ -1,6 +1,5 @@
-
-import modulo1 from "../assets/images/1imagen.jpg";
-// import modulo2 from "../assets/images/2imagen.jpg";
+import modulo1 from "../assets/images/5imagen.jpg";
+import modulo2 from "../assets/images/1imagen.jpg";
 import modulo3 from "../assets/images/3imagen.jpg";
 import modulo4 from "../assets/images/4imagen.jpg";
 import gymImage from "@/assets/images/gym.jpg";
@@ -10,9 +9,16 @@ import Module from "./Module";
 const modules = [
     {
         moduleName: "module 1",
-        roleCanUse: ["ADMIN", "usuario"],
-        urlToNavigate: "/Module1",
+        roleCanUse: ["ADMIN", "MEDICAL_SECRETARY", "DOCTOR"],
+        urlToNavigate:"/ModuloSalud/ModuloSalud",
         image: modulo1,
+    },
+
+    {
+        moduleName: "module 3",
+        roleCanUse: ["ADMIN"],
+        urlToNavigate: "/Module3",
+        image: modulo2,
     },
     {
         moduleName: "module 2",

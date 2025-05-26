@@ -29,6 +29,7 @@
     "react-dom": "^19.1.0",
     "react-hot-toast": "^2.5.2",
     "recharts": "^2.15.3",
+    "recharts": "^2.15.3",
     "sweetalert2": "^11.21.0",
     "tailwindcss": "^4.1.7",
     "three": "^0.176.0"
