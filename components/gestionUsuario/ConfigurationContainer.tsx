@@ -1,4 +1,3 @@
-import React, { ReactNode } from "react";
 import RectanguloConTexto from "./RectanguloConTextoConfiguration";
 
 interface Interval{

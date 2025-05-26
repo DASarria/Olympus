@@ -6,7 +6,7 @@ import RectanguloConTexto from './RectanguloConTexto';
 import styles from "@/components/gestionUsuario/styles.module.css";
 import { API_BASE } from "@/pages/api/UserManagement//UserService";
 
-interface UsuarioData {
+export interface UsuarioData {
   fullName: string;
   academicProgram: string;
   codeStudent: string;
@@ -91,18 +91,23 @@ const FormularioEditarUsuario: React.FC<Props> = ({ datosIniciales }) => {
           }}
         >
           {[ 
-            <CampoTexto etiqueta="Correo" marcador="Digite correo" valor={form.userName} onChange={v => setForm({ ...form, userName: v })} />, 
-            <CampoTexto etiqueta="Dirección" marcador="Digite dirección" valor={form.address} onChange={v => setForm({ ...form, address: v })} />, 
-            <CampoTexto etiqueta="Número de contacto" marcador="Digite número" valor={form.contactNumber} onChange={v => setForm({ ...form, contactNumber: v })} />, 
-            <CampoTexto etiqueta="Programa académico" marcador="Digite programa" valor={form.academicProgram} onChange={v => setForm({ ...form, academicProgram: v })} />, 
-            <CampoTexto etiqueta="Nombre del contacto" marcador="Digite nombre" valor={form.fullNameContact} onChange={v => setForm({ ...form, fullNameContact: v })} />, 
-            <CampoTexto etiqueta="Teléfono del contacto" marcador="Digite teléfono" valor={form.phoneNumber} onChange={v => setForm({ ...form, phoneNumber: v })} />, 
-            <CampoTexto etiqueta="Parentesco" marcador="Digite parentesco" valor={form.relationship} onChange={v => setForm({ ...form, relationship: v })} />, 
-            <CampoSelect etiqueta="Tipo de documento del contacto" marcador="Seleccione" opciones={["CC", "TI"]} valor={form.typeIdContact || ''} onChange={v => setForm({ ...form, typeIdContact: v })} /> 
-          ].map((comp, i) => (
-            <div key={i} style={{ flex: `1 1 ${i >= 2 ? "32.8%" : "calc(50% - 20px)"}`, minWidth: "200px" }}>
-              {comp}
-            </div>
+            {key: "Digite correo", comp: (
+            <CampoTexto etiqueta="Correo" marcador="Digite correo" valor={form.userName} onChange={v => setForm({ ...form, userName: v })}/>),},
+            {key: "Digite dirección", comp: (
+            <CampoTexto etiqueta="Dirección" marcador="Digite dirección" valor={form.address} onChange={v => setForm({ ...form, address: v })}/>),},
+            {key: "Digite número", comp: (
+            <CampoTexto etiqueta="Número de contacto" marcador="Digite número" valor={form.contactNumber} onChange={v => setForm({ ...form, contactNumber: v })}/>),},
+            {key: "Digite programa", comp: (
+            <CampoTexto etiqueta="Programa académico" marcador="Digite programa" valor={form.academicProgram} onChange={v => setForm({ ...form, academicProgram: v })}/>),},
+            {key: "Digite nombre", comp: (
+            <CampoTexto etiqueta="Nombre del contacto" marcador="Digite nombre" valor={form.fullNameContact} onChange={v => setForm({ ...form, fullNameContact: v })}/>),},
+            {key: "Digite teléfono", comp: (
+            <CampoTexto etiqueta="Teléfono del contacto" marcador="Digite teléfono" valor={form.phoneNumber} onChange={v => setForm({ ...form, phoneNumber: v })}/>),},
+            {key: "Digite parentesco", comp: (
+            <CampoTexto etiqueta="Parentesco" marcador="Digite parentesco" valor={form.relationship} onChange={v => setForm({ ...form, relationship: v })}/>),},
+            {key: "Tipo de documento del contacto", comp: (
+            <CampoSelect etiqueta="Tipo de documento del contacto" marcador="Seleccione" opciones={["CC", "TI"]} valor={form.typeIdContact || ''} onChange={v => setForm({ ...form, typeIdContact: v })}/>),},
+          ].map(({ key, comp }, i) => (<div key={`EditarUsuario-${key}`} style={{ flex: `1 1 ${i >= 2 ? "32.8%" : "calc(50% - 20px)"}`, minWidth: "200px",}}>{comp}</div>
           ))}
         </div>
       </RectanguloConTexto>

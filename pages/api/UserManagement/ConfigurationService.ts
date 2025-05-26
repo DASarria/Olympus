@@ -96,7 +96,8 @@ interface ResponseName{
   message:string;
   data:Configuration;
 }
-export async function getConfigurationByName(name:String):Promise<ResponseName> {
+export async function getConfigurationByName(name: string): Promise<ResponseName> {
+
     try {
     const response = await api.get("/name",{
       params:{

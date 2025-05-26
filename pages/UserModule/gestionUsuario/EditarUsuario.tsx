@@ -1,15 +1,17 @@
 import { useState } from "react";
-import axios from "axios";
 import styles from "@/components/gestionUsuario/styles.module.css";
-import { consultarUsuarios, borrarUsuarioPorId } from "@/pages/api/UserManagement//UserService";
+import { consultarUsuarios, borrarUsuarioPorId } from "@/pages/api/UserManagement/UserService";
 import { Return } from "@/components/Return";
 import CampoTexto from "@/components/gestionUsuario/CampoTexto";
 import CampoSelect from "@/components/gestionUsuario/CampoSelect";
 import RectanguloConTexto from "@/components/gestionUsuario/RectanguloConTexto";
 import FormularioEditarUsuario from "@/components/gestionUsuario/FormularioEditarUsuario";
 
+// Importa la interfaz
+import { UsuarioData } from "@/components/gestionUsuario/FormularioEditarUsuario"; 
+
 const EditarUsuario = () => {
-  type FiltroKey = "academicProgram" | "codeStudent" | "userName" | "fullName" | "role" | "id";
+  type FiltroKey = keyof Pick<UsuarioData, "academicProgram" | "codeStudent" | "userName" | "fullName" | "role" | "id">;
 
   interface Filtros {
     academicProgram: string;
@@ -19,6 +21,16 @@ const EditarUsuario = () => {
     role: string;
     id: string;
   }
+
+  interface FiltrosConSoloUno {
+  academicProgram: string | null;
+  codeStudent: string | null;
+  userName: string | null;
+  fullName: string | null;
+  role: string | null;
+  id: string | null;
+  }
+
 
   const [filtros, setFiltros] = useState<Filtros>({
     academicProgram: "",
@@ -30,8 +42,8 @@ const EditarUsuario = () => {
   });
 
   const [filtroSeleccionado, setFiltroSeleccionado] = useState<FiltroKey>("fullName");
-  const [resultados, setResultados] = useState([]);
-  const [usuarioEditando, setUsuarioEditando] = useState<any | null>(null);
+  const [resultados, setResultados] = useState<UsuarioData[]>([]);
+  const [usuarioEditando, setUsuarioEditando] = useState<UsuarioData | null>(null);
 
   const opcionesFiltro = [
     { label: "Programa académico", value: "academicProgram" },
@@ -42,42 +54,46 @@ const EditarUsuario = () => {
     { label: "Rol", value: "role" }
   ];
 
-  const filtrosConSoloUno = Object.fromEntries(
-    Object.keys(filtros).map((k) => [k, k === filtroSeleccionado ? filtros[k] || null : null])
-  );
+  const filtrosConSoloUno: FiltrosConSoloUno = {
+  academicProgram: filtroSeleccionado === "academicProgram" ? filtros.academicProgram : null,
+  codeStudent: filtroSeleccionado === "codeStudent" ? filtros.codeStudent : null,
+  userName: filtroSeleccionado === "userName" ? filtros.userName : null,
+  fullName: filtroSeleccionado === "fullName" ? filtros.fullName : null,
+  role: filtroSeleccionado === "role" ? filtros.role : null,
+  id: filtroSeleccionado === "id" ? filtros.id : null
+};
+
+
+
 
   const consultar = async () => {
-  try {
-    const datos = await consultarUsuarios(filtrosConSoloUno);
-    setResultados(datos);
-    alert("Consulta realizada con éxito");
-  } catch (e) {
-    console.error(e);
-    alert("Error al consultar usuarios");
-  }
+    try {
+      const datos = await consultarUsuarios(filtrosConSoloUno);
+      setResultados(datos);
+      alert("Consulta realizada con éxito");
+    } catch (e) {
+      console.error(e);
+      alert("Error al consultar usuarios");
+    }
   };
 
-
-
-  const editarUsuario = (usuario: any) => {
+  const editarUsuario = (usuario: UsuarioData) => {
     setUsuarioEditando(usuario);
   };
 
   const borrarUsuario = async (id: string) => {
-  const confirmacion = window.confirm(`¿Estás seguro de que deseas eliminar al usuario con ID: ${id}?`);
-  if (!confirmacion) return;
+    const confirmacion = window.confirm(`¿Estás seguro de que deseas eliminar al usuario con ID: ${id}?`);
+    if (!confirmacion) return;
 
-  try {
-    await borrarUsuarioPorId(id);
-    alert("Usuario eliminado con éxito");
-    setResultados(prev => prev.filter((u: any) => u.id !== id));
-  } catch (e) {
-    console.error(e);
-    alert("Error al eliminar el usuario");
-  }
+    try {
+      await borrarUsuarioPorId(id);
+      alert("Usuario eliminado con éxito");
+      setResultados(prev => prev.filter((u) => u.id !== id));
+    } catch (e) {
+      console.error(e);
+      alert("Error al eliminar el usuario");
+    }
   };
-
-
 
   return (
     <div style={{ padding: "20px", fontFamily: "'Open Sans', sans-serif" }}>
@@ -160,7 +176,7 @@ const EditarUsuario = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {resultados.map((u: any, i: number) => (
+                  {resultados.map((u, i) => (
                     <tr key={i} style={{ borderBottom: "1px solid #eee" }}>
                       <td style={{ padding: "12px", borderRight: "1px solid #ccc" }}>{u.fullName}</td>
                       <td style={{ padding: "12px", borderRight: "1px solid #ccc" }}>{u.id}</td>
@@ -190,9 +206,8 @@ const EditarUsuario = () => {
       )}
 
       {usuarioEditando && (
-        <FormularioEditarUsuario datosIniciales={usuarioEditando}/>
+        <FormularioEditarUsuario datosIniciales={usuarioEditando} />
       )}
-
     </div>
   );
 };
