@@ -31,9 +31,7 @@ const Header = ({ userName = 'Nombre de Usuario', notificationsCount = 0 }: Head
     sessionStorage.clear();
     router.push('/');
   }
-  const handleLogoClick = () => {
-    window.location.href = "/salasCrea/InicioSalasCreaADMIN"
-  }
+
 
   // Cierra el menú si se hace clic afuera
   useEffect(() => {
@@ -53,7 +51,6 @@ const Header = ({ userName = 'Nombre de Usuario', notificationsCount = 0 }: Head
       {/* Aquí se pone el logo, que pasó de estar en el menú lateral a acá para que no hubiera conflictos cuando se mostrara el contenido */}
       <div
         className="w-[14vw] md:w-[6vw] h-14 bg-eci flex items-center justify-center cursor-pointer"
-        onClick={handleLogoClick}
       >
         <Image
           src={logotransparente || "/placeholder.svg"}

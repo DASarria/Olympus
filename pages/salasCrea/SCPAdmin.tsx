@@ -66,17 +66,14 @@ const SCPAdmin = () => {
       "Content-Type": "application/json",
       Authorization: `${token}`,
     }
-
     const [resvRes, elemRes, loanRes] = await Promise.all([
       fetch(`${url}/revs`, { headers }),
       fetch(`${url}/elements`, { headers }),
       fetch(`${url}/loans`, { headers }),
     ])
-
     const resvs: Reserva[] = await resvRes.json()
     const elemsData = await elemRes.json()
     const loans: Loan[] = await loanRes.json()
-
     const formattedElems: Elemento[] = elemsData.map((el: { id: string; name: string; description?: string; quantity?: number }) => ({
       id: el.id,
       nombre: el.name,
@@ -84,28 +81,12 @@ const SCPAdmin = () => {
       cantidad: el.quantity ?? 0,
       imagen: imagenesPorNombre[el.name] || defaultImage,
     }))
-
     setReservas(resvs)
     setElementos(formattedElems)
     setPrestamos(loans)
   }
 
-  const updateElementoCantidad = async (elementId: string, delta: number) => {
-    const el = elementos.find((e) => e.id === elementId)
-    if (!el) return
-    const nuevaCantidad = el.cantidad + delta
-    await fetch(`${url}/elements/${elementId}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `${token}`,
-      },
-      body: JSON.stringify({
-        quantity: nuevaCantidad < 0 ? 0 : nuevaCantidad,
-        description: el.descripcion,
-      }),
-    })
-  }
+  
 
   const getDisponibles = (elementId: string) => {
     const total = elementos.find((e) => e.id === elementId)?.cantidad || 0
@@ -130,7 +111,7 @@ const SCPAdmin = () => {
       }),
     })
 
-    await updateElementoCantidad(selectedElementId, -1)
+    // await updateElementoCantidad(selectedElementId, -1)
     setSelectedElementId("")
     setSelectedReservaId("")
     await fetchData()
@@ -146,40 +127,53 @@ const SCPAdmin = () => {
       },
     })
 
-    const loan = prestamos.find((p) => p.id === loanId)
-    if (loan && (newState === "PRESTAMO_DEVUELTO" || newState === "DAMAGE_LOAN")) {
-      await updateElementoCantidad(loan.elementId, 1)
-    }
 
     await fetchData()
   }
 
   useEffect(() => {
     fetchData()
-  }, [fetchData])
+
+    const channel = new BroadcastChannel("reservas_channel")
+    channel.onmessage = (event) =>{
+      if(event.data === "reservas_actualizadas" || event.data === "estado_reservas_actualizadas"){
+        fetchData()
+      }
+    }
+    return () => {
+    channel.close()
+  }
+  }, [])
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
-      <button onClick={() => router.back()} className="mb-4 text-blue-600 flex items-center gap-2">
-        <ArrowLeft /> Volver
-      </button>
-      <h1 className="text-2xl font-bold mb-4">Gestión de Préstamos</h1>
-
-      <div className="mb-4">
-        <label>Reserva:</label>
-        <select value={selectedReservaId} onChange={(e) => setSelectedReservaId(e.target.value)} className="w-full p-2 border">
-          <option value="">Seleccione una reserva</option>
-          {reservas.map((r) => (
-            <option key={r.id} value={r.id}>
-              {r.userName} - {r.date.day} {r.date.time}
-            </option>
-          ))}
-        </select>
+    <div className="p-6 max-w-5xl">
+      <div className="flex gap-5 font-bold text-[30px] ml-6">
+        <ArrowLeft onClick={() => router.back()} className="cursor-pointer mt-3" />
+        <h1>Gestión de Préstamos</h1>
       </div>
 
-      <div className="mb-4">
-        <label>Elemento:</label>
-        <select value={selectedElementId} onChange={(e) => setSelectedElementId(e.target.value)} className="w-full p-2 border">
+      <div className="mb-4 col-2 flex gap-4">
+        <div>
+          <label>Reserva:</label>
+          <select 
+              value={selectedReservaId} 
+              onChange={(e) => setSelectedReservaId(e.target.value)} 
+              className="w-full p-2 bg-[#EAEAEA] rounded-xl">
+            <option value="">Seleccione una reserva</option>
+            {reservas.filter((r)=> r.state === "RESERVA_CONFIRMADA")
+              .map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.userName.toUpperCase()} - {r.userId}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label>Elemento:</label>
+        <select 
+          value={selectedElementId} 
+          onChange={(e) => setSelectedElementId(e.target.value)} 
+          className="w-full p-2 bg-[#EAEAEA] rounded-xl">
           <option value="">Seleccione un elemento</option>
           {elementos.map((e) => (
             <option key={e.id} value={e.id}>
@@ -187,33 +181,41 @@ const SCPAdmin = () => {
             </option>
           ))}
         </select>
+        </div>
+        
       </div>
 
-      <button onClick={handleCreateLoan} className="bg-blue-600 text-white px-4 py-2 rounded">
+      
+
+      <button onClick={handleCreateLoan} className="bg-[#990000] text-white px-4 py-2 rounded-md hover:bg-[#b30000] transition-colors">
         Crear préstamo
       </button>
 
       <h2 className="text-xl font-bold mt-8 mb-2">Todos los préstamos</h2>
-      <ul className="space-y-2">
+      <ul className="bg-[#EAEAEA] p-4 rounded-2xl shadow-md w-[60vw] overflow-y-auto max-h-[27vh] 2xl:max-h-[50vh]">
         {prestamos.map((p) => {
           const el = elementos.find((e) => e.id === p.elementId)
           const res = reservas.find((r) => r.id === p.revId)
           return (
-            <li key={p.id} className="border p-2 rounded">
+            <li key={p.id} className="bg-white p-4 rounded-xl gap-4 mb-4 shadow-md flex items-center justify-between">
               <p>
-                <strong>{el?.nombre || "Elemento Eliminado"}</strong> - {res?.userName} ({res?.date.day} {res?.date.time})<br />
+                <strong>{el?.nombre || "Elemento Eliminado"}</strong><br /> {res?.userName.toUpperCase()}<br />
                 Estado: <span className="font-semibold">{p.state}</span>
               </p>
               {p.state === "PRESTAMO_PENDIENTE" && (
-                <div className="mt-2 space-x-2">
-                  <button onClick={() => updateLoanState(p.id, "PRESTAMO_DEVUELTO")} className="bg-green-500 text-white px-2 py-1 rounded">
-                    Devolver
-                  </button>
-                  <button onClick={() => updateLoanState(p.id, "DAMAGE_LOAN")} className="bg-red-600 text-white px-2 py-1 rounded">
-                    Reportar Daño
-                  </button>
+                <div className="flex items-center justify-center gap-4">
+                  <p className="flex-1"></p>
+                  <div className="flex flex-col gap-2">
+                    <button onClick={() => updateLoanState(p.id, "PRESTAMO_DEVUELTO")} className="bg-[#990000] hover:bg-[#b30000] text-white px-2 py-1 rounded-md">
+                      Devolver
+                    </button>
+                    <button onClick={() => updateLoanState(p.id, "DAMAGE_LOAN")} className="bg-[#990000] hover:bg-[#b30000] text-white px-2 py-1 rounded-md">
+                      Reportar Daño
+                    </button>
+                  </div>
                 </div>
               )}
+
             </li>
           )
         })}

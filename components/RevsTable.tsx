@@ -146,7 +146,17 @@ const RevsTable = () => {
     checkReservationsForQuantityUpdates()
     }, 60000) // revisa cada minuto
 
-  return () => clearInterval(intervalId)
+    const channel = new BroadcastChannel("reservas_channel")
+    channel.onmessage = (event) =>{
+      if(event.data === "reservas_actualizadas" || event.data === "estado_reservas_actualizadas"){
+        fetchReservas()
+      }
+    }
+
+  return () => {
+    clearInterval(intervalId)
+    channel.close()
+  }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -296,6 +306,9 @@ const RevsTable = () => {
       console.error("Error en la respuesta:", errorText)
       throw new Error("Error actualizando reserva: " + errorText)
       }
+      const channel = new BroadcastChannel("reservas_channel")
+      channel.postMessage("reservas_actualizadas")
+      channel.close()
       
       await fetchReservas()
       localStorage.setItem("reservationsUpdated", "true")
