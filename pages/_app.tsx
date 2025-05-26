@@ -11,7 +11,7 @@ export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
 
   // Muestro el layout solo si no estamos en la página de login, se pueden poner mas rutas pero por el momento dejé esas
-  const isAuthPage = ['/', '/login', '/ModuloSalud/Pantalla_Entrada', '/ModuloSalud/SalaDeEspera'].includes(router.pathname);
+  const isAuthPage = ['/', '/login', '/ModuloSalud/Pantalla_Entrada/Confirmacion','/ModuloSalud/Pantalla_Entrada/Especialidad', '/ModuloSalud/Pantalla_Entrada/Turnos', '/ModuloSalud/SalaDeEspera'].includes(router.pathname);
 
   return isAuthPage ? (
       <Component {...pageProps} />
