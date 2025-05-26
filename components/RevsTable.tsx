@@ -146,7 +146,17 @@ const RevsTable = () => {
     checkReservationsForQuantityUpdates()
     }, 60000) // revisa cada minuto
 
-  return () => clearInterval(intervalId)
+    const channel = new BroadcastChannel("reservas_channel")
+    channel.onmessage = (event) =>{
+      if(event.data === "reservas_actualizadas"){
+        fetchReservas()
+      }
+    }
+
+  return () => {
+    clearInterval(intervalId)
+    channel.close()
+  }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

@@ -126,25 +126,25 @@ if (mismaFecha && estadoActivo) {
     maxDay.setHours(23, 59, 59, 999)
     const reservaDate = new Date(`${day}T${time}`)
     const dayOfWeek = reservaDate.getDay()
-    if (dayOfWeek === 0 || dayOfWeek === 6) {
-      return Swal.fire("Día no permitido", "No se permiten reservas en fines de semana", "warning")
-    }
-    if (reservaDate < now) {
-      return Swal.fire("Fecha inválida", "No se pueden hacer reservas en fechas u horas pasadas", "error")
-    }
-    if (reservaDate > maxDay) {
-      return Swal.fire("Fecha inválida", "No se pueden hacer reservas en días futuros", "error")
-    }
-    const twoHoursLater = new Date(now.getTime() + 2 * 60 * 60 * 1000)
-    if (reservaDate > twoHoursLater) {
-      return Swal.fire("Hora inválida", "Solo puedes reservar hasta 2 horas adelante desde la hora actual", "error")
-    }
+    // if (dayOfWeek === 0 || dayOfWeek === 6) {
+    //   return Swal.fire("Día no permitido", "No se permiten reservas en fines de semana", "warning")
+    // }
+    // if (reservaDate < now) {
+    //   return Swal.fire("Fecha inválida", "No se pueden hacer reservas en fechas u horas pasadas", "error")
+    // }
+    // if (reservaDate > maxDay) {
+    //   return Swal.fire("Fecha inválida", "No se pueden hacer reservas en días futuros", "error")
+    // }
+    // const twoHoursLater = new Date(now.getTime() + 2 * 60 * 60 * 1000)
+    // if (reservaDate > twoHoursLater) {
+    //   return Swal.fire("Hora inválida", "Solo puedes reservar hasta 2 horas adelante desde la hora actual", "error")
+    // }
 
-    const isMorning = hour >= 7 && hour < 10
-    const isAfternoon = hour >= 13 && hour < 16
-    if (!(isMorning || isAfternoon)) {
-      return Swal.fire("Horario inválido", "Solo se permiten reservas entre 7:00–10:00 y 13:00–16:00", "warning")
-    }
+    // const isMorning = hour >= 7 && hour < 10
+    // const isAfternoon = hour >= 13 && hour < 16
+    // if (!(isMorning || isAfternoon)) {
+    //   return Swal.fire("Horario inválido", "Solo se permiten reservas entre 7:00–10:00 y 13:00–16:00", "warning")
+    // }
 
     const reserva: Reserva = {
       userName,
@@ -178,6 +178,11 @@ if (mismaFecha && estadoActivo) {
 
       Swal.fire("Éxito", "Reserva creada correctamente", "success")
       await fetchData()
+
+      const channel = new BroadcastChannel("reservas_channel")
+      channel.postMessage("reservas_actualizadas")
+      channel.close()
+
       setSelectedRoom(null)
       setFormData({ people: 1, time: "", day: "" })
     } catch (e) {

@@ -86,22 +86,22 @@ const SCPAdmin = () => {
     setPrestamos(loans)
   }
 
-  const updateElementoCantidad = async (elementId: string, delta: number) => {
-    const el = elementos.find((e) => e.id === elementId)
-    if (!el) return
-    const nuevaCantidad = el.cantidad + delta
-    await fetch(`${url}/elements/${elementId}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `${token}`,
-      },
-      body: JSON.stringify({
-        quantity: nuevaCantidad < 0 ? 0 : nuevaCantidad,
-        description: el.descripcion,
-      }),
-    })
-  }
+  // const updateElementoCantidad = async (elementId: string, delta: number) => {
+  //   const el = elementos.find((e) => e.id === elementId)
+  //   if (!el) return
+  //   const nuevaCantidad = el.cantidad + delta
+  //   await fetch(`${url}/elements/${elementId}`, {
+  //     method: "PUT",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //       Authorization: `${token}`,
+  //     },
+  //     body: JSON.stringify({
+  //       quantity: nuevaCantidad < 0 ? 0 : nuevaCantidad,
+  //       description: el.descripcion,
+  //     }),
+  //   })
+  // }
 
   const getDisponibles = (elementId: string) => {
     const total = elementos.find((e) => e.id === elementId)?.cantidad || 0
@@ -126,7 +126,7 @@ const SCPAdmin = () => {
       }),
     })
 
-    await updateElementoCantidad(selectedElementId, -1)
+    // await updateElementoCantidad(selectedElementId, -1)
     setSelectedElementId("")
     setSelectedReservaId("")
     await fetchData()
@@ -142,10 +142,10 @@ const SCPAdmin = () => {
       },
     })
 
-    const loan = prestamos.find((p) => p.id === loanId)
-    if (loan && (newState === "PRESTAMO_DEVUELTO" || newState === "DAMAGE_LOAN")) {
-      await updateElementoCantidad(loan.elementId, 1)
-    }
+    // const loan = prestamos.find((p) => p.id === loanId)
+    // if (loan && (newState === "PRESTAMO_DEVUELTO" || newState === "DAMAGE_LOAN")) {
+    //   // await updateElementoCantidad(loan.elementId, 1)
+    // }
 
     await fetchData()
   }
@@ -165,7 +165,8 @@ const SCPAdmin = () => {
         <label>Reserva:</label>
         <select value={selectedReservaId} onChange={(e) => setSelectedReservaId(e.target.value)} className="w-full p-2 border">
           <option value="">Seleccione una reserva</option>
-          {reservas.map((r) => (
+          {reservas.filter((r)=> r.state === "RESERVA_CONFIRMADA")
+            .map((r) => (
             <option key={r.id} value={r.id}>
               {r.userName} - {r.date.day} {r.date.time}
             </option>
