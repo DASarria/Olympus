@@ -1,4 +1,5 @@
 import "@/styles/globals.css";
+import "@/styles/carouselTransform.css"; // Import the global carousel transform styles
 import type { AppProps } from "next/app";
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';

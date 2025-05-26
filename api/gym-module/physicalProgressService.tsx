@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import api from '../axiosInstance';
 import { 
   BodyMeasurements, 
@@ -6,7 +8,6 @@ import {
   ProgressMetrics, 
   SetGoalDTO,
   Weight,
-  AdditionalMeasurements
 } from '@/types/gym/physicalTracking';
 import { calculateBMI } from '@/utils/physicalTrackingUtils';
 
@@ -69,12 +70,14 @@ export async function getLatestPhysicalMeasurement(
     const response = await api.get(`/users/${userId}/physical-progress/latest`);
     return response.data;
   } catch (error: any) {
-    if (error.response?.status === 404) {
+    if (error.response?.status === 404 || error.response?.status === 500) {
+      console.warn(`Error ${error.response?.status} al obtener la última medición:`, error);
       return null;
     }
     
     console.error("Error al obtener la última medición:", error);
-    throw new Error(error.response?.data?.message || "Error al obtener la última medida");
+    // Evitar el uso del mensaje del servidor que puede contener errores de serialización
+    return null;
   }
 }
 
@@ -120,6 +123,9 @@ export async function setPhysicalGoal(
   try {
     const payload: SetGoalDTO = { goal };
     const response = await api.put(`/users/${userId}/physical-progress/goal`, payload);
+    const goalsArray: string[] = [goal]; 
+
+    await api.post(`/users/${userId}/goals`, goalsArray);
     return response.data;
   } catch (error: any) {
     console.error("Error al establecer meta física:", error);

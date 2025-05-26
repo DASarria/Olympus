@@ -11,8 +11,6 @@ import ProgressHistory from "@/components/gym-module/ProgressHistory";
 import BMIIndicator from "@/components/gym-module/BMIIndicator";
 import { classifyBMI, formatDate } from '@/utils/physicalTrackingUtils';
 import { withRoleProtection } from '@/hoc/withRoleProtection';
-import { FilterBtn } from '@/components/gym-module/FilterBtn';
-import UserIcon from '@/public/user-filter.svg';
 import { Return } from '@/components/Return';
 
 // Register chart elements for Chart.js
@@ -241,14 +239,7 @@ const PhysicalProgress = () => {
                         <div className="flex flex-wrap justify-between items-center mb-6">
                             <h1 className="text-2xl font-bold text-gray-800">Dashboard de Estudiantes</h1>
                             
-                            <div className="flex items-center gap-4">
-                                <FilterBtn
-                                    icon={UserIcon}
-                                    text="Buscar estudiante"
-                                    type="search"
-                                    action={(term: string) => setSearchTerm(term)}
-                                />
-                                
+                            <div className="flex items-center gap-4">                                
                                 <button
                                     onClick={() => setShowStudentSelector(true)}
                                     className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"

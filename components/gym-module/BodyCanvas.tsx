@@ -1,13 +1,7 @@
-import { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Canvas, useFrame, extend } from '@react-three/fiber';
-import { OrbitControls as DreiOrbitControls, useGLTF } from '@react-three/drei';
-import { OrbitControls } from 'three-stdlib';
+import { OrbitControls, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
-//import dynamic from 'next/dynamic';
-//import ExerciseList from './ExerciseList';
-//import mockExercises from '@/api/gym-module/exerciseMockData';
-
-extend({ OrbitControls });
 
 // Only extend specific THREE objects that we need to use as JSX elements
 extend({
@@ -35,60 +29,51 @@ const zoneLabels: Record<number, string> = {
 };
 
 // Exercise popup modal component
-// function ExercisePopup({ zoneId, onClose, exercises }: { 
-//   zoneId: number; 
-//   onClose: () => void;
-//   exercises: any[];
-// }){
-//   const [loading, setLoading] = useState(true);
-//   const zoneKey: Record<number, string> = {
-//     1: 'chest',
-//     2: 'back',
-//     3: 'biceps',
-//     4: 'triceps',
-//     5: 'shoulders',
-//     6: 'abs',
-//     7: 'glutes',
-//     8: 'quads',
-//     9: 'hamstrings',
-//     10: 'calves',
-//   };
+function ExercisePopup({ zoneId, onClose }: { 
+  zoneId: number; 
+  onClose: () => void;
+}) {
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    // Simulate API loading for smoother UI
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+    }, 500);
+  }, [zoneId]);
 
-//   useEffect(() => {
-//     // Simulate API loading for smoother UI
-//     setLoading(true);
-//     setTimeout(() => {
-//       setLoading(false);
-//     }, 500);
-//   }, [zoneId]);
-
-//   // Dynamic import of ExerciseList to avoid SSR issues
-//   const ExerciseList = dynamic(() => import('./ExerciseList'), { ssr: false });
-
-//   return (
-//     <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
-//       <div className="bg-white text-black rounded-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto p-6 relative">
-//         <button 
-//           onClick={onClose}
-//           className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 text-xl"
-//         >
-//           ✕
-//         </button>
-//         <h2 className="text-2xl font-bold mb-4">
-//           Ejercicios: {zoneLabels[zoneId]}
-//         </h2>
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-xl font-bold">{zoneLabels[zoneId]} - Ejercicios</h3>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
         
-//         {loading ? (
-//           <div className="flex justify-center py-8">
-//             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
-//           </div>
-//         ) : (
-//           <ExerciseList exercises={exercises} />
-//         )}
-//       </div>
-//     </div>
-//   );
-// }
+        {loading ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* We'll load exercises from the parent component */}
+            <div className="flex justify-center items-center col-span-full">
+              <p className="text-gray-600">Selecciona ejercicios de este grupo muscular usando el selector de arriba</p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 // Panel of vertical buttons
 function ZoneButtonPanel({ onSelectZone }: { onSelectZone: (zone: number) => void }) {
@@ -118,29 +103,27 @@ function Model({ modelPath }: Omit<BodyCanvasProps, 'onSelectZone'>) {
     <primitive object={scene} />
   );
 }
-function CameraControls() {
-  const orbitRef = useRef<OrbitControls>(null);
 
+function CameraControls() {
+  // Use any to avoid type conflicts with OrbitControls
+  const orbitRef = useRef<any>(null);
+  
   useFrame(() => {
     if (orbitRef.current) {
-      orbitRef.current.autoRotateSpeed = 0.5;
-      orbitRef.current.autoRotate = true;
+      // Since we can't directly access autoRotate properties on the Object3D type,
+      // we'll type cast it when accessing those properties
+      const controls = orbitRef.current as unknown as { autoRotateSpeed: number; autoRotate: boolean };
+      controls.autoRotateSpeed = 0.5;
+      controls.autoRotate = true;
     }
   });
-
-  return (
-    <DreiOrbitControls
-      ref={orbitRef}
-      enablePan={false}
-      enableZoom={true}
-    />
-  );
+  
+  return <OrbitControls ref={orbitRef} enablePan={false} enableZoom={true} />;
 }
 
 export default function BodyCanvas({ modelPath, onSelectZone }: BodyCanvasProps) {
   const [mounted, setMounted] = useState(false);
   const [selectedZoneId, setSelectedZoneId] = useState<number | null>(null);
-  //const [exercises, setExercises] = useState<any[]>([]);
 
   // Custom handler for zone selection that shows popup
   const handleZoneSelect = (zoneId: number) => {
@@ -149,59 +132,43 @@ export default function BodyCanvas({ modelPath, onSelectZone }: BodyCanvasProps)
     onSelectZone(zoneId);
   };
 
-  // const closePopup = () => {
-  //   setSelectedZoneId(null);
-  // };
-
+  const closePopup = () => {
+    setSelectedZoneId(null);
+  };
+  
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Update exercises when a zone is selected
-  useEffect(() => {
-    if (selectedZoneId !== null) {
-      // This would typically be where you fetch exercises from your API
-      // For now we'll use the props passed from the parent
-    }
-  }, [selectedZoneId]);
-
   if (!mounted) {
+    // SSR-safe loading state
     return (
-      <div className="relative h-full w-full bg-gray-100 flex items-center justify-center">
-        <div className="text-lg">Cargando modelo 3D...</div>
+      <div className="h-[500px] w-full bg-gray-100 rounded-lg flex items-center justify-center">
+        <div className="text-lg text-gray-500">Cargando modelo 3D...</div>
       </div>
     );
   }
 
   return (
-    <div className="relative h-full w-full">
-      {/* Instructions */}
-      <div className="absolute bottom-4 left-4 bg-black bg-opacity-50 text-white p-2 rounded z-10">
-        Selecciona el número para ver ejercicios de acuerdo a la zona
-      </div>
-      
-      {/* Vertical button panel */}
-      {selectedZoneId === null && (
-        <ZoneButtonPanel onSelectZone={handleZoneSelect} />
-      )}
-      
+    <div className="relative h-[500px] w-full rounded-lg overflow-hidden">
       {/* 3D model canvas */}
-      <Canvas shadows camera={{ position: [0, 1.5, 3], fov: 50 }}>
+      <Canvas shadows camera={{ position: [0, 0, 2.5], fov: 50 }}>
         <ambientLight intensity={0.6} />
         <directionalLight position={[5, 5, 5]} intensity={1} castShadow />
-        <directionalLight position={[-5, 5, -5]} intensity={0.5} />
         <Model modelPath={modelPath} />
         <CameraControls />
       </Canvas>
       
-      {/* Exercise popup when a zone is selected */}
-      {/* {selectedZoneId !== null && (
+      {/* UI layer */}
+      <ZoneButtonPanel onSelectZone={handleZoneSelect} />
+      
+      {/* Exercise popup if a zone is selected */}
+      {selectedZoneId && (
         <ExercisePopup 
           zoneId={selectedZoneId} 
           onClose={closePopup} 
-          exercises={exercises}
         />
-      )} */}
+      )}
     </div>
   );
 }
