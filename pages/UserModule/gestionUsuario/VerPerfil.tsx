@@ -62,8 +62,6 @@ const VerPerfil = () => {
   const idUsuario = decoded.id;
   const rol = decoded.role;
 
-  console.log("ID del usuario:", idUsuario);
-  console.log("Rol del usuario:", rol);
 
   let filtrosConSoloUno: FiltrosUsuario;
 
