@@ -1,6 +1,6 @@
 
 import modulo1 from "../assets/images/1imagen.jpg";
-import modulo2 from "../assets/images/2imagen.jpg";
+// import modulo2 from "../assets/images/2imagen.jpg";
 import modulo3 from "../assets/images/3imagen.jpg";
 import modulo4 from "../assets/images/4imagen.jpg";
 import modulo5 from "../assets/images/5imagen.jpg";
@@ -16,14 +16,15 @@ const modules = [
     },
     {
         moduleName: "module 2",
-        roleCanUse: ["ADMIN"],
-        urlToNavigate: "/Module2",
-        image: modulo2,
+
+        roleCanUse: ["STUDENT"],
+        urlToNavigate: "/salasCrea/InicioSalasCreaUsuario",
+        image: modulo3,
     },
     {
-        moduleName: "module 3",
-        roleCanUse: ["ADMIN", "usuario"],
-        urlToNavigate: "/Module3",
+        moduleName: "module 2_Admin",
+        roleCanUse: ["SALA_ADMIN"],
+        urlToNavigate: "/salasCrea/InicioSalasCreaADMIN",
         image: modulo3,
     },
     {
@@ -34,8 +35,9 @@ const modules = [
     },
     {
         moduleName: "module 5",
-        roleCanUse: ["ADMIN"],
-        urlToNavigate: "/Module5",
+        roleCanUse: ["ADMIN", "STUDENT", "TRAINER"],
+        urlToNavigate: "/gym-module",
+
         image: modulo5,
     },
     {
