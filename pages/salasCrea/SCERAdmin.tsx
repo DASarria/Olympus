@@ -378,7 +378,7 @@ const SCERAdmin = () => {
         {elementosList.map((elemento, idx) => (
           <div
             key={idx}
-            className="cursor-pointer border rounded-xl shadow-lg hover:scale-105 transition-transform duration-300 p-4 text-center bg-white"
+            className="w-[15vw] 2xl:w-[18vw] cursor-pointer border rounded-xl shadow-lg hover:scale-105 transition-transform duration-300 p-4 text-center bg-white"
             onClick={() => handleClick(elemento)}
           >
             <Image

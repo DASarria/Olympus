@@ -229,7 +229,16 @@ const ReservUser = () => {
               </div>
 
               <button
-                onClick={() => setSelectedRoom(room.id)}
+                onClick={() => {
+                  const today = new Date().toISOString().split("T")[0];
+                  setSelectedRoom(room.id)
+                  setFormData((prev)=>({
+                    ...prev,
+                    day: today, 
+                    time: "", 
+                    people: 1 
+                  }))
+                }}
                 disabled={ocupadosSala >= MAX_AFORO}
                 className={`w-full mt-4 rounded-xl py-2 font-semibold transition ${
                   ocupadosSala >= MAX_AFORO
@@ -272,15 +281,13 @@ const ReservUser = () => {
               <input
                 type="date"
                 value={formData.day}
-
-                onChange={(e) => setFormData({ ...formData, day: e.target.value })}
-                required
+                readOnly
                 className="mt-1 border rounded px-3 py-2 w-full"
               />
             </label>
 
             <label>
-              Hora:
+              Hora (7:00–10:00 y 13:00–16:00, máximo 2 antes de la reserva):
               <input
                 type="time"
                 value={formData.time}

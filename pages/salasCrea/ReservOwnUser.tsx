@@ -4,7 +4,9 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/router"
 import { aUr } from "@/pages/api/salasCreaU"
 import { ArrowLeft } from "lucide-react"
+import { CheckCheck, CircleX, Play } from "lucide-react"
 import Swal from "sweetalert2"
+import React from "react"
 
 interface Reservation {
   id?: string
@@ -20,17 +22,36 @@ interface Reservation {
   people: number
 }
 
+const stateColors: Record<string, string> = {
+  RESERVA_CONFIRMADA: "bg-yellow-400",
+  RESERVA_CANCELADA: "bg-red-700",
+  RESERVA_TERMINADA: "bg-green-600",
+  RESERVA_CREADA: "bg-blue-500"
+}
+
 export default function ReservOwnUser() {
   const [reservations, setReservations] = useState<Reservation[]>([])
-  const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [dateFilter, setDateFilter] = useState<string>("")
   const token = typeof window !== "undefined" ? sessionStorage.getItem("token") : null
   const url = aUr
   const router = useRouter()
 
+  const getRowColor = (reserva: Reservation) => {
+    switch(reserva.state.toLowerCase()){
+      case "reserva_confirmada":
+        return stateColors.RESERVA_CONFIRMADA
+      case "reserva_cancelada":
+        return stateColors.RESERVA_CANCELADA
+      case "reserva_terminada":
+        return stateColors.RESERVA_TERMINADA
+        case "reserva_creada":
+        return stateColors.RESERVA_CREADA
+    }
+  }
+
   useEffect(() => {
     const fetchReservas = async () => {
       if (!token) {
-        setErrorMsg("No autorizado. Por favor inicia sesión.")
         return
       }
       try {
@@ -47,45 +68,30 @@ export default function ReservOwnUser() {
         setReservations(data)
         localStorage.setItem("reservationsUpdated", "true")
       } catch (error) {
-        setErrorMsg("No se pudo cargar la información de las reservas.")
         console.error(error)
       }
     }
 
     fetchReservas()
+
+    const channel = new BroadcastChannel("reservas_channel")
+    channel.onmessage = (event) =>{
+      if(event.data === "reservas_actualizadas" || event.data === "estado_reservas_actualizadas"){
+        fetchReservas()
+      }
+    }
+    return () => {
+    channel.close()
+  }
   }, [token, url])
 
   const handleClickBack = () => router.back()
 
-  const formatEstado = (estado: string, date: { day: string; time: string }) => {
-    const startDate = new Date(`${date.day}T${date.time}`)
-    const endDate = new Date(startDate.getTime() + 90 * 60000)
-    const now = new Date()
-
-    if (now > endDate) return "Reserva terminada"
-
-    if (estado === "RESERVA_CONFIRMADA") {
-      if (now >= startDate && now <= endDate) return "Reserva en curso"
-      return "Reserva confirmada"
-    }
-
-    if (estado === "RESERVA_CREADA") {
-      return now < startDate ? "Reserva creada" : "Reserva confirmada"
-    }
-
-    switch (estado) {
-      case "RESERVA_TERMINADA":
-        return "Reserva terminada"
-      case "RESERVA_CANCELADA":
-        return "Reserva cancelada"
-      default:
-        return estado
-    }
-  }
+  
 
   const updateReservaState = async (
     id: string,
-    newState: "RESERVA_CANCELADA" | "RESERVA_TERMINADA"
+    newState: "RESERVA_CANCELADA" | "RESERVA_TERMINADA" | "RESERVA_CONFIRMADA"
   ) => {
     if (!token) {
       Swal.fire("Error", "No autorizado. Por favor inicia sesión.", "error")
@@ -113,10 +119,14 @@ export default function ReservOwnUser() {
           Authorization: `${token}`,
         },
       })
+      
 
       if (!response.ok) throw new Error("Error actualizando estado")
 
       Swal.fire("Actualizado", "Estado de la reserva actualizado", "success")
+      const channel = new BroadcastChannel("reservas_channel")
+      channel.postMessage("estado_reservas_actualizadas")
+      channel.close()
 
       setReservations((prev) =>
         prev.map((r) => (r.id === id ? { ...r, state: newState } : r))
@@ -127,90 +137,87 @@ export default function ReservOwnUser() {
     }
   }
 
+
+  const filteredReservas = reservations.filter((reserva) => {
+    const matchesDate = dateFilter === "" || reserva.date.day === dateFilter
+    return matchesDate
+  })
+
   return (
-    <div className="p-6 text-black">
-      <div className="flex justify-center items-center gap-4 font-bold text-[30px] mb-6">
-        <ArrowLeft onClick={handleClickBack} className="cursor-pointer mt-1" />
-        <h1>Mis Reservas</h1>
+    <div >
+      <div className="flex gap-5 font-bold text-[30px] ml-6">
+        <ArrowLeft onClick={handleClickBack} className="cursor-pointer mt-3" />
+        <h1>Reservas</h1>
       </div>
-
-      <div className="flex justify-center">
-        <section className="bg-[#EAEAEA] p-6 rounded-2xl shadow-md w-full max-w-5xl">
-          {errorMsg ? (
-            <p className="text-center text-red-600 font-semibold">{errorMsg}</p>
-          ) : reservations.length === 0 ? (
-            <p className="text-center text-gray-700">No tienes reservas registradas.</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <div className="grid grid-cols-5 gap-4 mb-2 px-2">
-                {["Sala", "Fecha", "Hora", "Personas", "Estado"].map((title) => (
-                  <div
-                    key={title}
-                    className="bg-white rounded-[15px] px-4 py-2 font-semibold text-center shadow-md"
-                  >
-                    {title}
-                  </div>
-                ))}
-              </div>
-
-              <div className="space-y-3">
-                {reservations.map((res) => {
-                  const { id, roomId, date, people, state } = res
-                  const start = new Date(`${date.day}T${date.time}`)
-                  const end = new Date(start.getTime() + 90 * 60000)
-                  const now = new Date()
-
-                  const estadoActual = formatEstado(state, date)
-
-                  const mostrarBotones =
-                    (state === "RESERVA_CREADA" && now < start) ||
-                    (state === "RESERVA_CONFIRMADA" && now >= start && now <= end)
-
-                  return (
-                    <div key={id} className="grid grid-cols-5 gap-4 px-2 items-center">
-                      <div className="bg-white rounded-[15px] px-4 py-2 text-center shadow-md">
-                        {roomId.split("-").join(" ")}
-                      </div>
-                      <div className="bg-white rounded-[15px] px-4 py-2 text-center shadow-md">
-                        {date.day}
-                      </div>
-                      <div className="bg-white rounded-[15px] px-4 py-2 text-center shadow-md">
-                        {date.time}
-                      </div>
-                      <div className="bg-white rounded-[15px] px-4 py-2 text-center shadow-md">
-                        {people}
-                      </div>
-                      <div className="flex flex-col items-center gap-2">
-                        <div className="bg-white rounded-[15px] px-4 py-2 text-center shadow-md">
-                          {estadoActual}
-                        </div>
-
-                        {mostrarBotones && (
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => updateReservaState(id!, "RESERVA_TERMINADA")}
-                              className="text-xs px-3 py-1 bg-blue-500 text-white rounded-full hover:bg-blue-600"
-                            >
-                              Terminar
-                            </button>
-                            <button
-                              onClick={() => updateReservaState(id!, "RESERVA_CANCELADA")}
-                              className="text-xs px-3 py-1 bg-red-500 text-white rounded-full hover:bg-red-600"
-                            >
-                              Cancelar
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                      <br />
-                    </div>
-                  )
-                })}
-              </div>
+      <section className="bg-[#EAEAEA] p-4 rounded-2xl shadow-md w-[70vw] ml-[10vw] mt-[5vh]">
+        <div className="flex justify-between items-center mb-4 sm:ml-4">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-[1vw] text-sm">
+            <div className="relative w-full md:w-64">
+            <input
+              type="date"
+              className="w-[55vw] sm:w-[15vw] px-4 py-2 rounded-xl bg-white drop-shadow-xl pl-3 text-center sm:h-[5vh]"
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+            />
             </div>
-          )}
-        </section>
-      </div>
+          </div>
+        </div>
+
+        <div className="max-h-[40vh] overflow-y-auto  ">
+          <table className="w-full text-center border-separate border-spacing-y-3 border-spacing-x-3 drop-shadow-xl">
+            <thead>
+              <tr className="text-sm font-semibold drop-shadow-xl">
+                <th className="bg-white rounded-xl px-4 py-2 h-[1vh]">Nombre</th>
+                <th className="bg-white rounded-xl px-4 py-2 h-[1vh]">Identificación</th>
+                <th className="bg-white rounded-xl px-4 py-2 h-[1vh]">Fecha</th>
+                <th className="bg-white rounded-xl px-4 py-2 h-[1vh]">Hora</th>
+                <th className="bg-white rounded-xl px-4 py-2 h-[1vh]">Sala</th>
+                <th className="bg-white rounded-xl px-4 py-2 h-[1vh]">Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredReservas.map((reserva) => (
+                <React.Fragment key={reserva.id}>
+                    <tr
+                      key={reserva.id}
+                      className="bg-white rounded-xl hover:bg-[#990000] hover:text-white drop-shadow-xl text-sm"
+                    >
+                      <td className={`px-4 py-2 rounded-xl `}>
+                        <div>
+                          <div className={`absolute left-0 top-0 h-full w-2 rounded-l-xl ${getRowColor(reserva)}`} />
+                          <span>{reserva.userName}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-2 rounded-xl">{reserva.userId}</td>
+                      <td className="px-4 py-2 rounded-xl">{reserva.date.day}</td>
+                      <td className="px-4 py-2 rounded-xl">{reserva.date.time}</td>
+                      <td className="px-4 py-2 rounded-xl">
+                        <span>{reserva.roomId.split("-").join(" ")}</span>
+                      </td>
+
+                      <td className="rounded-xl">
+                        <div className="flex gap-2 justify-center gap-4">
+                          <CheckCheck
+                            className="cursor-pointer text-green-600"
+                            onClick={() => updateReservaState(reserva.id!, "RESERVA_TERMINADA")}
+                          /> 
+                          <CircleX
+                            className="cursor-pointer text-red-700"
+                            onClick={() => updateReservaState(reserva.id!, "RESERVA_CANCELADA")}
+                          />
+                          <Play
+                            className="cursor-pointer text-yellow-400"
+                            onClick={() => updateReservaState(reserva.id!, "RESERVA_CONFIRMADA")}
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                </React.Fragment>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
     </div>
   )
 }

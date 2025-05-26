@@ -21,16 +21,13 @@ const Header = ({ userName = "Nombre de Usuario", notificationsCount = 0 }: Head
       .substring(0, 2)
   }
 
-  const handleLogoClick = () => {
-    window.location.href = "/salasCrea/InicioSalasCreaADMIN"
-  }
+  
 
   return (
     <div className="flex w-full justify-between items-center h-14">
       {/* Aquí se pone el logo, que pasó de estar en el menú lateral a acá para que no hubiera conflictos cuando se mostrara el contenido */}
       <div
         className="w-[14vw] md:w-[6vw] h-14 bg-eci flex items-center justify-center cursor-pointer"
-        onClick={handleLogoClick}
       >
         <Image
   src={logotransparente || "/placeholder.svg"}

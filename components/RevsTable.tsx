@@ -148,7 +148,7 @@ const RevsTable = () => {
 
     const channel = new BroadcastChannel("reservas_channel")
     channel.onmessage = (event) =>{
-      if(event.data === "reservas_actualizadas"){
+      if(event.data === "reservas_actualizadas" || event.data === "estado_reservas_actualizadas"){
         fetchReservas()
       }
     }
@@ -306,6 +306,9 @@ const RevsTable = () => {
       console.error("Error en la respuesta:", errorText)
       throw new Error("Error actualizando reserva: " + errorText)
       }
+      const channel = new BroadcastChannel("reservas_channel")
+      channel.postMessage("reservas_actualizadas")
+      channel.close()
       
       await fetchReservas()
       localStorage.setItem("reservationsUpdated", "true")
