@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import styles from "@/components/gestionUsuario/styles.module.css";
 import { consultarUsuarios } from "@/pages/api/UserManagement//UserService";
 import { Return } from "@/components/Return";
 import CampoTexto from "@/components/gestionUsuario/CampoTexto";
@@ -28,13 +27,26 @@ const VerPerfil = () => {
     role: "",
   });
 
-  type MiToken = {
+  interface FiltrosUsuario {
+    academicProgram: string | null;
+    codeStudent: string | null;
+    userName: string | null;
+    fullName: string | null;
+    role: string | null;
+    id: string | null;
+  }
+
+  // ✅ Tipo del token JWT corregido
+  interface MiToken {
     id: string;
-    [key: string]: any;
-  };
-  function changePassword () {
-        router.push("/UserModule/gestionUsuario/ChangePasswordPage")
-    }
+    exp?: number;
+    iat?: number;
+    [key: string]: unknown;
+  }
+
+  function changePassword() {
+    router.push("/UserModule/gestionUsuario/ChangePasswordPage");
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -49,7 +61,14 @@ const VerPerfil = () => {
       const decoded = jwtDecode<MiToken>(token);
       const idUsuario = decoded.id;
 
-      const filtrosConSoloUno = { id: idUsuario };
+      const filtrosConSoloUno: FiltrosUsuario = {
+        academicProgram: null,
+        codeStudent: null,
+        userName: null,
+        fullName: null,
+        role: null,
+        id: idUsuario,
+      };
 
       try {
         const res = await consultarUsuarios(filtrosConSoloUno);
@@ -72,8 +91,6 @@ const VerPerfil = () => {
             contactoTel: u.phoneNumber || "",
             role: u.role || "",
           });
-
-          alert("Consulta realizada con éxito");
         } else {
           alert("Usuario no encontrado");
         }
@@ -100,18 +117,23 @@ const VerPerfil = () => {
           <RectanguloConTexto texto="Información Personal">
             <div style={{ display: "flex", flexWrap: "wrap", gap: "5px 40px", width: "100%" }}>
               {[
-              <CampoTexto etiqueta="Nombre" valor={datos.nombre} soloLectura={true} marcador="" onChange={() => { }} />,
-              <CampoTexto etiqueta="Correo" valor={datos.correo} soloLectura={true} marcador="" onChange={() => { }} />,
-              <CampoTexto etiqueta="Tipo de documento" valor={datos.tipoId} soloLectura={true} marcador="" onChange={() => { }} />,
-              <CampoTexto etiqueta="Número de documento" valor={datos.doc} soloLectura={true} marcador="" onChange={() => { }} />,
-              <CampoTexto etiqueta="Programa académico" valor={datos.programa} soloLectura={true} marcador="" onChange={() => { }} />,
-              <CampoTexto etiqueta="Carnet estudiantil" valor={datos.carnet} soloLectura={true} marcador="" onChange={() => { }} />,
-              <CampoTexto etiqueta="Número telefónico" valor={datos.tel} soloLectura={true} marcador="" onChange={() => { }} />,
-              <CampoTexto etiqueta="Dirección" valor={datos.dir} soloLectura={true} marcador="" onChange={() => { }} />
-              ].map((comp, i) => (
-                <div key={i} style={{ flex: `1 1 ${i >= 6 ? "32.8%" : "calc(50% - 20px)"}`, minWidth: "200px" }}>
-                    {comp}
-                </div>
+              {key: "Nombre", comp: (
+              <CampoTexto etiqueta="Nombre" valor={datos.nombre} soloLectura={true} marcador="" onChange={() => { }}/>),},
+              {key: "Correo", comp: (
+              <CampoTexto etiqueta="Correo" valor={datos.correo} soloLectura={true} marcador="" onChange={() => { }}/>),},
+              {key: "TipoDocumento", comp: (
+              <CampoTexto etiqueta="Tipo de documento" valor={datos.tipoId} soloLectura={true} marcador="" onChange={() => { }}/>),},
+              {key: "NumeroDocumento", comp: (
+              <CampoTexto etiqueta="Número de documento" valor={datos.doc} soloLectura={true} marcador="" onChange={() => { }}/>),},
+              {key: "ProgramaAcadémico", comp: (
+              <CampoTexto etiqueta="Programa académico" valor={datos.programa} soloLectura={true} marcador="" onChange={() => { }}/>),},
+              {key: "CarnetEstudiantil", comp: (
+              <CampoTexto etiqueta="Carnet estudiantil" valor={datos.carnet} soloLectura={true} marcador="" onChange={() => { }}/>),},
+              {key: "NumeroTelefónico", comp: (
+              <CampoTexto etiqueta="Número telefónico" valor={datos.tel} soloLectura={true} marcador="" onChange={() => { }}/>),},
+              {key: "Dirección", comp: (
+              <CampoTexto etiqueta="Dirección" valor={datos.dir} soloLectura={true} marcador="" onChange={() => { }}/>),},
+              ].map(({ key, comp }, i) => (<div key={`Usuario-${key}`} style={{ flex: `1 1 ${i >= 2 ? "32.8%" : "calc(50% - 20px)"}`, minWidth: "200px",}}>{comp}</div>
               ))}
             </div>
           </RectanguloConTexto>
@@ -120,23 +142,21 @@ const VerPerfil = () => {
           <RectanguloConTexto texto="Contacto de emergencia">
             <div style={{ display: "flex", flexWrap: "wrap", gap: "5px 40px", width: "100%" }}>
               {[
-              <CampoTexto etiqueta="Nombre" valor={datos.contactoNombre} soloLectura={true} marcador="" onChange={() => { }} />,
-              <CampoTexto etiqueta="Relación" valor={datos.contactoRelacion} soloLectura={true} marcador="" onChange={() => { }} />,
-              
-              ].map((comp, i) => (
-                <div key={i} style={{ flex: `1 1 ${i >= 6 ? "32.8%" : "calc(50% - 20px)"}`, minWidth: "200px" }}>
-                    {comp}
-                </div>
+              {key: "Nombre", comp: (
+              <CampoTexto etiqueta="Nombre" valor={datos.contactoNombre} soloLectura={true} marcador="" onChange={() => { }}/>),},
+              {key: "Relación", comp: (
+              <CampoTexto etiqueta="Relación" valor={datos.contactoRelacion} soloLectura={true} marcador="" onChange={() => { }}/>),},
+              ].map(({ key, comp }, i) => (<div key={`contactoEmergencia-${key}`} style={{ flex: `1 1 ${i >= 2 ? "32.8%" : "calc(50% - 20px)"}`, minWidth: "200px",}}>{comp}</div>
               ))}
 
               {[
-              <CampoTexto etiqueta="Tipo de documento" valor={datos.contactoTipoId} soloLectura={true} marcador="" onChange={() => { }} />,
-              <CampoTexto etiqueta="Número de documento" valor={datos.contactoDoc} soloLectura={true} marcador="" onChange={() => { }} />,
-              <CampoTexto etiqueta="Número telefónico" valor={datos.contactoTel} soloLectura={true} marcador="" onChange={() => { }} />,
-              ].map((comp, i) => (
-                <div key={i} style={{ flex: `1 1 ${i >= 2 ? "30.0%" : "calc(30% - 20px)"}`, minWidth: "200px" }}>
-                    {comp}
-                </div>
+              {key: "Tipo de documento", comp: (
+              <CampoTexto etiqueta="Tipo de documento" valor={datos.contactoTipoId} soloLectura={true} marcador="" onChange={() => { }}/>),},
+              {key: "Número de documento", comp: (
+              <CampoTexto etiqueta="Número de documento" valor={datos.contactoDoc} soloLectura={true} marcador="" onChange={() => { }}/>),},
+              {key: "Número telefónico", comp: (
+              <CampoTexto etiqueta="Número telefónico" valor={datos.contactoTel} soloLectura={true} marcador="" onChange={() => { }}/>),},
+              ].map(({ key, comp }, i) => (<div key={`contactoEmergencia-${key}`} style={{ flex: `1 1 ${i >= 2 ? "32.8%" : "calc(50% - 20px)"}`, minWidth: "200px",}}>{comp}</div>
               ))}
 
             </div>
@@ -149,16 +169,19 @@ const VerPerfil = () => {
         <RectanguloConTexto texto="Información Personal">
           <div style={{ display: "flex", flexWrap: "wrap", gap: "5px 40px", width: "100%" }}>
             {[
-            <CampoTexto etiqueta="ID Admin" valor={datos.doc} soloLectura={true} marcador="" onChange={() => { }} />,
-            <CampoTexto etiqueta="Tipo de documento" valor={datos.tipoId} soloLectura={true} marcador="" onChange={() => { }} />,
-            <CampoTexto etiqueta="Nombre completo" valor={datos.nombre} soloLectura={true} marcador="" onChange={() => { }} />,
-            <CampoTexto etiqueta="Rol" valor={datos.role} soloLectura={true} marcador="" onChange={() => { }} />,
-            <CampoTexto etiqueta="Correo" valor={datos.correo} soloLectura={true} marcador="" onChange={() => { }} />,
-            <CampoTexto etiqueta="Teléfono" valor={datos.tel} soloLectura={true} marcador="" onChange={() => { }} />
-            ].map((comp, i) => (
-                <div key={i} style={{ flex: `1 1 ${i >= 6 ? "32.8%" : "calc(50% - 20px)"}`, minWidth: "200px" }}>
-                    {comp}
-                </div>
+            {key: "ID Admin", comp: (
+            <CampoTexto etiqueta="ID Admin" valor={datos.doc} soloLectura={true} marcador="" onChange={() => { }}/>),},
+            {key: "Tipo de documento", comp: (
+            <CampoTexto etiqueta="Tipo de documento" valor={datos.tipoId} soloLectura={true} marcador="" onChange={() => { }}/>),},
+            {key: "Nombre completo", comp: (
+            <CampoTexto etiqueta="Nombre completo" valor={datos.nombre} soloLectura={true} marcador="" onChange={() => { }}/>),},
+            {key: "Rol", comp: (
+            <CampoTexto etiqueta="Rol" valor={datos.role} soloLectura={true} marcador="" onChange={() => { }}/>),},
+            {key: "Correo", comp: (
+            <CampoTexto etiqueta="Correo" valor={datos.correo} soloLectura={true} marcador="" onChange={() => { }}/>),},
+            {key: "Teléfono", comp: (
+            <CampoTexto etiqueta="Teléfono" valor={datos.tel} soloLectura={true} marcador="" onChange={() => { }}/>),},
+            ].map(({ key, comp }, i) => (<div key={`Admin-${key}`} style={{ flex: `1 1 ${i >= 2 ? "32.8%" : "calc(50% - 20px)"}`, minWidth: "200px",}}>{comp}</div>
               ))}
           </div>
           <div
