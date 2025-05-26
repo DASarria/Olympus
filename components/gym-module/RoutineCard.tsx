@@ -1,5 +1,5 @@
+
 import Button from "@/components/gym-module/Button";
-import { Routine } from "@/api/gymServicesIndex";
 
 /**
  * Props interface for the RoutineCard component.
@@ -7,7 +7,7 @@ import { Routine } from "@/api/gymServicesIndex";
  * @interface Props
  */
 interface Props {
-  routine: Routine;
+  routine: any;
 }
 
 
@@ -30,7 +30,7 @@ export const RoutineCard = ({ routine }: Props) => {
   return (
     <div className="flex-shrink-0 w-[380px] h-[165px] max-h-[165px] border-box border-box inline-flex flex-col items-start justify-center gap-3 px-10 py-[30px] relative bg-[#eaeaea] rounded-[20px] overflow-hidden">
       <div className="relative w-fit mt-[-1.00px] font-bold text-black text-lg tracking-[0] leading-[18px] whitespace-nowrap">
-        {routine.name || "Rutina"}
+        {routine.title || "Rutina"}
       </div>
       <div className="inline-flex w-full items-start gap-3 relative flex-[0_0_auto] border-box">
         <div className="font-bold text-black text-base leading-4 whitespace-nowrap">Descripción:</div>
