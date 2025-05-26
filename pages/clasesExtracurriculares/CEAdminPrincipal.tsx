@@ -27,7 +27,7 @@ const ClasesExtracurriculares = () => {
       <div className="grid grid-cols-1 md:grid-cols-6 gap-5 p-1">
         <div
           className="bg-white rounded-lg shadow-md p-5 h-50 flex flex-col items-center justify-center hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 cursor-pointer border border-gray-100"
-          onClick={() => navegarA('/clasesExtracurriculares/CEProfeEstudianteClases')}
+          onClick={() => navegarA('/clasesExtracurriculares/CEAdminClases')}
         >
           <div className="bg-white-50 p-2 rounded-full mb-6 shadow-inner">
             <Image
@@ -62,7 +62,7 @@ const ClasesExtracurriculares = () => {
         {isAdmin && (
           <div
             className="bg-white rounded-lg shadow-md p-8 h-50 flex flex-col items-center justify-center hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 cursor-pointer border border-gray-100"
-            onClick={() => navegarA('/clasesExtracurriculares/CEProfeEstudianteClases')}
+            onClick={() => navegarA('/clasesExtracurriculares/CEAdminEstadisticas')}
           >
             <div className="bg-white-50 p-2 rounded-full mb-6 shadow-inner">
               <Image
