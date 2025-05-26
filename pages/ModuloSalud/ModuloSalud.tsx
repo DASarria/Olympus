@@ -27,35 +27,35 @@ const ModuloSalud = () => {
       key: 'turnos',
       label: 'Turnos',
       icon: '📝',
-      route: '/TurnosGestion',
+      route: '/ModuloSalud/TurnosGestion',
       requiredSection: 'turnos'
     },
     {
       key: 'analisis',
       label: 'Análisis',
       icon: '📊',
-      route: '/AnalisisSalud',
+      route: '/ModuloSalud/AnalisisSalud',
       requiredSection: 'analisis'
     },
     {
       key: 'sala',
       label: 'Sala de espera',
       icon: '🪑',
-      route: '/SalaDeEspera',
+      route: '/ModuloSalud/SalaDeEspera',
       requiredSection: 'sala'
     },
     {
       key: 'entrada',
       label: 'Pantalla entrada',
       icon: '🚪',
-      route: '/Pantalla_Entrada/Especialidad',
+      route: '/ModuloSalud/Pantalla_Entrada/Especialidad',
       requiredSection: 'entrada'
     },
     {
       key: 'contenido_visual',
       label: 'Contenido visual',
       icon: '🔍',
-      route: '/Contenido_Visual',
+      route: '/ModuloSalud/Contenido_Visual',
       requiredSection: 'contenido_visual'
     }
   ];

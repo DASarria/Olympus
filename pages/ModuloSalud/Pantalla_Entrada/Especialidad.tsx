@@ -8,7 +8,7 @@ export default function Especialidad() {
     // Guardar la especialidad seleccionada en sessionStorage
     sessionStorage.setItem("especialidadSeleccionada", especialidad)
     // Redirigir a la página de registro de turnos
-    router.push("/Pantalla_Entrada/Turnos")
+    router.push("/ModuloSalud/Pantalla_Entrada/Turnos")
   }
 
   return (

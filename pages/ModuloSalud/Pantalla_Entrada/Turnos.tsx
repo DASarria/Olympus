@@ -100,7 +100,7 @@ export default function Turnos() {
       localStorage.setItem("turnoCode", data.code || "N/A")
 
       // Redirigir a la página de confirmación
-      router.push("/Pantalla_Entrada/Confirmacion")
+      router.push("/ModuloSalud/Pantalla_Entrada/Confirmacion")
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Ocurrió un error al registrar el turno"
       setError(errorMessage)

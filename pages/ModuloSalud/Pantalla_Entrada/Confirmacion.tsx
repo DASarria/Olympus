@@ -43,7 +43,7 @@ export default function Confirmacion() {
         if (prevCount <= 1) {
           clearInterval(timer)
           // Redirigir a la página de entrada/especialidad
-          router.push("/Pantalla_Entrada/Especialidad")
+          router.push("/ModuloSalud/Pantalla_Entrada/Especialidad")
           return 0
         }
         return prevCount - 1
@@ -66,7 +66,7 @@ export default function Confirmacion() {
             <p className="text-center mb-6">No se encontraron datos del turno.</p>
             <div className="flex justify-center">
               <button
-                  onClick={() => router.push("/especialidad")}
+                  onClick={() => router.push("/ModuloSalud/Pantalla_Entrada/Especialidad")}
                   className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors border border-blue-600"
               >
                 Volver al inicio
@@ -107,7 +107,7 @@ export default function Confirmacion() {
                   localStorage.removeItem("turnoData")
                   localStorage.removeItem("turnoCode")
                   // Redirigir inmediatamente a la página de entrada/especialidad
-                  router.push("/Pantalla_Entrada/Especialidad")
+                  router.push("/ModuloSalud/Pantalla_Entrada/Especialidad")
                 }}
                 className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-900 transition-colors shadow"
             >
