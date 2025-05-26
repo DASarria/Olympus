@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AxiosError } from "axios";
+import { useRouter } from "next/router";
 import { saveAs } from "file-saver";
 import { Return } from "@/components/Return";
 import Button from "@/components/gym-module/Button";
@@ -7,6 +7,8 @@ import { ReportFormat, getGymUsageReport, getAttendanceReport, getUserProgressRe
 import { PageTransitionWrapper } from "@/components/PageTransitionWrapper";
 
 const ExportReports = () => {
+    const router = useRouter();
+
     const [reportType, setReportType] = useState<"gymUsage" | "attendance" | "userProgress">("gymUsage");
     const [format, setFormat] = useState<ReportFormat>(ReportFormat.PDF);
     const [startDate, setStartDate] = useState("");
@@ -19,32 +21,26 @@ const ExportReports = () => {
         setLoading(true);
         setMessage(null);
         try {
-            let blob: Blob;
+        let blob: Blob;
 
-            if (reportType === "gymUsage") {
-                if (!startDate || !endDate) throw new Error("Debes seleccionar fechas");
-                blob = await getGymUsageReport(startDate, endDate, format);
-            } else if (reportType === "attendance") {
-                if (!startDate || !endDate) throw new Error("Debes seleccionar fechas");
-                blob = await getAttendanceReport(startDate, endDate, format);
-            } else {
-                if (!userId) throw new Error("Debes ingresar un ID de usuario");
-                blob = await getUserProgressReport(userId, format);
-            }
+        if (reportType === "gymUsage") {
+            if (!startDate || !endDate) throw new Error("Debes seleccionar fechas");
+            blob = await getGymUsageReport(startDate, endDate, format);
+        } else if (reportType === "attendance") {
+            if (!startDate || !endDate) throw new Error("Debes seleccionar fechas");
+            blob = await getAttendanceReport(startDate, endDate, format);
+        } else {
+            if (!userId) throw new Error("Debes ingresar un ID de usuario");
+            blob = await getUserProgressReport(userId, format);
+        }
 
-            const fileName = `reporte-${reportType}-${new Date().toISOString().slice(0,10)}.${format.toLowerCase()}`;
-            saveAs(blob, fileName);
+        // Descargar el archivo usando file-saver
+        const fileName = `reporte-${reportType}-${new Date().toISOString().slice(0,10)}.${format.toLowerCase()}`;
+        saveAs(blob, fileName);
 
-            setMessage("Reporte descargado con éxito");
-        } catch (e) {
-            if (e instanceof AxiosError) {
-                const errorMessage = e.response?.data?.message || e.message || "No se puede obtener la información en estos momentos.";
-                setMessage(`Error: ${errorMessage}`);
-            } else if (e instanceof Error) {
-                setMessage(`Error: ${e.message}`);
-            } else {
-                setMessage("Error desconocido");
-            }
+        setMessage("Reporte descargado con éxito");
+        } catch (e: any) {
+        setMessage(`Error: ${e.message || "No se puede obtener la información en estos momentos."}`);
         }
         setLoading(false);
     }
@@ -62,7 +58,7 @@ const ExportReports = () => {
                     <label className="block mb-2 font-semibold">Tipo de reporte:</label>
                     <select
                         value={reportType}
-                        onChange={(e) => setReportType(e.target.value as "gymUsage" | "attendance" | "userProgress")}
+                        onChange={(e) => setReportType(e.target.value as any)}
                         className="w-full mb-4 p-2 border rounded"
                     >
                         <option value="gymUsage">Uso del Gimnasio</option>

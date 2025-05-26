@@ -1,0 +1,32 @@
+.carouselContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.carouselItemsContainer {
+  overflow: hidden;
+  margin-left: 1rem;
+  margin-right: 1rem;
+  flex: 1;
+}
+
+.carouselItems {
+  display: inline-flex;
+  align-items: start;
+  gap: 2.5rem;
+  position: relative;
+  transition: transform 300ms ease-in-out;
+}
+
+/* Position classes for carousel */
+.position0 { transform: translateX(0px); }
+.position1 { transform: translateX(-280px); }
+.position2 { transform: translateX(-560px); }
+.position3 { transform: translateX(-840px); }
+.position4 { transform: translateX(-1120px); }
+.position5 { transform: translateX(-1400px); }
+.position6 { transform: translateX(-1680px); }
+.position7 { transform: translateX(-1960px); }
+.position8 { transform: translateX(-2240px); }
+.position9 { transform: translateX(-2520px); }

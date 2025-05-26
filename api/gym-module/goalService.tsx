@@ -1,67 +1,56 @@
-import api from "@/api/axiosInstance";
-const USER_API = "/users";
-
+import api from '../axiosInstance';
 
 /**
- * Fetches the goals of a specific user.
- * @param {string} userId - The unique identifier of the user.
- * @returns {Promise<any[]>} A promise that resolves with the user's goals.
- * @throws {Error} Throws an error if the API request fails.
+ * Obtiene todas las metas físicas de un usuario
  */
-export async function getUserGoals(userId: string) {
-    try {
-        const response = await api.get(`${USER_API}/${userId}/goals`);
-        return response.data;
-    } catch (error: any) {
-        throw new Error(error.response?.data?.message || "Error al obtener metas");
+export async function getUserGoals(userId: string): Promise<string[]> {
+  try {
+    const response = await api.get(`/users/${userId}/goals`);
+    
+    // Si el endpoint devuelve un array de strings, retornarlo directamente
+    if (Array.isArray(response.data)) {
+      return response.data;
     }
+    
+    // Si el endpoint devuelve objetos con una propiedad goal, extraer solo las metas
+    if (Array.isArray(response.data) && response.data.length > 0 && typeof response.data[0] === 'object') {
+      return response.data.map((item: any) => item.goal || '').filter(Boolean);
+    }
+    
+    // Fallback: Si el formato no es reconocido
+    return [];
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      return [];
+    }
+    
+    console.warn("Error al obtener metas del usuario:", error);
+    return [];
+  }
 }
 
 /**
- * Creates new goals for a specific user.
- * @param {string} userId - The unique identifier of the user.
- * @param {string[]} goals - An array of goals to be created for the user.
- * @returns {Promise<any[]>} A promise that resolves with the created goals.
- * @throws {Error} Throws an error if the API request fails.
+ * Establece múltiples metas físicas para un usuario
  */
-export async function createUserGoals(userId: string, goals: string[]) {
-    try {
-        const response = await api.post(`${USER_API}/${userId}/goals`, goals);
-        return response.data;
-    } catch (error: any) {
-        throw new Error(error.response?.data?.message || "Error al crear metas");
-    }
+export async function setUserGoals(userId: string, goals: string[]): Promise<boolean> {
+  try {
+    await api.post(`/users/${userId}/goals`, { goals });
+    return true;
+  } catch (error: any) {
+    console.error("Error al establecer metas:", error);
+    throw new Error(error.response?.data?.message || "Error al establecer metas del usuario");
+  }
 }
 
 /**
- * Updates a specific goal for a user.
- * @param {string} userId - The unique identifier of the user.
- * @param {string} goalId - The unique identifier of the goal to update.
- * @param {any} goal - The updated goal object.
- * @returns {Promise<any>} A promise that resolves with the updated goal.
- * @throws {Error} Throws an error if the API request fails.
+ * Elimina una meta física específica
  */
-export async function updateUserGoal(userId: string, goalId: string, goal: any) {
-    try {
-        const response = await api.put(`${USER_API}/${userId}/goals/${goalId}`, goal);
-        return response.data;
-    } catch (error: any) {
-        throw new Error(error.response?.data?.message || "Error al actualizar la meta");
-    }
-}
-
-/**
- * Deletes a specific goal for a user.
- * @param {string} userId - The unique identifier of the user.
- * @param {string} goalId - The unique identifier of the goal to delete.
- * @returns {Promise<any>} A promise that resolves with the response data.
- * @throws {Error} Throws an error if the API request fails.
- */
-export async function deleteUserGoal(userId: string, goalId: string) {
-    try {
-        const response = await api.delete(`${USER_API}/${userId}/goals/${goalId}`);
-        return response.data;
-    } catch (error: any) {
-        throw new Error(error.response?.data?.message || "Error al eliminar la meta");
-    }
+export async function deleteUserGoal(userId: string, goalId: string): Promise<boolean> {
+  try {
+    await api.delete(`/users/${userId}/goals/${goalId}`);
+    return true;
+  } catch (error: any) {
+    console.error("Error al eliminar meta:", error);
+    throw new Error(error.response?.data?.message || "Error al eliminar meta del usuario");
+  }
 }

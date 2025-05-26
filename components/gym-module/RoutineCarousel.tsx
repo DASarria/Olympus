@@ -1,13 +1,10 @@
 import Button from "@/components/gym-module/Button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useState } from "react";
-import { Routine } from "@/api/gymServicesIndex";
+import { useState, useMemo } from "react";
 import { RoutineCard } from "./RoutineCard";
-
-const ITEM_WIDTH = 280;
-interface Props {
-  routines: Routine[];
-}
+import { assignRoutineToUser, Routine } from "@/api/gymServicesIndex";
+import { toast } from "react-hot-toast";
+import styles from './routineCarousel.module.css';
 
 /**
  * RoutineCarousel Component
@@ -19,30 +16,61 @@ interface Props {
  * @component
  * @example
  * // Usage example of the RoutineCarousel component
- * <RoutineCarousel routines={routineData} />
+ * <RoutineCarousel routines={routines} />
  * 
- * @param {Object} props - The props for the RoutineCarousel component.
- * @param {Array} props.routines - The array of routines to be displayed in the carousel.
- * @returns {JSX.Element} A carousel that displays the routine cards with navigation buttons.
+ * // Highlight routines that match user goals
+ * <RoutineCarousel routines={routines} highlightMatches={true} />
  */
-const RoutineCarousel = ({ routines }: Props) => {
+interface RoutineCarouselProps {
+  routines: Routine[];
+  highlightMatches?: boolean;
+  currentRoutineId?: string;
+  onSetCurrent?: (routineId: string) => Promise<void>;
+}
+
+const RoutineCarousel = ({ routines, highlightMatches = false, currentRoutineId, onSetCurrent }: RoutineCarouselProps) => {
   const [index, setIndex] = useState(0);
+  // Compute the position class name dynamically
+  const positionClassName = useMemo(() => {
+    const positionKey = `position${index}`;
+    return styles[positionKey] ?? '';
+  }, [index]);
 
-  const prev = () => setIndex((prev) => (prev > 0 ? prev - 1 : routines.length - 1));
-  const next = () => setIndex((prev) => (prev + 1) % routines.length);
-
+  const prev = () => setIndex((prevState) => (prevState > 0 ? prevState - 1 : routines.length - 1));
+  const next = () => setIndex((prevState) => (prevState + 1) % routines.length);
+  const handleAssignRoutine = async (routineId: string) => {
+    try {
+      // Get user ID from sessionStorage
+      const userId = typeof window !== 'undefined' ? sessionStorage.getItem("id") : null;
+      if (!userId) {
+        toast.error("No se pudo identificar al usuario");
+        return;
+      }
+      
+      await assignRoutineToUser(userId, routineId);
+      toast.success("Rutina asignada correctamente");
+    } catch (error) {
+      console.error("Error al asignar la rutina:", error);
+      toast.error("Error al asignar la rutina");
+    }
+  };
   return (
-    <div className="flex items-center justify-between">
+    <div className={styles.carouselContainer}>
       <Button onClick={prev} className="p-2">
         <ChevronLeft />
       </Button>
-      <div className="overflow-hidden mx-4 flex-1">
+      <div className={styles.carouselItemsContainer}>
         <div
-          className="inline-flex items-start gap-10 relative transition-transform duration-300 ease-in-out"
-          style={{ transform: `translateX(-${index * ITEM_WIDTH}px)` }}
-        >
-          {routines.map((routine, i) => (
-            <RoutineCard key={routine.id || i} routine={routine} />
+          className={`${styles.carouselItems} ${positionClassName}`}
+        >          {routines.map((routine, i) => (
+            <RoutineCard 
+              key={routine.id ?? i} 
+              routine={routine} 
+              onAssign={handleAssignRoutine}
+              highlightMatch={highlightMatches}
+              isCurrentRoutine={routine.id === currentRoutineId}
+              onSetCurrent={onSetCurrent}
+            />
           ))}
         </div>
       </div>
