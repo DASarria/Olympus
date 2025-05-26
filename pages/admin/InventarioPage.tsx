@@ -3,16 +3,13 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Layout from "@/components/Layout";
-import api from '@/services/prestamosService';
-import axios from "axios";
-
-interface Articulo {
-    id: number;
-    name: string;
-    description?: string;
-    articleStatus?: string;
-    imageUrl?: string;
-}
+import { 
+  getArticulos, 
+  createArticulo, 
+  deleteArticulo, 
+  updateArticulo,
+  Articulo 
+} from '@/services/inventarioService';
 
 interface GroupedArticulo {
     name: string;
@@ -30,10 +27,9 @@ export default function InventarioPage() {
     const [obsVisible, setObsVisible] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-
     const [mostrarModal, setMostrarModal] = useState(false);
 
-    // Campos del formulario nuevo artículo
+    // Campos del formulario
     const [nuevoNombre, setNuevoNombre] = useState("");
     const [nuevaDescripcion, setNuevaDescripcion] = useState("");
     const [nuevoEstado, setNuevoEstado] = useState("Disponible");
@@ -45,22 +41,17 @@ export default function InventarioPage() {
             router.push("/module4");
             return;
         }
-
         fetchArticulos();
     }, [role, router]);
 
     const fetchArticulos = async (q?: string) => {
         try {
             setLoading(true);
-            const params = q ? { params: { q } } : {};
-            const response = await api.get('/Article', params);
-            setArticulos(response.data.articulos);
-        } catch (error: unknown) {
-            if (axios.isAxiosError(error)) {
-                setError(error.response?.data?.details || 'Error al cargar artículos');
-            } else {
-                setError('Error desconocido al cargar artículos');
-            }
+            const data = await getArticulos(q);
+            setArticulos(data);
+            setError(null);
+        } catch (error) {
+            setError(error instanceof Error ? error.message : 'Error desconocido');
         } finally {
             setLoading(false);
         }
@@ -80,18 +71,12 @@ export default function InventarioPage() {
             }
 
             acc[key].total += 1;
-
-            if (articulo.articleStatus === 'Disponible') {
-                acc[key].available += 1;
-            }
-
-            if (articulo.articleStatus === 'Danado' || articulo.articleStatus === 'RequireMantenimiento') {
+            if (articulo.articleStatus === 'Disponible') acc[key].available += 1;
+            if (['Danado', 'RequireMantenimiento'].includes(articulo.articleStatus)) {
                 acc[key].observaciones.push(articulo);
             }
-
             return acc;
         }, {});
-
         return Object.values(grouped);
     };
 
@@ -102,12 +87,12 @@ export default function InventarioPage() {
 
     const agregarArticulo = async (name: string, description: string, articleStatus: string, cantidad: number) => {
         try {
-            // Crear la cantidad que el usuario indique
             for (let i = 0; i < cantidad; i++) {
-                await api.post('/Article', {
-                    name,
+                await createArticulo({ 
+                    name, 
                     description,
-                    articleStatus
+                    articleStatus,
+                    imageUrl: "" 
                 });
             }
             fetchArticulos();
@@ -118,23 +103,19 @@ export default function InventarioPage() {
 
     const eliminarArticulo = async (name: string) => {
         try {
-            const disponible = articulos.find(a =>
+            const disponible = articulos.find(a => 
                 a.name === name && a.articleStatus === 'Disponible'
             );
-
-            if (!disponible) {
-                alert('No hay unidades disponibles para eliminar');
-                return;
-            }
-
-            await api.delete(`/Article/${disponible.id}`);
+            if (!disponible) throw new Error('No hay unidades disponibles');
+            await deleteArticulo(disponible.id);
             fetchArticulos();
         } catch (error) {
-            alert('Error al eliminar artículo');
+            alert(error instanceof Error ? error.message : 'Error al eliminar');
         }
     };
 
     const groupedArticulos = groupArticulos();
+
 
     return (
         <Layout>
