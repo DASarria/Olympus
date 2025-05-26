@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const API_BASE = "https://chronosproduction-accheze7aycuc6dk.eastus-01.azurewebsites.net/";
+export const API_BASE = "https://chronosproduction-accheze7aycuc6dk.eastus-01.azurewebsites.net";
 // export const API_BASE = "http://localhost:8080"; // Usa esta línea para desarrollo local
 
 const headers = () => {
