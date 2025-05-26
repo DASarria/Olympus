@@ -3,7 +3,7 @@ import arrowLeft from "@/assets/icons/ArrowLeft.svg";
 import Image from "next/image";
 
 interface Props {
-    className: string;
+    className?: string;
     text: string;
     returnPoint: string;
 }
