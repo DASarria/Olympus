@@ -3,13 +3,13 @@ import Image from 'next/image';
 import { useRouter } from 'next/router';
 import clasesCE from "../../assets/images/clasesExtracurriculares/clasesCE.png";
 import estadisticasCE from "../../assets/images/clasesExtracurriculares/estadisticasCE.png";
-import horariosCE from "../../assets/images/clasesExtracurriculares/horariosCE.png";
+// Eliminado el import no utilizado: horariosCE
 
 const ClasesExtracurriculares = () => {
   const userRole = "administrador";
   
   const router = useRouter();
-  const navegarA = (ruta) => {
+  const navegarA = (ruta: string) => {
     router.push(ruta);
   };
 
@@ -45,7 +45,7 @@ const ClasesExtracurriculares = () => {
         {isAdmin && (
           <div
             className="bg-white rounded-lg shadow-md p-8 h-50 flex flex-col items-center justify-center hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 cursor-pointer border border-gray-100"
-            onClick={() => navegarA('/clasesExtracurriculares/CEProfeEstudianteClases')}
+            onClick={() => navegarA('/clasesExtracurriculares/CEAdminEstadisticas')}
           >
             <div className="bg-white-50 p-2 rounded-full mb-6 shadow-inner">
               <Image
@@ -59,22 +59,6 @@ const ClasesExtracurriculares = () => {
           </div>
         )}
         
-        {isAdmin && (
-          <div
-            className="bg-white rounded-lg shadow-md p-8 h-50 flex flex-col items-center justify-center hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 cursor-pointer border border-gray-100"
-            onClick={() => navegarA('/clasesExtracurriculares/CEAdminEstadisticas')}
-          >
-            <div className="bg-white-50 p-2 rounded-full mb-6 shadow-inner">
-              <Image
-                src={horariosCE}
-                alt="Gestión de Clases"
-                width={64}
-                height={64}
-              />
-            </div>
-            <h3 className="font-montserrat font-bold text-1xl text-center">Gestión Clases</h3>
-          </div>
-        )}
       </div>
     </div>
   );
