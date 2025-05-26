@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { Return } from "@/components/Return";
 import { withRoleProtection } from "@/hoc/withRoleProtection";
-import { ReservationStatus, getReservationDetails, cancelReservation } from '@/api/gymServicesIndex';
+import { ReservationStatus, cancelReservation } from '@/api/gymServicesIndex';
 import { PageTransitionWrapper } from '@/components/PageTransitionWrapper';
+import { CalendarEvent } from '../reservations';
 
 /**
  * ReservationDetails component displays detailed information about a reservation.
@@ -19,47 +20,35 @@ import { PageTransitionWrapper } from '@/components/PageTransitionWrapper';
  */
 const ReservationDetails = () => {
     const router = useRouter();
-    const { id } = router.query;
-
-    const userId = typeof window !== 'undefined' ? sessionStorage.getItem("id") : null;
+    const [userId, setUserId] = useState<string | null>(null);
+    const [event, setEvent] = useState<CalendarEvent | null>(null);
+    const checkedStorageRef = useRef(false);
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
 
-    const [formData, setFormData] = useState({
-        sessionId: '',
-        status: ReservationStatus.PENDING,
-        reservationDate: '',
-        equipmentIds: '',
-        notes: ''
-    });
-
     useEffect(() => {
-        /**
-         * Fetches reservation details when the component mounts.
-         * It updates the formData state with the fetched reservation details.
-         * 
-         * @async
-         * @function fetchData
-         * @returns {Promise<void>} - Returns nothing.
-         */
-        const fetchData = async () => {
-            if (!id || typeof id !== 'string' || !userId) return;
-            try {
-                const reservation = await getReservationDetails(userId, id);
-                setFormData({
-                    sessionId: reservation.sessionId,
-                    status: reservation.status,
-                    reservationDate: reservation.reservationDate.slice(0, 16),
-                    equipmentIds: reservation.equipmentIds?.join(',') || '',
-                    notes: reservation.notes || ''
-                });
-            } catch (error) {
-                console.error('Error al cargar la reserva:', error);
-                setErrorMessage('No se pudo cargar la reserva.');
-            }
-        };
-        fetchData();
-    }, [id, userId]);
+        if (typeof window === "undefined") return;
+        if (checkedStorageRef.current) return;
+        checkedStorageRef.current = true;
+
+        const storedId = sessionStorage.getItem("gymId");
+        const storedEvent = sessionStorage.getItem("GymEvent");
+
+        if (!storedId) {
+            router.push("/");
+            return;
+        }
+
+        if (storedEvent) {
+            setEvent(JSON.parse(storedEvent));
+            sessionStorage.removeItem('GymEvent');
+        } else {
+            router.push('/gym-module/reservations');
+            return;
+        }
+
+        setUserId(storedId);
+    }, []);
 
 
     /**
@@ -71,13 +60,13 @@ const ReservationDetails = () => {
      * @returns {Promise<void>} - Returns nothing.
      */
     const handleCancelReservation = async () => {
-        if (!userId || !id || typeof id !== 'string') {
+        if (!userId || !event?.reservationId) {
             setErrorMessage("Faltan datos para cancelar la reserva.");
             return;
         }
         try {
-            await cancelReservation(userId, id);
-            setFormData(prev => ({ ...prev, status: ReservationStatus.CANCELLED }));
+            await cancelReservation(userId, event.reservationId);
+            setEvent(prev => prev ? { ...prev, status: ReservationStatus.CANCELLED } : null);
             setSuccessMessage("Reserva cancelada exitosamente.");
             setErrorMessage('');
         } catch (error) {
@@ -87,6 +76,17 @@ const ReservationDetails = () => {
         }
     };
 
+    const formatToInputDateTime = (date: Date) => {
+        return date.toISOString().slice(0, 16);
+    };
+
+    if (!event) {
+        return (
+            <PageTransitionWrapper>
+                <div className="text-center py-8 text-gray-500">Cargando detalles de la reserva...</div>
+            </PageTransitionWrapper>
+        );
+    }
     return (
         <PageTransitionWrapper>
             <div className='flex flex-col gap-6'>
@@ -96,7 +96,6 @@ const ReservationDetails = () => {
                     returnPoint="/gym-module/reservations"
                 />
                 <div>
-                    <h2 className="text-xl font-semibold mb-4">Detalles de Reserva</h2>
 
                     {successMessage && <div className="mb-4 text-green-600">{successMessage}</div>}
                     {errorMessage && <div className="mb-4 text-red-600">{errorMessage}</div>}
@@ -107,7 +106,7 @@ const ReservationDetails = () => {
                             <input
                                 type="text"
                                 name="sessionId"
-                                value={formData.sessionId}
+                                value={event.id}
                                 disabled
                                 className="w-full border rounded p-2 bg-gray-100 cursor-not-allowed"
                             />
@@ -118,18 +117,18 @@ const ReservationDetails = () => {
                             <input
                                 type="datetime-local"
                                 name="reservationDate"
-                                value={formData.reservationDate}
+                                value={formatToInputDateTime(new Date(event.start))}
                                 disabled
                                 className="w-full border rounded p-2 bg-gray-100 cursor-not-allowed"
                             />
                         </div>
 
                         <div>
-                            <label className="block font-medium mb-1">Equipos (IDs separados por coma)</label>
+                            <label className="block font-medium mb-1">Descripción</label>
                             <input
                                 type="text"
-                                name="equipmentIds"
-                                value={formData.equipmentIds}
+                                name="description"
+                                value={event.description}
                                 disabled
                                 className="w-full border rounded p-2 bg-gray-100 cursor-not-allowed"
                             />
@@ -139,7 +138,7 @@ const ReservationDetails = () => {
                             <label className="block font-medium mb-1">Notas</label>
                             <textarea
                                 name="notes"
-                                value={formData.notes}
+                                value={event.notes || ''}
                                 disabled
                                 className="w-full border rounded p-2 bg-gray-100 cursor-not-allowed"
                             />
@@ -150,13 +149,13 @@ const ReservationDetails = () => {
                             <input
                                 type="text"
                                 name="status"
-                                value={formData.status}
+                                value={event.status}
                                 disabled
                                 className="w-full border rounded p-2 bg-gray-100 cursor-not-allowed"
                             />
                         </div>
 
-                        {formData.status !== ReservationStatus.CANCELLED && (
+                        {event?.status !== ReservationStatus.CANCELLED && (
                             <button
                                 onClick={handleCancelReservation}
                                 className="bg-[var(--primary-red)] text-white px-4 py-2 rounded cursor-pointer"
@@ -171,4 +170,4 @@ const ReservationDetails = () => {
     );
 };
 
-export default withRoleProtection(["USER", "TRAINER"], "/gym-module/reservations")(ReservationDetails);
+export default withRoleProtection(["STUDENT"], "/gym-module/reservations")(ReservationDetails);

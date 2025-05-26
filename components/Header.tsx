@@ -1,5 +1,3 @@
-// filepath: c:\Users\Usuario\Pictures\Olympus\components\Header.tsx
-
 interface HeaderProps {
   userName?: string;
   notificationsCount?: number;

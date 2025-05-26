@@ -1,4 +1,5 @@
 import cvdsLogo from '@/assets/icons/cvds.svg';
+import Image from 'next/image';
 
 // Footer solo en escritorio
 export const Footer = () => {
@@ -18,10 +19,12 @@ export const Footer = () => {
                 .
             </span>
             </p>
-            <img
-                className='relative w-7 h-[18px] object-cover'
+            <Image
+                className="relative object-cover"
+                src={cvdsLogo}
                 alt="cvdsLogo"
-                src={cvdsLogo.src}
+                width={28}
+                height={18}
             />
         </footer>
     )

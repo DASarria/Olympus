@@ -32,14 +32,17 @@ export enum ReservationStatus {
  * @property {string} [notes] - Any additional notes related to the reservation (optional).
  */
 export interface ReservationDTO {
-  userId: string;
-  sessionId: string;
-  status: ReservationStatus; 
-  reservationDate: string;
-  cancellationDate?: string;
-  checkInTime?: string;
-  equipmentIds?: string[];
+  userId?: string;
+  sessionId?: string;
   notes?: string;
+}
+
+export interface Reservation {
+    id: string;
+    userId: string;
+    sessionId: string;
+    status: ReservationStatus;
+    notes?:string;
 }
 
 /**
@@ -93,12 +96,12 @@ export async function createReservation(userId: string, reservationDTO: Reservat
 /**
  * Fetches all reservations made by a user.
  * @param {string} userId - The unique identifier of the user whose reservations are to be fetched.
- * @returns {Promise<ReservationDTO[]>} A promise that resolves with an array of reservation data.
+ * @returns {Promise<Reservation[]>} A promise that resolves with an array of reservation data.
  * @throws {Error} Throws an error if the user's reservations cannot be fetched.
  */
-export async function getUserReservations(userId: string): Promise<ReservationDTO[]> {
+export async function getUserReservations(userId: string): Promise<Reservation[]> {
   try {
-    const response = await api.get<ReservationDTO[]>(`${USER_API}/${userId}/reservations`);
+    const response = await api.get<Reservation[]>(`${USER_API}/${userId}/reservations`);
     return response.data;
   } catch (error: any) {
     throw new Error(error.response?.data?.message || "Error al obtener las reservas del usuario");
@@ -109,12 +112,12 @@ export async function getUserReservations(userId: string): Promise<ReservationDT
  * Fetches details of a specific reservation made by a user.
  * @param {string} userId - The unique identifier of the user whose reservation details are to be fetched.
  * @param {string} reservationId - The unique identifier of the reservation to fetch.
- * @returns {Promise<ReservationDTO>} A promise that resolves with the reservation details.
+ * @returns {Promise<Reservation>} A promise that resolves with the reservation details.
  * @throws {Error} Throws an error if the reservation details cannot be fetched.
  */
-export async function getReservationDetails(userId: string, reservationId: string): Promise<ReservationDTO> {
+export async function getReservationDetails(userId: string, reservationId: string): Promise<Reservation> {
   try {
-    const response = await api.get<ReservationDTO>(`${USER_API}/${userId}/reservations/${reservationId}`);
+    const response = await api.get<Reservation>(`${USER_API}/${userId}/reservations/${reservationId}`);
     return response.data;
   } catch (error: any) {
     throw new Error(error.response?.data?.message || "Error al obtener los detalles de la reserva");
