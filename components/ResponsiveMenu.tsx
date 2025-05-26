@@ -34,7 +34,7 @@ const modules = [
     {
         moduleName: "module 5",
         roleCanUse: ["ADMIN", "MEDICAL_SECRETARY", "DOCTOR"],
-        urlToNavigate: "/ModuloSalud",
+        urlToNavigate: "/ModuloSalud/ModuloSalud",
         image: modulo5,
     },
     {

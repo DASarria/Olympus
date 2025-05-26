@@ -3,24 +3,16 @@ import type { AppProps } from "next/app";
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
 
-<<<<<<< HEAD
-const Layout = dynamic(() => import('../components/Layout'), { 
+const Layout = dynamic(() => import('../components/Layout'), {
   ssr: false,
   loading: () => <div>Cargando...</div>
 });
-=======
-
-
-// Esta línea es para importar Layout dinámicamente sin SSR, esto evita el error de sessionStorage
-const Layout = dynamic(() => import('../components/Layout'), { ssr: false });
->>>>>>> refs/heads/develop
 
 
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
   
 
-<<<<<<< HEAD
   // Rutas donde NO mostrar Layout (actualizado)
   const noLayoutRoutes = ['/', '/login', '/Turnos', '/ModuloSalud/Pantalla_Entrada', '/ModuloSalud/SalaDeEspera']; // Ahora usa '/Turnos' directo
   
@@ -35,16 +27,6 @@ export default function App({ Component, pageProps }: AppProps) {
     <Layout userName="Nombre de Usuario" notificationsCount={0}>
       <Component {...pageProps} />
     </Layout>
-=======
-  // Muestro el layout solo si no estamos en la página de login, se pueden poner mas rutas pero por el momento dejé esas
-  const isAuthPage = ['/', '/login'].includes(router.pathname);
-  
-  return isAuthPage ? (
-      <Component {...pageProps} />
-  ) : (
-        <Layout notificationsCount={0}>
-          <Component {...pageProps} />
-        </Layout>
->>>>>>> refs/heads/develop
+
   );
 }
