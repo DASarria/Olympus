@@ -1,5 +1,5 @@
 const API = "https://hadesback-app-c5fwbybjd0gnf0fx.canadacentral-01.azurewebsites.net";
-const APIUser = "https://9eaizp3wsf.execute-api.us-east-1.amazonaws.com";
+const APIUser = "https://usermanagement-bhe9cfg4b5b2hthj.eastus-01.azurewebsites.net";
 
 const endPointUser = {
     login: '/authentication/login',

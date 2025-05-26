@@ -16,7 +16,7 @@ export const find = async (filters,token) => {
     const client = createClient(APIUser,token);
     return await client.post(endPointUser.findUsers, filters);
   }catch(error){
-    console.error("Error al obtener usuarios");
+    console.error("Error al obtener usuarios", error);
   }
     
 };

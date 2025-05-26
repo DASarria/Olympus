@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { all } from "../api/APIActivity"
 
 interface Actividad {
   id: string;
@@ -21,9 +22,6 @@ const HorarioClasesOptimizado: React.FC = () => {
   const [actividadesRaw, setActividadesRaw] = useState<Actividad[]>([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const tokenJWT = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEyMyIsInVzZXJOYW1lIjoiYWRtaW4iLCJlbWFpbCI6ImFkbWluQGVzY3VlbGFpbmcuZWR1LmNvIiwibmFtZSI6ImVsIGFkbWluIiwicm9sZSI6IkFETUlOIiwic3BlY2lhbHR5IjoibnVsbCIsImV4cCI6MTc0ODIyMjU0MX0.-2xp9JoodiBDy3g8i9c0uYmnBGygxsPorEvXM1N68_M";
-  const linkAPI = "https://hadesback-app-c5fwbybjd0gnf0fx.canadacentral-01.azurewebsites.net";
 
   const diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
   const mapDiaSemana = { MONDAY: 0, TUESDAY: 1, WEDNESDAY: 2, THURSDAY: 3, FRIDAY: 4, SATURDAY: 5 };
@@ -59,9 +57,8 @@ const HorarioClasesOptimizado: React.FC = () => {
     setCargando(true);
     setError(null);
     try {
-      const response = await fetch(`${linkAPI}/api/activity/all`, { headers: { Authorization: tokenJWT } });
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const data = await response.json();
+      const response = await all(null);
+      const data = response?.data;
       setActividadesRaw(data);
       
       const actividadesMap = new Map();

@@ -34,7 +34,7 @@ export const all = async (token) => {
         const client = createClient(API, token);
         return await client.get(endPointActivity.all);
     }catch(error){
-        console.error("Error al obtener actividades");
+        console.error("Error al obtener actividades",error);
     }
 };
 

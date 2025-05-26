@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import axios from "axios";
+import { create, update, all } from "../api/APIActivity"
+import { find } from "../api/APIUser"
 
 //Variables de TAILWIND
 const borderRadius = "rounded-lg";
@@ -93,22 +94,29 @@ interface Recurso {
   amount: number;
 }
 
+type ActividadOption = {
+  value: string;
+  label: string;
+};
+
+
 const CEAdminActividades = () => {
   useEffect(() => {
     fetchDatos();
   }, []);
 
   //Constantes para peticiones
-  const tokenJWT =
-    "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEyMTMyMTQxIiwidXNlck5hbWUiOiJhZG1pbiIsImVtYWlsIjoiYWRtaW5AZXNjdWVsYWluZy5lZHUuY28iLCJuYW1lIjoiZWwgYWRtaW4iLCJyb2xlIjoiQURNSU4iLCJzcGVjaWFsdHkiOiJudWxsIiwiZXhwIjoxNzQ3OTY2MTQyfQ.vjOpZTA2Q_XxqbWe5uEFoX6EUZ61R8L_72BmF1TgdhE";
 
 
   //VARIABLES GENERALES (Guardar informacion o usarla)
   const router = useRouter();
   const { id } = router.query; //Variable que traer las cosas del link
   const [actividadesTemp, setActividadesTemp] = useState<Actividad[]>([]);
+
   const [profesoresTemp, setProfesoresTemp] = useState<any[]>([]);
 
+  const [actividadesDisponibles, setActividadesDisponibles] = useState<ActividadOption[]>([]);
+  
   const [actividades, setActividades] = useState<
     { id: string; nombre: string }[]
   >([]);
@@ -143,36 +151,13 @@ const CEAdminActividades = () => {
   };
 
   const fetchActividades = async () => {
-    try {
-      const response = await axios.get(`${linkAPI}/api/activity/all`, {
-        headers: {
-          Authorization: tokenJWT,
-        },
-      });
-      setActividadesTemp(response.data);
-    } catch (error) {
-      console.error("Error al obtener las actividades:", error);
-    }
+    const response = await all(null);
+    setActividadesTemp(response?.data ?? []);
   };
 
   const fetchProfesores = async () => {
-    try {
-      const response = await axios.post(
-        `${linkAPIUSER}/user/query`,
-        {
-          role: "EXTRACURRICULAR_TEACHER",
-        },
-        {
-          headers: {
-            Authorization: tokenJWT,
-          },
-        }
-      );
-
-      setProfesoresTemp(response.data.data);
-    } catch (error) {
-      console.error("Error al obtener los profesores", error);
-    }
+    const response = await find({ role: "EXTRACURRICULAR_TEACHER", }, null);
+    setProfesoresTemp(response?.data.data ?? []);
   };
 
   //ACTUALIZAR LAS VARIABLES DE LOS SELECT QUE SU INFORMACION VIENE DE AFUERA
@@ -185,6 +170,10 @@ const CEAdminActividades = () => {
           nombre: activityType,
         }));
       setActividades(mapped);
+      const disponibles = nombresActividades.filter(
+      (actividad) => !actividadesTemp.some(a => a.activityType === actividad.value)
+    );
+      setActividadesDisponibles(disponibles);
     }
   }, [actividadesTemp]);
 
@@ -262,9 +251,9 @@ const CEAdminActividades = () => {
       setRecursos(
         actividad.resources.length > 0
           ? actividad.resources.map((r: Recurso) => ({
-              name: r.name,
-              amount: Number(r.amount),
-            }))
+            name: r.name,
+            amount: Number(r.amount),
+          }))
           : [{ name: "", amount: 0 }]
       );
 
@@ -274,10 +263,10 @@ const CEAdminActividades = () => {
       setDays(
         actividad.days.length > 0
           ? actividad.days.map((d: Day) => ({
-              dayWeek: d.dayWeek,
-              startHour: d.startHour,
-              endHour: d.endHour,
-            }))
+            dayWeek: d.dayWeek,
+            startHour: d.startHour,
+            endHour: d.endHour,
+          }))
           : [{ dayWeek: "none", startHour: "", endHour: "" }]
       );
     } else {
@@ -307,18 +296,16 @@ const CEAdminActividades = () => {
       return;
     }
 
-    if (capacidad <= 0) {
-      alert("Tiene que tener una capacidad mayor a 0");
-      return;
-    } else if (capacidad >= 50) {
-      alert("Tiene que seleccionar una capacidad menor a 50 estudiantes");
+    if (capacidad <= 0 || capacidad >= 50) {
+      alert("Tiene que tener una capacidad mayor a 0 y menor a 50");
       return;
     }
 
-    if (profesorSeleccionado === "none") {
-      alert("Debe seleccionar un profesor valido para continuar");
+    if (profesoresTemp.length > 0 && profesorSeleccionado === "none") {
+      alert("Debe seleccionar un profesor válido para continuar");
       return;
     }
+
 
     //Esto es uan manera de revisar que no esten mal los recursos
     const recursoInvalido = recursos.some(
@@ -371,9 +358,26 @@ const CEAdminActividades = () => {
       return;
     }
 
-    const profesorLabel =
-      profesores.find((p) => p.id === profesorSeleccionado)?.fullName ||
-      "No encontrado";
+
+let profesorLabel = "Asignar Profesor";
+let profesorCode = -1;
+
+if (profesores.length > 0 && profesorSeleccionado !== "none") {
+  const profSeleccionado = profesores.find(
+    (p) => String(p.fullName) === String(profesorSeleccionado)
+  );
+
+  if (profSeleccionado) {
+    profesorLabel = profSeleccionado.fullName;
+    profesorCode = Number(profSeleccionado.id);
+  }
+}
+
+
+
+
+
+
 
     //Este para crear
     if (actividadSeleccionada === "none") {
@@ -382,7 +386,7 @@ const CEAdminActividades = () => {
         semester: Number(semestreSeleccionado),
         activityType: nombreActividadSeleccionada,
         teacher: profesorLabel,
-        teacherId: Number(profesorSeleccionado),
+        teacherId: profesorCode,
         location: ubicacion,
         capacityMaximum: capacidad,
         schedules: [],
@@ -398,7 +402,7 @@ const CEAdminActividades = () => {
         semester: Number(semestreSeleccionado),
         activityType: nombreActividadSeleccionada,
         teacher: profesorLabel,
-        teacherId: Number(profesorSeleccionado),
+        teacherId: profesorCode,
         location: ubicacion,
         capacityMaximum: capacidad,
         schedules: [],
@@ -409,32 +413,18 @@ const CEAdminActividades = () => {
     }
 
     //Reset
-    fetchActividades();
+    fetchDatos();
     setActividadSeleccionada("none");
   };
 
   const CrearActividades = async (actividad: ActividadNueva) => {
-    try {
-      await axios.post(`${linkAPI}/api/activity`, actividad, {
-        headers: {
-          Authorization: tokenJWT,
-        },
-      });
-    } catch (error) {
-      console.error("Error al crear las actividades:", error);
-    }
+    await create(actividad, null);
+    console.log(actividad);
   };
 
   const ActualizarActividades = async (actividad: Actividad) => {
-    try {
-      await axios.put(`${linkAPI}/api/activity/update`, actividad, {
-        headers: {
-          Authorization: tokenJWT,
-        },
-      });
-    } catch (error) {
-      console.error("Error al actualizar las actividades:", error);
-    }
+    await update(actividad, null);
+    console.log(actividad);
   };
 
   // Después de fetchActividades y estados:
@@ -469,21 +459,21 @@ const CEAdminActividades = () => {
         <div className={sectionStyle}>
           <h2 className={h2Style}>Información General</h2>
           <div className={divInput}>
-            <h3 className={h3Style}>Clase</h3>
+            <h3 className={h3Style}>Actividad</h3>
             <select
-              value={nombreActividadSeleccionada}
-              onChange={(e) => setNombreActividadSeleccionada(e.target.value)}
-              className={inputStyle}
-            >
-              <option value="none" disabled>
-                Selecciona una actividad
-              </option>
-              {nombresActividades.map((actividad) => (
-                <option key={actividad.value} value={actividad.value}>
-                  {actividad.label}
-                </option>
-              ))}
-            </select>
+  value={nombreActividadSeleccionada}
+  onChange={(e) => setNombreActividadSeleccionada(e.target.value)}
+  className={inputStyle}
+>
+  <option value="none" disabled>
+    Selecciona una actividad
+  </option>
+  {actividadesDisponibles.map((actividad) => (
+    <option key={actividad.value} value={actividad.value}>
+      {actividad.label}
+    </option>
+  ))}
+</select>
           </div>
           <div className="flex flex-wrap gap-4">
             <div className="flex-1 min-w-[200px]">
