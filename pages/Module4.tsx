@@ -40,7 +40,7 @@ const Module4 = () => {
           {userRole === "ADMIN" && (
             <>
               <Opciones title="Analisis" imgSrc={analisis.src} href="../admin/AnalisisPage" />
-              <Opciones title="Devoluciones" imgSrc={devoluciones.src} href="../admin/DevolucionesPage" />
+              <Opciones title="Notificaciones" imgSrc={notificacionesImg.src} href="../admin/NotificacionesPage" />
               <Opciones title="Inventario" imgSrc={inventario.src} href="../admin/InventarioPage" />
               <Opciones title="Prestamos" imgSrc={prestamos.src} href="../admin/PrestamosPage" />
               <Opciones title="Reportes" imgSrc={reportes.src} href="../admin/ReportesPage" />

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { USER_API_URL } from "../config/config";
+import { USER_API_URL } from "../pages/prestamosDeportivos/util/config";
 
 const api = axios.create({ baseURL: USER_API_URL });
 
