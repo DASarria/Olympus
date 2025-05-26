@@ -16,7 +16,7 @@ export default function App({ Component, pageProps }: AppProps) {
   return isAuthPage ? (
       <Component {...pageProps} />
   ) : (
-      <Layout userName="Nombre de Usuario" notificationsCount={0}>
+      <Layout notificationsCount={0}>
         <Component {...pageProps} />
       </Layout>
   );
