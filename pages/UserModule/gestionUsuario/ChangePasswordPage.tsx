@@ -38,7 +38,7 @@ const ChangePassword = () =>{
     return(
         <div style={{ padding: "20px", fontFamily: "'Open Sans', sans-serif" }}>
             <PageTransitionWrapper>
-                <Return text="" returnPoint=" /UserModule/gestionUsuario/VerPerfil"/>
+                <Return text="" returnPoint="/UserModule/gestionUsuario/VerPerfil"/>
                 <RectanguloConTextoConfiguration texto="Cambio de contraseña">
                     <div
                         style={{display: "flex", flexWrap: "wrap", gap: "5px 40px", width: "100%", boxSizing: "border-box",}}
