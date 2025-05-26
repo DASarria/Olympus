@@ -9,33 +9,41 @@ import Module from "./Module";
 const modules = [
     {
         moduleName: "module 1",
-        roleCanUse: ["ADMIN", "usuario"],
-        urlToNavigate: "/Module1",
-        image: modulo1,
+        roleCanUse: ["ADMIN", "MEDICAL_SECRETARY", "DOCTOR"],
+        urlToNavigate:"/ModuloSalud/ModuloSalud",
+        image: modulo5,
     },
+
     {
         moduleName: "module 2",
         roleCanUse: ["ADMIN"],
         urlToNavigate: "/Module2",
-        image: modulo2,
+        image: modulo1,
+    },
+
+    {
+        moduleName: "module 2",
+        roleCanUse: ["STUDENT"],
+        urlToNavigate: "/salasCrea/InicioSalasCreaUsuario",
+        image: modulo3,
     },
     {
-        moduleName: "module 3",
-        roleCanUse: ["ADMIN", "usuario"],
-        urlToNavigate: "/Module3",
+        moduleName: "module 2_Admin",
+        roleCanUse: ["SALA_ADMIN"],
+        urlToNavigate: "/salasCrea/InicioSalasCreaADMIN",
         image: modulo3,
     },
     {
         moduleName: "module 4",
-        roleCanUse: ["ADMIN"],
-        urlToNavigate: "/Module4",
+        roleCanUse: ["ADMIN", "MEDICAL_SECRETARY", "DOCTOR"],
+        urlToNavigate: "/ModuloSalud/ModuloSalud",
         image: modulo4,
     },
     {
         moduleName: "module 5",
-        roleCanUse: ["ADMIN", "MEDICAL_SECRETARY", "DOCTOR"],
-        urlToNavigate: "/ModuloSalud/ModuloSalud",
-        image: modulo5,
+        roleCanUse: ["ADMIN", "STUDENT", "TRAINER"],
+        urlToNavigate: "/gym-module",
+        image: modulo2,
     },
     {
         moduleName: "module 6",
