@@ -1,3 +1,4 @@
+
 'use client';
 import Image from 'next/image';
 import { useState, useRef, useEffect } from 'react';
@@ -5,27 +6,33 @@ import logotransparente from "../assets/images/logotransparente.png";
 import { useRouter } from 'next/navigation';
 
 
+
 interface HeaderProps {
-  userName?: string;
-  notificationsCount?: number;
+  userName?: string
+  notificationsCount?: number
 }
+
 
 const Header = ({ userName = 'Nombre de Usuario', notificationsCount = 0 }: HeaderProps) => {
   const [menuAbierto, setMenuAbierto] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
+
   const getInitials = (name: string) => {
     return name
-      .split(' ')
-      .map(word => word[0])
-      .join('')
+      .split(" ")
+      .map((word) => word[0])
+      .join("")
       .toUpperCase()
       .substring(0, 2);
   };
   const logOut = () => {
     sessionStorage.clear();
     router.push('/');
+  }
+  const handleLogoClick = () => {
+    window.location.href = "/salasCrea/InicioSalasCreaADMIN"
   }
 
   // Cierra el menú si se hace clic afuera
@@ -39,17 +46,29 @@ const Header = ({ userName = 'Nombre de Usuario', notificationsCount = 0 }: Head
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  
+
   return (
-    <div className="flex w-full justify-between items-center h-14 relative">
-      <div className="w-[14vw] md:w-[6vw] h-14 bg-eci flex items-center justify-center">
+    <div className="flex w-full justify-between items-center h-14">
+      {/* Aquí se pone el logo, que pasó de estar en el menú lateral a acá para que no hubiera conflictos cuando se mostrara el contenido */}
+      <div
+        className="w-[14vw] md:w-[6vw] h-14 bg-eci flex items-center justify-center cursor-pointer"
+        onClick={handleLogoClick}
+      >
         <Image
-          src={logotransparente}
+          src={logotransparente || "/placeholder.svg"}
           alt="ECI logo"
-          className="h-auto w-full object-contain"
+          width={50}
+          height={50}
+          className="object-contain"
         />
+
+
       </div>
 
-      <div className="flex items-center space-x-4 px-4 relative" ref={menuRef}>
+      {/* Controles de usuario a la derecha, nombre y notificaciones */}
+      <div className="flex items-center space-x-4 px-4">
+        {/* Nombre de usuario (solo visible en escritorio) */}
         <span className="hidden md:block text-gray-700">{userName}</span>
 
         <button
@@ -75,10 +94,7 @@ const Header = ({ userName = 'Nombre de Usuario', notificationsCount = 0 }: Head
         )}
 
         <div className="relative">
-          <button
-            className="p-2 rounded-full hover:bg-gray-100"
-            aria-label="Notificaciones"
-          >
+          <button className="p-2 rounded-full hover:bg-gray-100" aria-label="Notificaciones">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-6 w-6 text-gray-700"
@@ -96,14 +112,16 @@ const Header = ({ userName = 'Nombre de Usuario', notificationsCount = 0 }: Head
 
             {notificationsCount > 0 && (
               <span className="absolute top-1 right-1 h-4 w-4 bg-red-600 rounded-full flex items-center justify-center text-white text-xs">
-                {notificationsCount > 9 ? '9+' : notificationsCount}
+                {notificationsCount > 9 ? "9+" : notificationsCount}
               </span>
             )}
           </button>
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
+
 
 export default Header;
+

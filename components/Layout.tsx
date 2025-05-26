@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import ResponsiveMenu from './ResponsiveMenu';
 import Header from './Header';
+import {useState, useEffect} from "react"
 
 interface LayoutProps {
   children?: ReactNode;
@@ -10,9 +11,16 @@ interface LayoutProps {
 
 const Layout = ({
   children,
-  userName = 'Nombre de Usuario',
   notificationsCount = 0
 }: LayoutProps) => {
+    const [userName, setUserName] = useState<string>("")
+  
+    useEffect(()=>{
+      const storedName = sessionStorage.getItem("name");
+      if(storedName){
+        setUserName(storedName);
+      }
+    },[]);
   return (
     <div className="h-screen flex flex-col">
       {/* El header siempre está fijo en la parte superior */}
